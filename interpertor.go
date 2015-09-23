@@ -9,8 +9,8 @@ import (
 )
 
 var (
-	EOF           = fmt.Errorf("End of file")
-	EncodingFault = fmt.Errorf("Encoding error!")
+	EOF                  = fmt.Errorf("End of file")
+	EncodingFault        = fmt.Errorf("Encoding error!")
 	ConditionalTypeError = fmt.Errorf("Expected a boolean value, but didn't find it.")
 )
 
@@ -98,7 +98,6 @@ func runCode(code string) {
 		case wordVal == "?":
 			// If there is an error, this will stop the loop.
 			err = m.runConditionalOperator()
-			
 		case wordVal == "call":
 
 		default:
@@ -126,16 +125,13 @@ func (m *machine) runConditionalOperator() error {
 			m.pushValue(falseVal)
 		}
 		return nil
-	}
-	else {
+	} else {
 		m.pushValue(booleanVal)
 		m.pushValue(trueVal)
 		m.pushValue(falseVal)
-		return ConditionalTypeError;
+		return ConditionalTypeError
 	}
-
 }
-
 
 func (s *script) nextWord() (word, error) {
 	var readingInto string
