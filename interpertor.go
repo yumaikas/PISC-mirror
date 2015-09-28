@@ -18,8 +18,9 @@ var (
 type word string
 
 type codeList struct {
-	idx  int
-	code []word
+	idx   int
+	code  []word
+	debug bool
 }
 
 type codeSequence interface {
@@ -67,7 +68,9 @@ func runCode(code string) *machine {
 		code: getWordList(code),
 	}
 	m := &machine{
-		values: make([]stackEntry, 0),
+		values:               make([]stackEntry, 0),
+		definedWords:         make(map[word][]word),
+		definedStackComments: make(map[word]string),
 	}
 	//
 	executeWordsOnMachine(m, p)
@@ -87,7 +90,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 	var err error
 	var wordVal word
 	for err == nil {
-		// fmt.Println(wordVal)
 		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
 		if err != nil {
@@ -99,11 +101,13 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			if intErr != nil {
 				panic(intErr)
 			}
-			m.pushValue(intVal)
+			m.pushValue(Integer(intVal))
 		case wordVal == "dup":
 			stackVal := m.popValue()
 			m.pushValue(stackVal)
 			m.pushValue(stackVal)
+		case wordVal == "drop":
+			m.popValue()
 		case wordVal == "f":
 			m.pushValue(Boolean(false))
 		case wordVal == "t":
@@ -152,6 +156,9 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 					m.pushValue(String(literal))
 				}
 			}
+		case spaceMatch.MatchString(string(wordVal)):
+			// TODO: capture this space?
+			continue
 		default:
 			if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
@@ -184,6 +191,7 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 	name, err := c.nextWord()
 	openPar, err2 := c.nextWord()
 	if openPar != "(" {
+		fmt.Println("ERRR0!")
 		return WordDefParenExpectedError
 	}
 	// TODO: come back and clean this up.
@@ -192,9 +200,10 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 	}
 
 	stackComment := ""
+	var wordVal word
 	// read the stack comment for the word
-	for err != nil {
-		wordVal, err := c.nextWord()
+	for err == nil {
+		wordVal, err = c.nextWord()
 		if err != nil {
 			return err
 		}
@@ -203,10 +212,11 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 		}
 		stackComment += string(wordVal) + " "
 	}
+	fmt.Println("stackComment is", stackComment)
 	m.definedStackComments[name] = strings.TrimSpace(stackComment)
 
 	wordDef := make([]word, 0)
-	for err != nil {
+	for err == nil {
 		wordVal, err := c.nextWord()
 		if err != nil {
 			return err
@@ -255,7 +265,9 @@ func (c *codeList) nextWord() (word, error) {
 	if c.idx < len(c.code) {
 		retval := c.code[c.idx]
 		c.idx++
+		// fmt.Println(retval)
 		return retval, nil
 	}
+	// fmt.Println("EOF")
 	return word(""), EOF
 }
