@@ -1,3 +1,4 @@
+// TODO: look for ways to split this code up better.
 package main
 
 import (
@@ -81,9 +82,9 @@ func runCode(code string) *machine {
 var (
 	intMatch         = regexp.MustCompile(`\d+`)
 	stringBeginMatch = regexp.MustCompile(`^".+`)
-	stringEndMatch   = regexp.MustCompile(`.+$`)
+	stringEndMatch   = regexp.MustCompile(`.+"$`)
 	spaceMatch       = regexp.MustCompile(`\s+`)
-	// floatMatch = regexp.MustCompile(`\d+\.\d+`)
+	floatMatch       = regexp.MustCompile(`\d+\.\d+`)
 )
 
 // This executes a given code sequence against a given machine
@@ -103,6 +104,12 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 				panic(intErr)
 			}
 			m.pushValue(Integer(intVal))
+		case floatMatch.MatchString(string(wordVal)):
+			floatVal, floatErr := strconv.ParseFloat(string(wordVal), 64)
+			if floatErr != nil {
+				panic(floatErr)
+			}
+			m.pushValue(Double(floatVal))
 		case wordVal == "dup":
 			stackVal := m.popValue()
 			m.pushValue(stackVal)
@@ -251,13 +258,45 @@ func (m *machine) executeQuotation() error {
 	}
 }
 
+type _type int
+
+const (
+	type_int _type = iota
+	type_double
+	type_else
+)
+
 func (m *machine) executeAdd() error {
-	a, a_ok := m.popValue().(Integer)
-	b, b_ok := m.popValue().(Integer)
-	if !a_ok || !b_ok {
+	a := m.popValue()
+	b := m.popValue()
+	var a_type, b_type _type
+	switch a.(type) {
+	case Integer:
+		a_type = type_int
+	case Double:
+		a_type = type_double
+	default:
+		a_type = type_else
+	}
+	switch b.(type) {
+	case Integer:
+		b_type = type_int
+	case Double:
+		b_type = type_double
+	default:
+		b_type = type_else
+	}
+
+	if a_type == type_else || b_type == type_else {
 		return InvalidAddTypeError
 	}
-	c := Integer(int(a) + int(b))
+	if a_type == type_double || b_type == type_double {
+		c := Double(float64(a.(float64)) + float64(b.(float64)))
+		m.pushValue(c)
+		return nil
+	}
+	// If we have handled the other cases, then this has to be integers
+	c := Integer(int(a.(int)) + int(b.(int)))
 	m.pushValue(c)
 	return nil
 }
