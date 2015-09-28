@@ -13,6 +13,7 @@ var (
 	ConditionalTypeError      = fmt.Errorf("Expected a boolean value, but didn't find it.")
 	WordDefParenExpectedError = fmt.Errorf("Word definitions require a stack effect commnet!")
 	QuotationTypeError        = fmt.Errorf("Expected quotation value, but didn't find it.")
+	InvalidAddTypeError       = fmt.Errorf("Expected two integer values, but didn't find them.")
 )
 
 type word string
@@ -108,6 +109,15 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			m.pushValue(stackVal)
 		case wordVal == "drop":
 			m.popValue()
+		case wordVal == "2drop":
+			m.popValue()
+			m.popValue()
+		case wordVal == "3drop":
+			m.popValue()
+			m.popValue()
+			m.popValue()
+		case wordVal == "+":
+			m.executeAdd()
 		case wordVal == "f":
 			m.pushValue(Boolean(false))
 		case wordVal == "t":
@@ -239,6 +249,17 @@ func (m *machine) executeQuotation() error {
 	} else {
 		return QuotationTypeError
 	}
+}
+
+func (m *machine) executeAdd() error {
+	a, a_ok := m.popValue().(Integer)
+	b, b_ok := m.popValue().(Integer)
+	if !a_ok || !b_ok {
+		return InvalidAddTypeError
+	}
+	c := Integer(int(a) + int(b))
+	m.pushValue(c)
+	return nil
 }
 
 func (m *machine) runConditionalOperator() error {

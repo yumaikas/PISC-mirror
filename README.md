@@ -26,9 +26,11 @@ With that in mind, things that I will be adding (or accepting PRs for) as [time]
   -- 2over ( x y z -- x y z x y )
   -- pick ( x y z -- x y z x )
   -- swap ( x y -- y x )
+  - Add a way for modules to be added without a lot of major modifications in the core loop of the interp.
   - Math words. A lot is needed here, and in double/int versions ( >, <, =, -, +, div, mod ) 
   - String manipulation words (concat, >upper, >lower, int>string, double>string, etc)
   - Array and map manipulating words (ways to define them, literals, member access, so on.)
+  - A basic compliation step for reducing cache misses in the core loop (transforming words into constant lookup codes, so that word lookup isn't proportional to the number of words in the core loop)
   - STDIN/STDOUT words.
   - Regex facilties. 
   - File i/o words
