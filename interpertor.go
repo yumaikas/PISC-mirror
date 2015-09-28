@@ -5,8 +5,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"unicode"
-	"unicode/utf8"
 )
 
 var (
@@ -14,14 +12,10 @@ var (
 	EncodingFault             = fmt.Errorf("Encoding error!")
 	ConditionalTypeError      = fmt.Errorf("Expected a boolean value, but didn't find it.")
 	WordDefParenExpectedError = fmt.Errorf("Word definitions require a stack effect commnet!")
+	QuotationTypeError        = fmt.Errorf("Expected quotation value, but didn't find it.")
 )
 
 type word string
-
-type script struct {
-	idx  int
-	code string
-}
 
 type codeList struct {
 	idx  int
@@ -58,29 +52,47 @@ func (m *machine) popValue() stackEntry {
 	m.values = m.values[:len(m.values)-1]
 	return popped
 }
-func runCode(code string) {
-	p := &script{
-		idx:  0,
-		code: code,
+
+func getWordList(code string) []word {
+	words := make([]word, 0)
+	for _, v := range spaceMatch.Split(code, -1) {
+		words = append(words, word(v))
 	}
-	m := machine{
+	return words
+}
+
+func runCode(code string) *machine {
+	p := &codeList{
+		idx:  0,
+		code: getWordList(code),
+	}
+	m := &machine{
 		values: make([]stackEntry, 0),
 	}
 	//
 	executeWordsOnMachine(m, p)
+	return m
 }
 
 var (
-	intMatch = regexp.MustCompile(`\d+`)
+	intMatch         = regexp.MustCompile(`\d+`)
+	stringBeginMatch = regexp.MustCompile(`^".+`)
+	stringEndMatch   = regexp.MustCompile(`.+$`)
+	spaceMatch       = regexp.MustCompile(`\s+`)
 	// floatMatch = regexp.MustCompile(`\d+\.\d+`)
 )
 
 // This executes a given code sequence against a given machine
-func executeWordsOnMachine(m machine, p codeSequence) {
+func executeWordsOnMachine(m *machine, p codeSequence) {
 	var err error
 	var wordVal word
 	for err == nil {
+		// fmt.Println(wordVal)
+		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
+		if err != nil {
+			return
+		}
 		switch {
 		case intMatch.MatchString(string(wordVal)):
 			intVal, intErr := strconv.Atoi(string(wordVal))
@@ -99,15 +111,15 @@ func executeWordsOnMachine(m machine, p codeSequence) {
 			// Push true onoto stack
 		case wordVal == "[":
 			// Begin quotation
-			quotation := make([]word, 0)
+			quote := make([]word, 0)
 			for err == nil {
 				wordVal, err = p.nextWord()
 				if wordVal == "]" {
 					break
 				}
-				quotation = append(quotation, wordVal)
+				quote = append(quote, wordVal)
 			}
-			m.pushValue(quotation)
+			m.pushValue(quotation(quote))
 		case wordVal == "]":
 			// panic here.
 			panic("Unbalanced ]")
@@ -115,10 +127,38 @@ func executeWordsOnMachine(m machine, p codeSequence) {
 			// If there is an error, this will stop the loop.
 			err = m.runConditionalOperator()
 		case wordVal == "call":
-			// m.executeQuotation()
+			err := m.executeQuotation()
+			if err != nil {
+				panic(err)
+			}
 		case wordVal == ":":
 			m.readWordDefinition(p)
+		case wordVal == "call":
+			m.executeQuotation()
+		case wordVal == ")":
+			panic("Unexpected )")
+		case wordVal == ";":
+			panic("Unexpected ;")
+		case matchStringBeginWord(wordVal):
+			// Strings begin at words that being with " and end on words that end with "
+			if matchStringEndWord(wordVal) {
+				m.pushValue(String(wordVal))
+			}
+			literal := wordVal
+			for err != nil {
+				wordVal, err = p.nextWord()
+				literal += wordVal
+				if matchStringEndWord(wordVal) {
+					m.pushValue(String(literal))
+				}
+			}
 		default:
+			if val, ok := m.definedWords[wordVal]; ok {
+				// Run the definition of this word on this machine.
+				executeWordsOnMachine(m, &codeList{idx: 0, code: val})
+			} else {
+				panic("Undefined word: " + string(wordVal))
+			}
 			// Evaluate a defined word, or complain if a word is not defined.
 
 			// Plan of attack: Expand word definition, and push terms into current spot on stack.
@@ -130,6 +170,14 @@ func executeWordsOnMachine(m machine, p codeSequence) {
 			return
 		}
 	}
+}
+
+func matchStringBeginWord(w word) bool {
+	return len(w) > 0 && w[0] == '"'
+}
+
+func matchStringEndWord(w word) bool {
+	return len(w) > 0 && w[len(w)-1] == '"'
 }
 
 func (m *machine) readWordDefinition(c codeSequence) error {
@@ -153,9 +201,9 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 		if wordVal == ")" {
 			break
 		}
-		stackComment += string(word) + " "
+		stackComment += string(wordVal) + " "
 	}
-	m.definedStackComments[name] = strings.Trim(stackComment)
+	m.definedStackComments[name] = strings.TrimSpace(stackComment)
 
 	wordDef := make([]word, 0)
 	for err != nil {
@@ -172,11 +220,21 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 	return nil
 }
 
+// Used for call word.
+func (m *machine) executeQuotation() error {
+	quoteVal := m.popValue()
+	if q, ok := quoteVal.(quotation); ok {
+		executeWordsOnMachine(m, &codeList{idx: 0, code: q})
+		return nil
+	} else {
+		return QuotationTypeError
+	}
+}
+
 func (m *machine) runConditionalOperator() error {
 	falseVal := m.popValue()
 	trueVal := m.popValue()
 	booleanVal := m.popValue()
-
 	if b, ok := booleanVal.(Boolean); ok {
 		if b {
 			m.pushValue(trueVal)
@@ -185,6 +243,7 @@ func (m *machine) runConditionalOperator() error {
 		}
 		return nil
 	} else {
+		// Return the stack to it's previous state, for debugging...?
 		m.pushValue(booleanVal)
 		m.pushValue(trueVal)
 		m.pushValue(falseVal)
@@ -199,19 +258,4 @@ func (c *codeList) nextWord() (word, error) {
 		return retval, nil
 	}
 	return word(""), EOF
-}
-
-func (s *script) nextWord() (word, error) {
-	var readingInto string
-	for idx, r := range s.code[s.idx:] {
-		s.idx = idx
-		if r == utf8.RuneError {
-			return word(""), EncodingFault
-		}
-		if unicode.IsSpace(r) {
-			return word(readingInto), nil
-		}
-		readingInto += string(r)
-	}
-	return word(readingInto), EOF
 }
