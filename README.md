@@ -13,6 +13,7 @@ If you can understand what is going on, please submit a pull request to add some
 With that in mind, things that I will be adding (or accepting PRs for) as [time](http://www.catb.org/jargon/html/C/copious-free-time.html) allows:
 
   - More tests for different combinators (if, loop, while)
+  - A standard library build from a minimal core (this is a lot of the things below)
   - Stack shuffling combinators (see the ones in factor):
   -- drop
   -- 2drop
@@ -26,8 +27,15 @@ With that in mind, things that I will be adding (or accepting PRs for) as [time]
   -- pick
   -- swap
   - Array and map manipulating words
-  - A standard library build from a minimal core
   - Math words. A lot is needed here, and in double/int versions. 
-  - 
+  - STDIN/STDOUT words.
+  - File i/o words
+  - A plan for multiprocessing. (I want to pull from TCL on this one if I can)
+  - Combinators for quotations, like bi and tri. 
+  - A plan for a module system.
+  - Syscalls
+  - shellout words. 
+  - Bindings to awesome libraries (SDL, Tk, ImageMagick)
 
-.pisc is the file extension for these files. I don't have a standard library in place yet.
+
+.pisc is the file extension for these files. 
