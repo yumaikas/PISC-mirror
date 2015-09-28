@@ -15,26 +15,29 @@ With that in mind, things that I will be adding (or accepting PRs for) as [time]
   - More tests for different combinators (if, loop, while)
   - A standard library build from a minimal core (this is a lot of the things below)
   - Stack shuffling combinators (see the ones in factor):
-  -- drop
-  -- 2drop
-  -- 3drop
-  -- nip
-  -- 2nip
-  -- dup
-  -- 2dup
-  -- 3dup
-  -- 2over
-  -- pick
-  -- swap
-  - Array and map manipulating words
-  - Math words. A lot is needed here, and in double/int versions. 
+  -- drop ( x -- )
+  -- 2drop ( x y -- )
+  -- 3drop ( x y z -- )
+  -- nip ( x y -- y )
+  -- 2nip ( x y z -- z )
+  -- dup  ( x -- x x )
+  -- 2dup ( x y -- x y x y )
+  -- 3dup ( x y z -- x y z )
+  -- 2over ( x y z -- x y z x y )
+  -- pick ( x y z -- x y z x )
+  -- swap ( x y -- y x )
+  - Math words. A lot is needed here, and in double/int versions ( >, <, =, -, +, div, mod ) 
+  - String manipulation words (concat, >upper, >lower, int>string, double>string, etc)
+  - Array and map manipulating words (ways to define them, literals, member access, so on.)
   - STDIN/STDOUT words.
+  - Regex facilties. 
   - File i/o words
   - A plan for multiprocessing. (I want to pull from TCL on this one if I can)
   - Combinators for quotations, like bi and tri. 
   - A plan for a module system.
   - Syscalls
   - shellout words. 
+  - struct words (when this thing allows for partial compilation or some such thing.)
   - Bindings to awesome libraries (SDL, Tk, ImageMagick)
 
 
