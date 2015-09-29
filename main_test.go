@@ -62,6 +62,15 @@ func TestIntAddition(t *testing.T) {
 	}
 }
 
+func TestAdditionTypePromotion(t *testing.T) {
+	m := runCode(`1 2.0 +`)
+	a := m.popValue().(Double)
+	if a != Double(3) {
+		t.Fail()
+		t.Log("Stack values:", a, m.values)
+	}
+}
+
 // This is just a test to make sure that performance isn't hugely sucky.
 func TestManyIntAddition(t *testing.T) {
 	m := runCode(`1 2 3 4 5 6 300 2 3 2 3 2 3 2 3 2 3 + + + + + + + + + + + + + + + +`)

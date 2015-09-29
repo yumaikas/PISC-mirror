@@ -98,18 +98,18 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			return
 		}
 		switch {
-		case intMatch.MatchString(string(wordVal)):
-			intVal, intErr := strconv.Atoi(string(wordVal))
-			if intErr != nil {
-				panic(intErr)
-			}
-			m.pushValue(Integer(intVal))
 		case floatMatch.MatchString(string(wordVal)):
 			floatVal, floatErr := strconv.ParseFloat(string(wordVal), 64)
 			if floatErr != nil {
 				panic(floatErr)
 			}
 			m.pushValue(Double(floatVal))
+		case intMatch.MatchString(string(wordVal)):
+			intVal, intErr := strconv.Atoi(string(wordVal))
+			if intErr != nil {
+				panic(intErr)
+			}
+			m.pushValue(Integer(intVal))
 		case wordVal == "dup":
 			stackVal := m.popValue()
 			m.pushValue(stackVal)
@@ -267,37 +267,9 @@ const (
 )
 
 func (m *machine) executeAdd() error {
-	a := m.popValue()
-	b := m.popValue()
-	var a_type, b_type _type
-	switch a.(type) {
-	case Integer:
-		a_type = type_int
-	case Double:
-		a_type = type_double
-	default:
-		a_type = type_else
-	}
-	switch b.(type) {
-	case Integer:
-		b_type = type_int
-	case Double:
-		b_type = type_double
-	default:
-		b_type = type_else
-	}
-
-	if a_type == type_else || b_type == type_else {
-		return InvalidAddTypeError
-	}
-	if a_type == type_double || b_type == type_double {
-		c := Double(float64(a.(float64)) + float64(b.(float64)))
-		m.pushValue(c)
-		return nil
-	}
-	// If we have handled the other cases, then this has to be integers
-	c := Integer(int(a.(int)) + int(b.(int)))
-	m.pushValue(c)
+	a := m.popValue().(number)
+	b := m.popValue().(number)
+	m.pushValue(a.Add(b))
 	return nil
 }
 
