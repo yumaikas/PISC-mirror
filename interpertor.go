@@ -266,13 +266,6 @@ const (
 	type_else
 )
 
-func (m *machine) executeAdd() error {
-	a := m.popValue().(number)
-	b := m.popValue().(number)
-	m.pushValue(a.Add(b))
-	return nil
-}
-
 func (m *machine) runConditionalOperator() error {
 	falseVal := m.popValue()
 	trueVal := m.popValue()
