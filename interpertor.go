@@ -80,11 +80,11 @@ func runCode(code string) *machine {
 }
 
 var (
-	intMatch         = regexp.MustCompile(`\d+`)
+	intMatch         = regexp.MustCompile(`-?\d+`)
 	stringBeginMatch = regexp.MustCompile(`^".+`)
 	stringEndMatch   = regexp.MustCompile(`.+"$`)
 	spaceMatch       = regexp.MustCompile(`\s+`)
-	floatMatch       = regexp.MustCompile(`\d+\.\d+`)
+	floatMatch       = regexp.MustCompile(`-?\d+\.\d+`)
 )
 
 // This executes a given code sequence against a given machine
