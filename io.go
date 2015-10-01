@@ -24,5 +24,4 @@ func (m *machine) executeStringWord(w word) error {
 	}
 	return nil
 }
-
 */

@@ -78,15 +78,14 @@ func runCode(code string) *machine {
 		definedWords:         make(map[word][]word),
 		definedStackComments: make(map[word]string),
 	}
-	//
 	executeWordsOnMachine(m, p)
 	return m
 }
 
 var (
-	intMatch   = regexp.MustCompile(`-?\d+`)
 	spaceMatch = regexp.MustCompile(`\s+`)
 	floatMatch = regexp.MustCompile(`-?\d+\.\d+`)
+	intMatch   = regexp.MustCompile(`-?\d+`)
 )
 
 // TODO: run a tokenizer on the code that handles string literals more appropriately.
@@ -101,7 +100,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			return
 		}
 		switch {
-		// Comments are going to be exclusively of the /* */ variety for now.
+		// Comments are going to be exclusively of the /*  */ variety for now.
 		case wordVal == "/*":
 			for err == nil {
 				wordVal, err = p.nextWord()
@@ -109,7 +108,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 					break
 				}
 			}
-
 		case floatMatch.MatchString(string(wordVal)):
 			floatVal, floatErr := strconv.ParseFloat(string(wordVal), 64)
 			if floatErr != nil {
@@ -145,8 +143,8 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 		case wordVal == "f":
 			m.pushValue(Boolean(false))
 		case wordVal == "t":
+			// Push true onto stack
 			m.pushValue(Boolean(true))
-			// Push true onoto stack
 		case wordVal == "[":
 			// Begin quotation
 			quote := make([]word, 0)
@@ -158,7 +156,11 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 				quote = append(quote, wordVal)
 			}
 			m.pushValue(quotation(quote))
+		case wordVal == "]":
+			// panic here.
+			panic("Unbalanced ]")
 		case strings.HasPrefix(string(wordVal), `"`):
+			// This is the case for string literals
 			strVal := ""
 			// Slice out the " chracter
 			strVal += strings.TrimPrefix(string(wordVal), `"`) + p.currentSpace()
@@ -179,9 +181,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 				strVal += string(wordVal) + p.currentSpace()
 			}
 			m.pushValue(String(strVal))
-		case wordVal == "]":
-			// panic here.
-			panic("Unbalanced ]")
 		case wordVal == "?":
 			// If there is an error, this will stop the loop.
 			err = m.runConditionalOperator()
@@ -192,25 +191,10 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			}
 		case wordVal == ":":
 			m.readWordDefinition(p)
-		case wordVal == "call":
-			m.executeQuotation()
 		case wordVal == ")":
 			panic("Unexpected )")
 		case wordVal == ";":
 			panic("Unexpected ;")
-		case matchStringBeginWord(wordVal):
-			// Strings begin at words that being with " and end on words that end with "
-			if matchStringEndWord(wordVal) {
-				m.pushValue(String(wordVal))
-			}
-			literal := wordVal
-			for err != nil {
-				wordVal, err = p.nextWord()
-				literal += wordVal
-				if matchStringEndWord(wordVal) {
-					m.pushValue(String(literal))
-				}
-			}
 		case spaceMatch.MatchString(string(wordVal)):
 			// TODO: capture this space?
 			continue
@@ -232,14 +216,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			return
 		}
 	}
-}
-
-func matchStringBeginWord(w word) bool {
-	return len(w) > 0 && w[0] == '"'
-}
-
-func matchStringEndWord(w word) bool {
-	return len(w) > 0 && w[len(w)-1] == '"'
 }
 
 func (m *machine) readWordDefinition(c codeSequence) error {

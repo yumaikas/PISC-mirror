@@ -16,7 +16,6 @@ func isMathWord(w word) bool {
 		w == "/" ||
 		// w == "div" ||
 		w == "mod" ||
-		w == "=" ||
 		w == "<" ||
 		w == "zero?"
 }
