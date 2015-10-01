@@ -8,7 +8,7 @@ func TestParser(t *testing.T) {
 	a := m.popValue().(Integer)
 	b := m.popValue().(Integer)
 	c := m.popValue().(Integer)
-	if a != Integer(2) && b != Integer(2) && c != Integer(3) {
+	if a != Integer(2) || b != Integer(2) || c != Integer(1) {
 		t.Fail()
 		t.Log("Stack values were: ", a, b, c)
 	}
@@ -19,7 +19,7 @@ func TestExecution(t *testing.T) {
  f [ 1 ] [ 2 ] ? call`)
 	a := m.popValue().(Integer)
 	b := m.popValue().(Integer)
-	if a != Integer(2) && b != Integer(1) {
+	if a != Integer(2) || b != Integer(1) {
 		t.Fail()
 		t.Log("Stack values were", a, b, m.values)
 	}
@@ -78,5 +78,68 @@ func TestManyIntAddition(t *testing.T) {
 	if a != Integer(346) {
 		t.Fail()
 		t.Log("Stack values:", a, m.values)
+	}
+}
+
+func TestMath(t *testing.T) {
+	m := runCode(`1 2 -`)
+	a := m.popValue().(Integer)
+	if a != Integer(-1) {
+		t.Fail()
+		t.Log(m.values)
+	}
+}
+
+func TestBooleanOr(t *testing.T) {
+	m := runCode(`t f or`)
+	a := m.popValue().(Boolean)
+	if a != Boolean(true) {
+		t.Fail()
+		t.Log(m.values)
+	}
+}
+
+func TestBooleanAnd(t *testing.T) {
+	m := runCode(`t f and`)
+	a := m.popValue().(Boolean)
+	if a != Boolean(false) {
+		t.Fail()
+		t.Log(m.values)
+	}
+}
+
+func TestEven(t *testing.T) {
+	m := runCode(`: even? ( x -- ? ) 2 mod zero? ; 2 even? 3 even? 4 even?`)
+	a := m.popValue().(Boolean)
+	b := m.popValue().(Boolean)
+	c := m.popValue().(Boolean)
+	if a != Boolean(true) || b != Boolean(false) || c != Boolean(true) {
+		t.Fail()
+		t.Log(m.values)
+	}
+}
+
+func TestRecursion(t *testing.T) {
+	m := runCode(`: countDown ( n x -- x ) 1 - dup dup zero? [ ] [ countDown ] ? call ; 3 countDown`)
+	a := m.popValue().(Integer)
+	if a != Integer(0) {
+		t.Fail()
+		t.Log(m.values)
+	}
+}
+
+func TestString(t *testing.T) {
+	m := runCode(`"aa" " as " "bo" concat concat`)
+	if m.popValue() != String("aa as bo") {
+		t.Fail()
+		t.Log(m.values)
+	}
+}
+
+func TestStringConv(t *testing.T) {
+	m := runCode(`1.34 >string`)
+	if m.popValue() != String("1.34") {
+		t.Fail()
+		t.Log(m.values)
 	}
 }

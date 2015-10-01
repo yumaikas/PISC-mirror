@@ -20,13 +20,15 @@ var (
 type word string
 
 type codeList struct {
-	idx   int
-	code  []word
-	debug bool
+	idx    int
+	code   []word
+	spaces []string
+	debug  bool
 }
 
 type codeSequence interface {
 	nextWord() (word, error)
+	currentSpace() string
 }
 
 type machine struct {
@@ -56,18 +58,20 @@ func (m *machine) popValue() stackEntry {
 	return popped
 }
 
-func getWordList(code string) []word {
+func getWordList(code string) ([]word, []string) {
 	words := make([]word, 0)
 	for _, v := range spaceMatch.Split(code, -1) {
 		words = append(words, word(v))
 	}
-	return words
+	return words, spaceMatch.FindAllString(code, -1)
 }
 
 func runCode(code string) *machine {
+	words, spaces := getWordList(strings.TrimSpace(code))
 	p := &codeList{
-		idx:  0,
-		code: getWordList(code),
+		idx:    0,
+		code:   words,
+		spaces: spaces,
 	}
 	m := &machine{
 		values:               make([]stackEntry, 0),
@@ -80,13 +84,12 @@ func runCode(code string) *machine {
 }
 
 var (
-	intMatch         = regexp.MustCompile(`-?\d+`)
-	stringBeginMatch = regexp.MustCompile(`^".+`)
-	stringEndMatch   = regexp.MustCompile(`.+"$`)
-	spaceMatch       = regexp.MustCompile(`\s+`)
-	floatMatch       = regexp.MustCompile(`-?\d+\.\d+`)
+	intMatch   = regexp.MustCompile(`-?\d+`)
+	spaceMatch = regexp.MustCompile(`\s+`)
+	floatMatch = regexp.MustCompile(`-?\d+\.\d+`)
 )
 
+// TODO: run a tokenizer on the code that handles string literals more appropriately.
 // This executes a given code sequence against a given machine
 func executeWordsOnMachine(m *machine, p codeSequence) {
 	var err error
@@ -98,6 +101,15 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			return
 		}
 		switch {
+		// Comments are going to be exclusively of the /* */ variety for now.
+		case wordVal == "/*":
+			for err == nil {
+				wordVal, err = p.nextWord()
+				if wordVal == "*/" {
+					break
+				}
+			}
+
 		case floatMatch.MatchString(string(wordVal)):
 			floatVal, floatErr := strconv.ParseFloat(string(wordVal), 64)
 			if floatErr != nil {
@@ -123,8 +135,13 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			m.popValue()
 			m.popValue()
 			m.popValue()
-		case wordVal == "+":
-			m.executeAdd()
+			// Math words are: +, -, *, /, div, and mod
+		case isMathWord(wordVal):
+			m.executeMathWord(wordVal)
+		case isBooleanWord(wordVal):
+			m.executeBooleanWord(wordVal)
+		case isStringWord(wordVal):
+			m.executeStringWord(wordVal)
 		case wordVal == "f":
 			m.pushValue(Boolean(false))
 		case wordVal == "t":
@@ -141,6 +158,27 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 				quote = append(quote, wordVal)
 			}
 			m.pushValue(quotation(quote))
+		case strings.HasPrefix(string(wordVal), `"`):
+			strVal := ""
+			// Slice out the " chracter
+			strVal += strings.TrimPrefix(string(wordVal), `"`) + p.currentSpace()
+
+			if strings.HasSuffix(string(wordVal), `"`) && len(wordVal) > 1 {
+				// Slice out the " at the end.
+				strVal = strings.TrimPrefix(string(wordVal), `"`)
+				strVal = strings.TrimSuffix(strVal, `"`)
+				m.pushValue(String(strVal))
+				continue
+			}
+			for err == nil {
+				wordVal, err = p.nextWord()
+				if strings.HasSuffix(string(wordVal), `"`) {
+					strVal += strings.TrimSuffix(string(wordVal), `"`)
+					break
+				}
+				strVal += string(wordVal) + p.currentSpace()
+			}
+			m.pushValue(String(strVal))
 		case wordVal == "]":
 			// panic here.
 			panic("Unbalanced ]")
@@ -284,6 +322,15 @@ func (m *machine) runConditionalOperator() error {
 		m.pushValue(falseVal)
 		return ConditionalTypeError
 	}
+}
+func (c *codeList) currentSpace() string {
+	if len(c.spaces) == 0 {
+		return " "
+	}
+	if c.idx >= len(c.spaces) {
+		return ""
+	}
+	return c.spaces[c.idx-1]
 }
 
 func (c *codeList) nextWord() (word, error) {

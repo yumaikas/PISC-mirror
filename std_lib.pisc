@@ -1,0 +1,16 @@
+/*
+
+Defining some things in this std_lib file, which I am going to be adding to tests
+
+*/
+
+/* If statement */
+: if (? true false -- res ) ? call ;
+
+/* Some basic math */
+: even? ( n -- ? ) 2 mod zero? ;
+
+: = ( a b -- ? ) - zero? ;
+
+/* < is already defined */
+: >= ( a b -- ? ) < not ;
