@@ -4,8 +4,19 @@ Defining some things in this std_lib file, which I am going to be adding to test
 
 */
 
+/* Stack shufflers */
+: dup ( a -- a a ) 0 pick-dup ;
+: 2dup ( a b -- a b a b ) 2 [ 1 pick-dup ] times ;
+: swap ( a b -- b a ) 1 pick-drop ;
+: drop ( a -- ) 0 pick-del ;
+: 2drop ( a b -- ) 2 [ drop ] times ;
+: 3drop ( a b c ) 3 [ drop ] times ;
+
+/* : dip ( a quot -- a ) >a call $a ; */
+
+
 /* If statement */
-: if (? true false -- res ) ? call ;
+: if ( ? true false -- res ) ? call ;
 
 /* Some basic math */
 : even? ( n -- ? ) 2 mod zero? ;
@@ -14,3 +25,16 @@ Defining some things in this std_lib file, which I am going to be adding to test
 
 /* < is already defined */
 : >= ( a b -- ? ) < not ;
+
+: . ( a -- ) drop ;
+
+: print ( a -- ) >string priv_puts ;
+
+: inspect ( a -- a ) dup print ;
+
+
+
+/*
+: 
+
+*/

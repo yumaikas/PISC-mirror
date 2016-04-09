@@ -15,6 +15,8 @@ var (
 	WordDefParenExpectedError = fmt.Errorf("Word definitions require a stack effect commnet!")
 	QuotationTypeError        = fmt.Errorf("Expected quotation value, but didn't find it.")
 	InvalidAddTypeError       = fmt.Errorf("Expected two integer values, but didn't find them.")
+	UnexpectedStackDashError  = fmt.Errorf("Found unexpected -- in stack annotation")
+	ParenBeforeStackDashError = fmt.Errorf("Found ) before -- in stack annotation")
 )
 
 type word string
@@ -35,6 +37,8 @@ type machine struct {
 	// TODO: add a stack pointer so that we can keep from re-allocating a lot.
 	// stackPtr int
 	values []stackEntry
+	// This is reallocated when locals are used
+	locals []map[string]stackEntry
 	// A map from words to slices of words.
 	definedWords map[word][]word
 	// TODO: try to work this out later.
@@ -84,13 +88,19 @@ func runCode(code string) *machine {
 
 var (
 	spaceMatch = regexp.MustCompile(`\s+`)
-	floatMatch = regexp.MustCompile(`-?\d+\.\d+`)
-	intMatch   = regexp.MustCompile(`-?\d+`)
+	floatMatch = regexp.MustCompile(`^-?\d+\.\d+$`)
+	intMatch   = regexp.MustCompile(`^-?\d+$`)
 )
 
 // TODO: run a tokenizer on the code that handles string literals more appropriately.
 // This executes a given code sequence against a given machine
-func executeWordsOnMachine(m *machine, p codeSequence) {
+func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
+	defer func() {
+		pErr := recover()
+		if pErr != nil {
+			retErr = fmt.Errorf("%s", pErr)
+		}
+	}()
 	var err error
 	var wordVal word
 	for err == nil {
@@ -120,19 +130,28 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 				panic(intErr)
 			}
 			m.pushValue(Integer(intVal))
-		case wordVal == "dup":
-			stackVal := m.popValue()
-			m.pushValue(stackVal)
-			m.pushValue(stackVal)
-		case wordVal == "drop":
-			m.popValue()
-		case wordVal == "2drop":
-			m.popValue()
-			m.popValue()
-		case wordVal == "3drop":
-			m.popValue()
-			m.popValue()
-			m.popValue()
+		case wordVal == "f":
+			m.pushValue(Boolean(false))
+		case wordVal == "t":
+			// Push true onto stack
+			m.pushValue(Boolean(true))
+		case wordVal == "pick-dup":
+			distBack := int(m.popValue().(Integer))
+			m.pushValue(m.values[len(m.values)-distBack-1])
+		case wordVal == "pick-drop":
+			distBack := int(m.popValue().(Integer))
+			valIdx := len(m.values) - distBack - 1
+			val := m.values[valIdx]
+			// Splice out the value
+			m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
+			m.pushValue(val)
+		case wordVal == "pick-del":
+			distBack := int(m.popValue().(Integer))
+			valIdx := len(m.values) - distBack - 1
+			m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
+		case wordVal == "len":
+			length := m.popValue().(lenable).Length()
+			m.pushValue(Integer(length))
 			// Math words are: +, -, *, /, div, and mod
 		case isMathWord(wordVal):
 			m.executeMathWord(wordVal)
@@ -140,11 +159,14 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 			m.executeBooleanWord(wordVal)
 		case isStringWord(wordVal):
 			m.executeStringWord(wordVal)
-		case wordVal == "f":
-			m.pushValue(Boolean(false))
-		case wordVal == "t":
-			// Push true onto stack
-			m.pushValue(Boolean(true))
+		case isLoopWord(wordVal):
+			m.executeLoopWord(wordVal)
+		case isVectorWord(wordVal):
+			m.executeVectorWord(wordVal)
+		case isDictWord(wordVal):
+			m.executeDictWord(wordVal)
+		case isIOWord(wordVal):
+			m.executeIOWord(wordVal)
 		case wordVal == "[":
 			// Begin quotation
 			quote := make([]word, 0)
@@ -201,7 +223,10 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 		default:
 			if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
-				executeWordsOnMachine(m, &codeList{idx: 0, code: val})
+				err = executeWordsOnMachine(m, &codeList{idx: 0, code: val})
+				if err != nil {
+					return err
+				}
 			} else {
 				panic("Undefined word: " + string(wordVal))
 			}
@@ -213,9 +238,10 @@ func executeWordsOnMachine(m *machine, p codeSequence) {
 		if err != nil {
 			// TODO: add some ways to debug here....
 			fmt.Println("Execution stopped Error: ", err)
-			return
+			return err
 		}
 	}
+	return nil
 }
 
 func (m *machine) readWordDefinition(c codeSequence) error {
@@ -232,30 +258,65 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 
 	stackComment := ""
 	var wordVal word
-	// read the stack comment for the word
-	for err == nil {
-		wordVal, err = c.nextWord()
-		if err != nil {
-			return err
+	// read the stack annotation for the word
+	{
+		pushes := 0
+		pops := 0
+		// Counting pushes
+		for err == nil {
+			wordVal, err = c.nextWord()
+			if err != nil {
+				return err
+			}
+
+			if wordVal == "--" {
+				break
+			}
+
+			if wordVal == ")" {
+				return ParenBeforeStackDashError
+			}
+			pushes++
+			stackComment += string(wordVal) + " "
 		}
-		if wordVal == ")" {
-			break
+		// Counting pops
+		for err == nil {
+			wordVal, err = c.nextWord()
+			if err != nil {
+				return err
+			}
+
+			if wordVal == "--" {
+				return UnexpectedStackDashError
+			}
+			if wordVal == ")" {
+				break
+			}
+			pops++
+			stackComment += string(wordVal) + " "
 		}
-		stackComment += string(wordVal) + " "
 	}
 	fmt.Println("stackComment is", stackComment)
 	m.definedStackComments[name] = strings.TrimSpace(stackComment)
 
 	wordDef := make([]word, 0)
+	hasLocal := false
 	for err == nil {
 		wordVal, err := c.nextWord()
 		if err != nil {
 			return err
 		}
+		if isLocalWord(w) {
+			hasLocal = true
+		}
 		if wordVal == ";" {
 			break
 		}
 		wordDef = append(wordDef, wordVal)
+	}
+	if hasLocal == true {
+		wordDef = append([]word{string("get-locals")}, wordDef...)
+		wordDef = append(wordDef, "drop-locals")
 	}
 	m.definedWords[name] = wordDef
 	return nil

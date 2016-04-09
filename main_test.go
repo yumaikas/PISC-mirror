@@ -120,7 +120,7 @@ func TestEven(t *testing.T) {
 }
 
 func TestRecursion(t *testing.T) {
-	m := runCode(`: countDown ( n x -- x ) 1 - dup dup zero? [ ] [ countDown ] ? call ; 3 countDown`)
+	m := runCode(`: countDown ( n x -- x ) 1 - dup dup zero? [ drop ] [ countDown ] ? call ; 3 countDown`)
 	a := m.popValue().(Integer)
 	if a != Integer(0) {
 		t.Fail()
