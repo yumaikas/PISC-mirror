@@ -20,13 +20,29 @@ type Double float64
 type Dict map[string]stackEntry
 type Array []stackEntry
 type String string
+type Symbol int64
 
 // This is a separate sematic from arrays.
 type quotation []word
 
-func (s String) String() string {
-	return "<<" + string(s) + ">>"
+type GoFunc GoWord
+
+func (g GoFunc) String() string {
+	return "<Native Code>"
 }
+
+func (g GoFunc) Type() string {
+	return "Go Word"
+}
+
+func (s String) String() string {
+	return string(s)
+}
+
+func (s Symbol) String() string {
+	return "#" + fmt.Sprint(int(s))
+}
+
 func (b Boolean) String() string {
 	if bool(b) {
 		return "t"
@@ -82,10 +98,18 @@ func (s String) Type() string {
 	return "String"
 }
 
+func (s Symbol) Type() string {
+	return "ERROR: Symbol observed on stack!"
+}
+
 func (dict Dict) Length() int {
 	return len(dict)
 }
 
 func (a Array) Length() int {
 	return len(a)
+}
+
+func (s String) Length() int {
+	return len(s)
 }

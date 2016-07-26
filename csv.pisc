@@ -1,0 +1,32 @@
+/* Parsing CSV data in PISC */
+
+: parse-csv ( str -- vec [ vec ] ) 
+	<vector> :results
+	f :inString
+	[ $inString not ] :outOfString
+
+	/* Set up the temporary variables */
+	[ "" :tempStr ] :resetCell
+	[ %resetCell <vector> :tempVec ] dup call :resetLine
+
+	[ $tempVec $tempStr vec-append :tempVec %resetCell ] :addCell
+	[ $results $tempVec vec-append :results %resetLine ] :addLine
+
+	/* Debugging 
+	"Temp Cell: " $tempStr concat print
+	"Temp Vector: " $tempVec >string concat print
+	*/
+
+	[ 
+		/* By default, append a char */
+		t :default
+		[ f :default ] :break
+
+		dup "," str-eq %outOfString and [ %addCell %break ] when
+		dup "\n" str-eq %outOfString and [ %addCell %addLine %break ] when
+		dup "\"" str-eq /* Toggle */ [ %outOfString :inString %break ] when
+		$default [ $tempStr swap concat :tempStr ] [ drop ] if
+	] each-char 
+	/* Add the straggling items */
+	%addCell %addLine 
+	$results ; 

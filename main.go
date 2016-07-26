@@ -15,9 +15,13 @@ func main() {
 	// Run command stuff here.
 	m := &machine{
 		values:               make([]stackEntry, 0),
-		definedWords:         make(map[word][]word),
+		definedWords:         make(map[word]*codeList),
 		definedStackComments: make(map[word]string),
+		predefinedWords:      make(map[word]GoWord),
+		prefixWords:          make(map[word]*codeList),
 	}
+	m.loadPredefinedValues()
+
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          ">> ",
 		HistoryFile:     "/tmp/readline.tmp",
@@ -42,14 +46,17 @@ Code
 			fmt.Println("Exiting")
 			return
 		}
+		if strings.TrimSpace(line) == "preload" {
+			m.loadPredefinedValues()
+		}
 		if err != nil {
 			panic(err)
 		}
-		words, spaces := getWordList(strings.TrimSpace(line))
+		words := getWordList(strings.TrimSpace(line))
+		// fmt.Println(words)
 		p := &codeList{
-			idx:    0,
-			code:   words,
-			spaces: spaces,
+			idx:  0,
+			code: words,
 		}
 		err = executeWordsOnMachine(m, p)
 		if err != nil {

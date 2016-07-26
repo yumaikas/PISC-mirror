@@ -1,0 +1,49 @@
+
+/*
+Even Fibonacci numbers under 4 million
+*/
+
+"std_lib.pisc" import
+
+: triplicate ( a -- a a a ) dup dup ;
+: max_fib ( --  const ) 4000000 ;
+
+/* TODO: This isn't working?
+: nth_fib ( a -- b ) 
+	:n
+
+	$n 0 = [ 0 ] when
+	$n 1 = [ 1 ] when
+	$n 1 > [ 
+		$n [ 1 - nth_fib ] [ 2 - nth_fib ] bi +
+	] when
+;
+*/
+
+: loop_fib ( n -- fib sum )
+	:n 
+	0 triplicate :sum :fib :a 
+	1 :b
+	$n [ 
+		$a $b + :fib
+		$b :a
+		$fib :b
+		$fib even? [ $fib $sum + :sum ] when
+	] times
+	$fib
+	$sum
+;
+
+: nth_fib ( n -- b ) 
+	:n
+	0 1 $n nth_fib_do
+;
+
+/* This is the tail-recursive version of fibionacci */
+: nth_fib_do ( a b n -- q ) 
+	:n :b :a
+	$n 0 > 
+		[ $b  $a $b +  $n 1 - nth_fib_do ] 
+		[ $a ]
+	if
+;

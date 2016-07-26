@@ -1,44 +1,49 @@
 package main
 
 import (
-	"strings"
+// "strings"
 )
 
-// TODO: add words for printing and such here.
-func isDictWord(w word) bool {
-	return w == ">>" ||
-		w == "<dict>" ||
-		strings.HasSuffix(string(w), "#get") ||
-		strings.HasSuffix(string(w), "#set")
+func (m *machine) loadDictWords() error {
 
-}
-
-func (m *machine) executeDictWord(w word) error {
-	switch {
 	// Push a dictionary to the stack.
-	case w == "<dict>":
+	m.predefinedWords["<dict>"] = NilWord(func(m *machine) {
 		dict := make(map[string]stackEntry)
 		m.pushValue(Dict(dict))
-	// The is a multi-read operation
-	case strings.HasSuffix(string(w), ">>"):
+	})
+
+	// ( dict quot -- vals.. )
+	m.predefinedWords["dict-get-many"] = NilWord(func(m *machine) {
 		q := m.popValue().(quotation)
 		// Keep from popping the dictionary
 		dict := m.values[len(m.values)-1].(Dict)
 		for _, innerWord := range q {
 			m.pushValue(dict[string(innerWord)])
 		}
-	// This is a set operation
-	case strings.HasSuffix(string(w), "#set"):
-		key := w[:len(w)-len("#set")]
+	})
+
+	// ( dict key -- dict bool )
+	m.predefinedWords["dict-has-key"] = NilWord(func(m *machine) {
+		key := m.popValue().(String).String()
+		dict := m.popValue().(Dict)
+		_, ok := dict[key]
+		m.pushValue(dict)
+		m.pushValue(Boolean(ok))
+	})
+
+	// ( dict value key -- dict )
+	m.predefinedWords["dict-set"] = NilWord(func(m *machine) {
+		key := m.popValue().(String).String()
 		value := m.popValue()
 		// Peek, since we have no intention of popping here.
 		dict := m.values[len(m.values)-1].(Dict)
 		dict[string(key)] = value
+	})
 
-		// This is a get operation
-	case strings.HasSuffix(string(w), "#get"):
-		key := string(w[:len(w)-len("#get")])
+	// ( dict key -- dict value )
+	m.predefinedWords["dict-get"] = NilWord(func(m *machine) {
+		key := m.popValue().(String).String()
 		m.pushValue(m.values[len(m.values)-1].(Dict)[key])
-	}
+	})
 	return nil
 }

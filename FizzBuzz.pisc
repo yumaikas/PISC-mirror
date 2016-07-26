@@ -1,0 +1,35 @@
+/* 
+ Implementing fizzbuzz in PISC
+*/
+
+
+/* Old version, very verbose
+: divisible? ( a b -- bool ) mod zero? ;
+: out-f ( a -- f ) print f ;
+get-locals
+0 :num
+
+100 [
+	t :unprinted
+	$num inc :num 
+	$num 15 divisible? [ "FizzBuzz" out-f :unprinted ] when
+	$num 5 divisible? $unprinted and [ "Buzz" out-f :unprinted ] when
+	$num 3 divisible? $unprinted and [ "Fizz" out-f :unprinted ] when 
+	$unprinted [ $num print ] when 
+ ] times
+drop-locals
+*/
+
+"std_lib.pisc" import
+
+: inc ( a -- a' ) 1 + ;
+
+get-locals
+0 !num /* Store 0 into num variable */
+100 [
+	$num inc dup :num
+			[ 3 divisor? [ "Buzz" ] [ "" ] if ] 
+			[ 5 divisor? [ "Fizz" ] [ "" ] if ] bi 
+		concat dup len 0 = [ drop $num ] when print
+] times
+drop-locals

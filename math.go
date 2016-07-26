@@ -30,6 +30,8 @@ func (m *machine) executeMathWord(w word) error {
 		return m.executeMultiply()
 	case "/":
 		return m.executeDivide()
+	case "<":
+		return m.executeLessThan()
 	case "zero?":
 		a := m.popValue().(number)
 		if a == Integer(0) || a == Double(0.0) {
@@ -40,6 +42,13 @@ func (m *machine) executeMathWord(w word) error {
 	case "mod":
 		m.executeModulus()
 	}
+	return nil
+}
+
+func (m *machine) executeLessThan() error {
+	a := m.popValue().(number)
+	b := m.popValue().(number)
+	m.pushValue(b.LessThan(a))
 	return nil
 }
 

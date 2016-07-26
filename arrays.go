@@ -1,49 +1,64 @@
 package main
 
-func isVectorWord(w word) bool {
-	return w == "at" ||
-		w == "<vector>" ||
-		w == "#>array" || // Take n elements from the stack into a new array
-		w == "+>" || // Add to end of array
-		w == "<+" || // Add to front of array
-		w == "<-" || // Remove from from of array
-		w == "->" || // Remove from end of array
-		w == "#>" // || // Pop n elements from stack into end of array
-	//w == "#->" || // Pop n elements from end array into stack
-	//w == "each" // execute a quotation for each method on the array
-	//
-}
-func (m *machine) executeVectorWord(w word) error {
-	switch w {
-	case "at":
-		idx := m.popValue().(Integer)
+import (
+	"fmt"
+)
+
+func (m *machine) loadVectorWords() error {
+
+	m.predefinedWords["vec-at"] = GoWord(func(m *machine) error {
+		// ( vec idx -- vec elem )
+		idx := int(m.popValue().(Integer))
 		arr := m.popValue().(Array)
+		if idx > len(arr)-1 || idx < 0 {
+			return fmt.Errorf("Index out of bounds!")
+		}
 		m.pushValue(arr[idx])
-	case "<vector>":
+		return nil
+	})
+
+	// ( -- vector )
+	m.predefinedWords["<vector>"] = NilWord(func(m *machine) {
 		m.pushValue(Array(make([]stackEntry, 0)))
-	case "+>": // ( vec elem -- newVect )
+	})
+	// ( vec elem -- newVect )
+	m.predefinedWords["vec-append"] = NilWord(func(m *machine) {
 		toAppend := m.popValue()
 		arr := m.popValue().(Array)
 		arr = append(arr, toAppend)
 		m.pushValue(arr)
-	case "<+": // ( elem vec -- newVect )
+	})
+	// ( vec elem -- newVect )
+	m.predefinedWords["vec-prepend"] = NilWord(func(m *machine) {
 		toPrepend := m.popValue()
 		arr := m.popValue().(Array)
 		arr = append([]stackEntry{toPrepend}, arr...)
 		m.pushValue(arr)
-	case "->": // ( vec -- sliced elem )
+	})
+
+	// ( vec -- )
+	m.predefinedWords["vec-popback"] = GoWord(func(m *machine) error {
 		arr := m.popValue().(Array)
+		if len(arr) < 1 {
+			return fmt.Errorf("No elements in array!")
+		}
 		val := arr[len(arr)-1]
 		arr = arr[:len(arr)-1]
 		m.pushValue(arr)
 		m.pushValue(val)
-	case "<-": // ( vec -- sliced elem )
+		return nil
+	})
+
+	m.predefinedWords["vec-popfront"] = GoWord(func(m *machine) error {
 		arr := m.popValue().(Array)
+		if len(arr) < 1 {
+			return fmt.Errorf("No elements in array!")
+		}
 		val := arr[0]
 		arr = arr[1:]
 		m.pushValue(arr)
 		m.pushValue(val)
-	}
+		return nil
+	})
 	return nil
-
 }
