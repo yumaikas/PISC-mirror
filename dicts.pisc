@@ -1,0 +1,18 @@
+/* Dictionaries and their utilities */
+
+: dict-if-empty-stack ( .. -- dict? ) stack-empty? [ <dict> ] when ;
+: dict-if-not-dict ( .. -- dict ) dup typeof "Dictionary" str-neq [ <dict> ] when ;
+: ensure-dictionary ( .. -- dict ) dict-if-empty-stack dict-not-dict ;
+
+/* Fetch from dictionary */
+:PRE -$ ( dict name -- val ) dict-get ;
+
+/* Set dictionary value, and set option (in the tradition of shells) */
+:PRE -: ( dict val name -- dict ) [ [ ensure-dictionary ] dip ] dip dict-set ;
+
+/*  Set an entry to true for each unicode character in this file */
+:PRE -% ( dict? name -- dict ) 
+	/* Keep the name on the stack */ 
+	[ ensure-dictionary ] dip [ t swap dict-set ] each-char ;
+
+: quot>dict ( quot -- dict ) get-locals call <dict> [ dict-set ] each-local drop-locals ;

@@ -1,0 +1,3 @@
+/* Vectors and their utilities */
+
+:PRE [] ( vec idx -- ) string>int vec-at ;
