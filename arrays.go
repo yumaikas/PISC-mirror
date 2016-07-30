@@ -21,6 +21,25 @@ func (m *machine) loadVectorWords() error {
 	m.predefinedWords["<vector>"] = NilWord(func(m *machine) {
 		m.pushValue(Array(make([]stackEntry, 0)))
 	})
+	// ( vec quot -- .. )
+	m.predefinedWords["vec-each"] = GoWord(func(m *machine) error {
+		quot := m.popValue().(quotation)
+		vect := m.popValue().(Array)
+		code := &codeList{
+			idx:  0,
+			code: quot,
+		}
+		for _, elem := range vect {
+			m.pushValue(elem)
+			code.idx = 0
+			err := executeWordsOnMachine(m, code)
+			if err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+
 	// ( vec elem -- newVect )
 	m.predefinedWords["vec-append"] = NilWord(func(m *machine) {
 		toAppend := m.popValue()
@@ -36,7 +55,7 @@ func (m *machine) loadVectorWords() error {
 		m.pushValue(arr)
 	})
 
-	// ( vec -- )
+	// ( vec -- vec elem )
 	m.predefinedWords["vec-popback"] = GoWord(func(m *machine) error {
 		arr := m.popValue().(Array)
 		if len(arr) < 1 {
@@ -48,7 +67,7 @@ func (m *machine) loadVectorWords() error {
 		m.pushValue(val)
 		return nil
 	})
-
+	// ( vec -- vec elem)
 	m.predefinedWords["vec-popfront"] = GoWord(func(m *machine) error {
 		arr := m.popValue().(Array)
 		if len(arr) < 1 {

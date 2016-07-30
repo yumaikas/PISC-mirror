@@ -82,7 +82,7 @@ func getWordList(code string) []word {
 	currentLine := ""
 	for _, v := range code {
 		if v == '\n' {
-			fmt.Println("Parsing:", currentLine)
+			// fmt.Println("Parsing:", currentLine)
 			currentLine = ""
 			lineno++
 		}
@@ -172,7 +172,7 @@ var (
 	spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
 	floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
 	intMatch         = regexp.MustCompile(`^-?\d+$`)
-	prefixMatchRegex = regexp.MustCompile(`^[\[\]:!@#$%^&*]+`)
+	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@#$%^&*<>]+`)
 )
 
 // TODO: run a tokenizer on the code that handles string literals more appropriately.
@@ -222,19 +222,14 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 		case wordVal == ":PRE":
 			err = m.readPrefixDefinition(p)
 			// err = m.readPatternDefinition
-		case wordVal == "{":
-			err = m.readVectorLiteral(p)
-		/* case wordVal == "read-quote":
-		word, compErr := p.nextWord()
-		if compErr != nil {
-			return compErr
-		}
-		if word != "[" {
-			err = QuotationTypeError
-			break
-		}
-		fallthrough
-		*/
+		case wordVal == "typeof":
+			m.pushValue(String(m.popValue().Type()))
+		case wordVal == "stack-empty?":
+			if len(m.values) == 0 {
+				m.pushValue(Boolean(true))
+			} else {
+				m.pushValue(Boolean(false))
+			}
 		case wordVal == "[":
 			// Begin quotation
 			quote := make([]word, 0)
@@ -309,6 +304,20 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				// be used.
 				m.pushValue(String(getNonPrefixOf(wordVal)))
 				err = executeWordsOnMachine(m, prefixFunc)
+			} else if localFunc, ok := m.locals[len(m.locals)-1][string(wordVal)]; ok {
+				if fn, ok := localFunc.(quotation); ok {
+					code := &codeList{idx: 0, code: fn}
+					err = executeWordsOnMachine(m, code)
+					if err != nil {
+						return err
+					}
+				} else {
+					cl := p.(*codeList)
+					fmt.Println(cl.code[cl.idx-1])
+					// fmt.Println(p.(*codeList).code)
+
+					panic(fmt.Sprint("Undefined word: ", wordVal))
+				}
 			} else {
 				cl := p.(*codeList)
 				fmt.Println(cl.code[cl.idx-1])

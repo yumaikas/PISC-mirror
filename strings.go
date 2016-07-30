@@ -1,6 +1,10 @@
 package main
 
-import "strings"
+import (
+	"bufio"
+	"strconv"
+	"strings"
+)
 
 // TODO: Add more words to support strings here, we need a way to handle a lot more cases, like
 // replacement, substringing, joining and so on.
@@ -18,6 +22,17 @@ func (m *machine) loadStringWords() error {
 			return
 		}
 		m.pushValue(String(a.String()))
+	})
+
+	m.predefinedWords["string>int"] = GoWord(func(m *machine) error {
+		a := m.popValue().(String).String()
+		if i, err := strconv.Atoi(a); err != nil {
+			return err
+		} else {
+			m.pushValue(Integer(i))
+			return nil
+		}
+
 	})
 
 	// ( vec sep -- str )
@@ -56,6 +71,15 @@ func (m *machine) loadStringWords() error {
 		a := m.popValue().String()
 		m.pushValue(Boolean(a == b))
 
+	})
+	// ( str -- obj )
+	m.predefinedWords["str>rune-reader"] = NilWord(func(m *machine) {
+		a := m.popValue().(String)
+		reader := strings.NewReader(string(a))
+		bufReader := bufio.NewReader(reader)
+
+		readerObj := makeReader(bufReader)
+		m.pushValue(Dict(readerObj))
 	})
 	// ( str quot -- .. )
 	m.predefinedWords["each-char"] = NilWord(func(m *machine) {

@@ -3,10 +3,65 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"os"
 	"strings"
 )
+
+type PISCReader interface {
+	io.RuneReader
+	io.ByteReader
+	io.Reader
+	ReadString(delim byte) (string, error)
+}
+
+func makeReader(reader PISCReader) Dict {
+	file := make(Dict)
+	EOF := false
+	file["read-byte"] = GoFunc(func(m *machine) error {
+		b, err := reader.ReadByte()
+		if err == io.EOF {
+			EOF = true
+			err = nil
+		}
+		if err != nil {
+			return err
+		}
+		m.pushValue(Integer(int(b)))
+		return nil
+	})
+	file["read-rune"] = GoFunc(func(m *machine) error {
+		ch, _, err := reader.ReadRune()
+		if err == io.EOF {
+			EOF = true
+			err = nil
+		}
+		if err != nil {
+			return err
+		}
+		m.pushValue(String(string(ch)))
+		return nil
+	})
+	file["read-line"] = GoFunc(func(m *machine) error {
+		str, err := reader.ReadString('\n')
+		if err == io.EOF {
+			EOF = true
+			err = nil
+		}
+		if err != nil {
+			return err
+		}
+		// Deal with \r on windows
+		m.pushValue(String(strings.TrimRight(str, "\r\n")))
+		return nil
+	})
+	file["EOF"] = GoFunc(func(m *machine) error {
+		m.pushValue(Boolean(EOF))
+		return nil
+	})
+	return file
+}
 
 func (m *machine) loadIOWords() error {
 	m.predefinedWords["import"] = GoWord(func(m *machine) error {
@@ -24,6 +79,16 @@ func (m *machine) loadIOWords() error {
 		if err != nil {
 			return err
 		}
+		return nil
+	})
+
+	m.predefinedWords["filepath>string"] = GoWord(func(m *machine) error {
+		fileName := m.popValue().(String)
+		data, err := ioutil.ReadFile(string(fileName))
+		if err != nil {
+			return err
+		}
+		m.pushValue(String(string(data)))
 		return nil
 	})
 
@@ -63,31 +128,15 @@ func (m *machine) loadIOWords() error {
 
 	m.predefinedWords["open-file-reader"] = GoWord(func(m *machine) error {
 		var fileName = m.popValue().(String)
-		var file = Dict(make(map[string]stackEntry))
+		// var file = Dict(make(map[string]stackEntry))
 		goFile, err := os.Open(string(fileName))
 		if err != nil {
 			return err
 		}
 		var reader = bufio.NewReader(goFile)
+		file := makeReader(reader)
 		file["close"] = GoFunc(func(m *machine) error {
 			return goFile.Close()
-		})
-		file["read-byte"] = GoFunc(func(m *machine) error {
-			b, err := reader.ReadByte()
-			if err != nil {
-				return err
-			}
-			m.pushValue(Integer(int(b)))
-			return nil
-		})
-		file["read-line"] = GoFunc(func(m *machine) error {
-			str, err := reader.ReadString('\n')
-			if err != nil {
-				return err
-			}
-			// Deal with \r on windows
-			m.pushValue(String(strings.TrimRight(str, "\r\n")))
-			return nil
 		})
 		m.pushValue(file)
 		/*
