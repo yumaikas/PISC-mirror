@@ -4,6 +4,44 @@ This is the growing standard library of PISC.
 
 */
 
+/* t and f respectively push true and false onto the stack */
+: t ( -- t ) "t" extern-call ;
+: f ( -- t ) "f" extern-call ;
+
+/* stack-empty? checks if there are any entries on the stack
+: stack-empty? ( .. -- empty? ) primitive ;
+*/
+
+/* The following calls are the current stack-shuffling primitives */
+
+/* pick-dup duplicates the nth item back on the stack */
+: pick-dup ( .. n -- .. item ) "pick-dup" extern-call ;
+
+/* pick-drop removes the item from the nth stack slot, placing it atop the stack */
+: pick-drop ( .. n -- ..` item ) "pick-drop" extern-call ;
+
+/* pick-del deletes the nth stack entry back, removing it from the stack entirely */
+: pick-del ( .. n --  ..`  ) "pick-del" extern-call ;
+
+
+/* Len is the go defined word that defers length checking to the go type system */
+: len ( lenable -- length ) "len" extern-call ;
+
+/* import current takes a file name, and attempts to execute the file at that relative file path. 
+
+NOTE: Currently this word is actually defined inside the go executable
+*/
+
+: import ( filepath -- .. ) "import" extern-call ;
+
+"locals.pisc" import
+"io.pisc" import
+"dicts.pisc" import
+"vectors.pisc" import
+
+
+
+
 /* Local Prefixes */
 /* # is the import prefix */
 :PRE : ( val name --  ) set-local ;
@@ -26,12 +64,6 @@ This is the growing standard library of PISC.
 : str-neq ( str-a str-b -- eq? ) str-eq not ;
 
 
-
-:PRE [] ( vec idx -- ) string>int vec-at ;
-
-  
-
-
 /* Symbol manipulation */
 : is-symbol ( symb symb  -- eq? ) symb-neq not ;
 
@@ -50,6 +82,7 @@ This is the growing standard library of PISC.
 : if ( ? true false -- res ) ? call ;
 /* When statement for when you don't need all of if */
 : when ( ? true -- res ) [ ] ? call ;
+
 
 /* Some basic math */
 : even? ( n -- ? ) 2 mod zero? ;

@@ -230,6 +230,10 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			} else {
 				m.pushValue(Boolean(false))
 			}
+		case wordVal == "extern-call":
+			wordName := m.popValue().(String).String()
+			fn := m.predefinedWords[word(wordName)]
+			err = fn(m)
 		case wordVal == "[":
 			// Begin quotation
 			quote := make([]word, 0)
@@ -289,9 +293,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 		case len(wordVal) == 0:
 			continue
 		default:
-			if wordFunc, ok := m.predefinedWords[wordVal]; ok {
-				wordFunc(m)
-			} else if val, ok := m.definedWords[wordVal]; ok {
+			if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
 				val.idx = 0
 				err = executeWordsOnMachine(m, val)
