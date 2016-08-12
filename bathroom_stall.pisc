@@ -1,0 +1,42 @@
+/* 
+Solving this code golf problem http://codegolf.stackexchange.com/questions/89241/be-respectful-in-the-restroom
+*/
+
+: fill-urinal-locs ( str -- full empty ) 
+	<vector> :full
+	<vector> :empty
+	[ 0 :i ] dup :reset call
+	[ [ 1 + ] $:i ] :incr
+	>string 
+	[ 
+		dup "1" str-eq [ [ $i vec-append ] $:full ] when 
+		"0" str-eq [ [ $i vec-append ] $:empty ] when
+		incr
+	] each-char 
+	$full $empty
+;
+
+: respect ( stalls -- respectfulPostion ) 
+
+	<vector> :distances
+	fill-urinal-locs :empty :full
+	[ 0 :i ] dup :reset call
+	[ [ 1 + ] $:i ] :incr
+	$empty [ :eElem 
+		0 :dist
+		reset
+		$full [ :fElem
+		  [ $fElem $eElem - abs + ] $:dist incr 
+		] vec-each
+	    [ $dist $i / $eElem ] quot>vector [ swap vec-append ] $:distances
+	] vec-each
+	$distances print
+	0 :maxDist
+	0 :maxPos
+	"LOL" print
+	$distances [ /* Pop the elements into vars */
+		dup []0 :dist []1 :pos
+		$maxDist $dist < [ $pos :maxPos ] when 
+	] vec-each
+	$maxPos
+	;

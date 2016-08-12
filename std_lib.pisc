@@ -41,6 +41,7 @@ NOTE: Currently this word is actually defined inside the go executable
 "io.pisc" import
 "dicts.pisc" import
 "vectors.pisc" import
+"symbols.pisc" import
 
 
 
@@ -59,10 +60,21 @@ NOTE: Currently this word is actually defined inside the go executable
 : 2drop ( a b -- ) 2 [ drop ] times ;
 : 3drop ( a b c -- ) 3 [ drop ] times ;
 : over ( x y -- x y x ) 1 pick-dup ;
-/* Uses locals for fun and profit */
+/* Used locals for fun and profit 
 : dip ( a quot -- a ) swap :a call $a ;
-: keep ( ..a x quot: ( ..a x -- ..b ) -- ..b x ) over [ call ] dip ;
+*/
+: dip ( a quot -- a ) "dip" extern-call ; 
+: keep ( ..a x quot: [ ..a x --- ..b ] -- ..b x ) over [ call ] dip ;
 : bi ( a quot1 quot2 -- ... ) [ keep ] dip call ;
+
+/*
+: change ( quot name -- ... ) drop-locals :name :quot  ;
+
+: change ( quot varName -- .. ) drop-locals :name :quot $name get-local $quot call $name set-local get-locals ;
+*/
+/* Copied from factor */
+: change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
+:PRE $: ( quot varName -- ) change ;
 
 : str-neq ( str-a str-b -- eq? ) str-eq not ;
 
@@ -97,6 +109,8 @@ NOTE: Currently this word is actually defined inside the go executable
 : >= ( a b -- ? ) < not ;
 : <= ( a b -- ? ) 2dup < [ = ] dip or ;
 : > ( a b -- ? ) <= not ;
+
+: abs ( a -- a ) dup 0 < [ -1 * ] when ; 
 
 /* : eq ( a b -- ? ) */
 : . ( a -- ) drop ;
