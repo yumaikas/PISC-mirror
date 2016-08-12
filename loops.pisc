@@ -1,0 +1,6 @@
+/*
+Loops.pisc
+*/
+
+: times ( n quot -- .. ) "times" extern-call ;
+: while ( n quot -- .. ) "while" extern-call ;
