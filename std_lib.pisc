@@ -34,7 +34,9 @@ NOTE: Currently this word is actually defined inside the go executable
 
 : import ( filepath -- .. ) "import" extern-call ;
 
+"loops.pisc" import
 "bools.pisc" import 
+"strings.pisc" import
 "locals.pisc" import
 "io.pisc" import
 "dicts.pisc" import

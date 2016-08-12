@@ -1,3 +1,16 @@
 /* Vectors and their utilities */
 
+: vec-at ( vec idx -- elem ) "vec-at" extern-call ;
+: <vector> ( -- vector ) "<vector>" extern-call ;
+: vec-each ( vec quot -- .. ) "vec-each" extern-call ;
+
+
+: vec-at ( -- ) "vec-at" extern-call ;
+: <vector> ( -- vec ) "<vector>" extern-call ;
+: vec-each ( vec quot -- .. ) "vec-each" extern-call ;
+: vec-append ( vec elem --  newVect ) "vec-append" extern-call ;
+: vec-prepend ( vec elem -- newVect ) "vec-prepend" extern-call ;
+: vec-popback ( vec -- vec elem  ) "vec-popback" extern-call ;
+: vec-popfront ( vec -- vec elem ) "vec-popfront" extern-call ;
+
 :PRE [] ( vec idx -- ) string>int vec-at ;

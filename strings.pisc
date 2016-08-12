@@ -1,0 +1,15 @@
+/* 
+Strings.pisc
+
+String handling words and such
+*/
+
+: concat ( a b -- c ) "concat" extern-call ;
+: >string ( a -- str ) ">string" extern-call ;
+: string>int ( str -- int! ) "string>int" extern-call ;
+: str-join ( vec sep -- str ) "str-join" extern-call ;
+: str-split ( str sep -- vec ) "str-split" extern-call ;
+: empty? ( str -- ? ) "empty?" extern-call ;
+: str-eq ( a b -- ? ) "str-eq" extern-call ;
+: str>rune-reader ( str -- obj ) "str>rune-reader" extern-call ;
+: each-char ( str quot -- .. ) "each-char" extern-call ;
