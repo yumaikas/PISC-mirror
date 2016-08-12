@@ -1,0 +1,18 @@
+/* Locals in PISC */
+
+/* set name to val */
+: set-local ( val name -- ) "set-local" extern-call ;
+
+/* get the value associated with a local value */
+: get-local ( name -- val ) "get-local" extern-call ;
+
+/* Push a stack frame for locals onto the locals stack */
+: get-locals ( -- ) "get-locals" extern-call ;
+
+/* Pop a frame of locals off the locals stack */
+: drop-locals ( -- ) "drop-locals" extern-call ;
+
+/* Run a quotation for each local in the current stack frame 
+SEE: quot>dict
+*/
+: each-local ( quot [ k v - .. ] -- locals.. ) "each-local" extern-call ;

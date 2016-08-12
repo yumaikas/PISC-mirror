@@ -1,0 +1,50 @@
+/* The IO libraries of PISC */
+
+/* 
+	# Readers
+
+Currently, PISC has reading and writing objects that are bound to underlying go based bufio objects. Each reader has the following functions loaded into its dictionary entries:
+
+## read-byte ( -- byte )
+Reads a byte from the reader as an int, setting the readers EOF to true if the end of the file is reached
+
+## read-rune ( -- rune )
+Reads a UTF-8 rune from the reader
+
+## read-line ( -- str )
+Reads a line from the reader, trimming '\r' and '\n' off the end
+
+## EOF ( -- EOF? )
+Returns true if the end of the file has been reached, false otherwise
+
+	
+*/
+/*
+
+# File readers
+File readers have a `close` entry that can be called to close the underlying file handle
+
+*/
+: open-file-reader ( path -- Reader ) "open-file-reader" extern-call ;
+
+
+/*
+
+# Writers
+
+Writers are simpler than readers, as they can only write lines or strings
+	
+## write-string ( str -- )
+Write str to the attached writer.
+
+## write-line ( str -- )
+Write str to the attached writer, appending \n to the end
+
+*/
+: open-file-writer ( path -- writer ) "open-file-writer" extern-call ;
+
+/* A utility function for reading small files into strings. Do not use on large files */ 
+: filepath>string ( fileName -- strContents ) "filepath>string" extern-call ;
+
+/* priv_puts is the underlying word used for printing values */
+: priv_puts ( str -- ) "priv_puts" extern-call ;
