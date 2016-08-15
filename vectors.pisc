@@ -14,3 +14,5 @@
 : vec-popfront ( vec -- vec elem ) "vec-popfront" extern-call ;
 
 :PRE [] ( vec idx -- ) string>int vec-at ;
+
+: 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;

@@ -12,16 +12,24 @@ func isLocalWordPrefix(w word) bool {
 }
 
 var ErrLocalNotFound = fmt.Errorf("Local variable not found!")
+var ErrNoLocalsExist = fmt.Errorf("A local frame hasn't been allocated with get-locals!")
 
 func (m *machine) loadLocalWords() {
 	// ( val name -- )
-	m.predefinedWords["set-local"] = NilWord(func(m *machine) {
+	m.predefinedWords["set-local"] = GoWord(func(m *machine) error {
 		varName := m.popValue().(String)
+		if len(m.locals) <= 0 {
+			return ErrNoLocalsExist
+		}
 		m.locals[len(m.locals)-1][varName.String()] = m.popValue()
+		return nil
 	})
 	// ( name -- val )
 	m.predefinedWords["get-local"] = GoWord(func(m *machine) error {
 		varName := m.popValue().(String)
+		if len(m.locals) <= 0 {
+			return ErrNoLocalsExist
+		}
 		if val, ok := m.locals[len(m.locals)-1][varName.String()]; ok {
 			m.pushValue(val)
 			return nil

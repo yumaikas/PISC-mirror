@@ -232,8 +232,12 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			}
 		case wordVal == "extern-call":
 			wordName := m.popValue().(String).String()
-			fn := m.predefinedWords[word(wordName)]
-			err = fn(m)
+			fn, ok := m.predefinedWords[word(wordName)]
+			if ok {
+				err = fn(m)
+			} else {
+				err = fmt.Errorf("External call not registered")
+			}
 		case wordVal == "[":
 			// Begin quotation
 			quote := make([]word, 0)
@@ -279,10 +283,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			// If there is an error, this will stop the loop.
 			err = m.runConditionalOperator()
 		case wordVal == "call":
-			err := m.executeQuotation()
-			if err != nil {
-				panic(err)
-			}
+			err = m.executeQuotation()
 		case wordVal == ")":
 			panic("Unexpected )")
 		case wordVal == ";":

@@ -2,41 +2,34 @@
 Solving this code golf problem http://codegolf.stackexchange.com/questions/89241/be-respectful-in-the-restroom
 */
 
-: fill-urinal-locs ( str -- full empty ) 
-	<vector> :full
-	<vector> :empty
-	[ 0 :i ] dup :reset call
-	[ [ 1 + ] $:i ] :incr
-	>string 
-	[ 
-		dup "1" str-eq [ [ $i vec-append ] $:full ] when 
-		"0" str-eq [ [ $i vec-append ] $:empty ] when
-		incr
-	] each-char 
-	$full $empty
-;
 
 : respect ( stalls -- respectfulPostion ) 
 
 	<vector> :distances
-	fill-urinal-locs :empty :full
-	[ 0 :i ] dup :reset call
-	[ [ 1 + ] $:i ] :incr
+	<vector> :full
+	<vector> :empty
+	0 :i 
+	>string 
+	[ 
+		dup "1" str-eq [ [ $i vec-append ] $:full ] when 
+		"0" str-eq [ [ $i vec-append ] $:empty ] when
+		[ 1 + ] $:i
+	] each-char 
+	0 :i
 	$empty [ :eElem 
-		0 :dist
-		reset
+		0 dup :dist :i 
 		$full [ :fElem
-		  [ $fElem $eElem - abs + ] $:dist incr 
+		  [ $fElem $eElem - abs + ] $:dist
+		  [ 1 + ] $:i
 		] vec-each
-	    [ $dist $i / $eElem ] quot>vector [ swap vec-append ] $:distances
+	    $dist $i 0.0 + / $eElem 2vector [ swap vec-append ] $:distances
 	] vec-each
-	$distances print
 	0 :maxDist
 	0 :maxPos
-	"LOL" print
-	$distances [ /* Pop the elements into vars */
+
+	$distances dup print [ /* Pop the elements into vars */
 		dup []0 :dist []1 :pos
-		$maxDist $dist < [ $pos :maxPos ] when 
+		$maxDist $dist < [ $pos :maxPos $dist :maxDist ] when 
 	] vec-each
 	$maxPos
 	;
