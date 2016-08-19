@@ -42,6 +42,7 @@ NOTE: Currently this word is actually defined inside the go executable
 "dicts.pisc" import
 "vectors.pisc" import
 "symbols.pisc" import
+"math.pisc" import
 
 
 

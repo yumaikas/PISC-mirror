@@ -1,5 +1,10 @@
 package main
 
+import (
+	"fmt"
+	"math"
+)
+
 type number interface {
 	stackEntry
 	Add(number) number
@@ -18,6 +23,61 @@ func isMathWord(w word) bool {
 		w == "mod" ||
 		w == "<" ||
 		w == "zero?"
+}
+
+func (m *machine) loadHigherMathWords() error {
+	m.predefinedWords[">double"] = GoWord(func(m *machine) error {
+		a := m.popValue()
+		if i, ok := a.(Integer); ok {
+			m.pushValue(Double(float64(i)))
+			return nil
+		}
+		if d, ok := a.(Double); ok {
+			m.pushValue(Double(d))
+			return nil
+		}
+		return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
+	})
+	var math1Arg = func(name string, mathyFunc func(float64) float64) {
+		m.predefinedWords[word(name)] = NilWord(func(m *machine) {
+			a := m.popValue().(Double)
+			m.pushValue(Double(mathyFunc(float64(a))))
+		})
+	}
+	math1Arg("acos", math.Acos)
+	math1Arg("acosh", math.Acosh)
+	math1Arg("asin", math.Asin)
+	math1Arg("asinh", math.Asinh)
+	math1Arg("atan", math.Atan)
+	math1Arg("atanh", math.Atanh)
+	math1Arg("cbrt", math.Cbrt)
+	math1Arg("ceil", math.Ceil)
+	math1Arg("cos", math.Cos)
+	math1Arg("cosh", math.Cosh)
+	math1Arg("erf", math.Erf)
+	math1Arg("erfc", math.Erfc)
+	math1Arg("exp", math.Exp)
+	math1Arg("exp2", math.Exp2)
+	math1Arg("expm1", math.Expm1)
+	math1Arg("floor", math.Floor)
+	math1Arg("gamma", math.Gamma)
+	math1Arg("j0", math.J0)
+	math1Arg("j1", math.J1)
+	math1Arg("log", math.Log)
+	math1Arg("log10", math.Log10)
+	math1Arg("log1p", math.Log1p)
+	math1Arg("log2", math.Log2)
+	math1Arg("logb", math.Logb)
+	math1Arg("sin", math.Sin)
+	math1Arg("sinh", math.Sinh)
+	math1Arg("sqrt", math.Sqrt)
+	math1Arg("tan", math.Tan)
+	math1Arg("tanh", math.Tanh)
+	math1Arg("trunc", math.Trunc)
+	math1Arg("y0", math.Y0)
+	math1Arg("y1", math.Y1)
+
+	return nil
 }
 
 func (m *machine) executeMathWord(w word) error {

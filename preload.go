@@ -62,6 +62,7 @@ func (m *machine) loadPredefinedValues() {
 	m.loadDictWords()
 	m.loadVectorWords()
 	m.loadSymbolWords()
+	m.loadHigherMathWords()
 
 	m.loadIOWords()
 	err := executeWordsOnMachine(m, code)
