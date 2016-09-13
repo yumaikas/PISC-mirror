@@ -4,12 +4,12 @@ Strings.pisc
 String handling words and such
 */
 
-: concat ( a b -- c ) "concat" extern-call ;
-: >string ( a -- str ) ">string" extern-call ;
-: string>int ( str -- int! ) "string>int" extern-call ;
-: str-join ( vec sep -- str ) "str-join" extern-call ;
-: str-split ( str sep -- vec ) "str-split" extern-call ;
-: empty? ( str -- ? ) "empty?" extern-call ;
-: str-eq ( a b -- ? ) "str-eq" extern-call ;
-: str>rune-reader ( str -- obj ) "str>rune-reader" extern-call ;
-: each-char ( str quot -- .. ) "each-char" extern-call ;
+:DOC concat ( a b -- c ) Concatenate the top two strings on the stack ;
+:DOC >string ( a -- str ) Convert any stack value into a string ;
+:DOC string>int ( str -- int! ) Attempt to convert a string to an integer ;
+:DOC str-join ( vec sep -- str ) Turn a vector into a string by `>string` and using sep in between all the elements of `vec` ;
+:DOC str-split ( str sep -- vec ) Split a string into a vector using `sep` as a deilimeter ;
+:DOC empty? ( str -- ? ) Is this string empty? ;
+:DOC str-eq ( a b -- ? ) Are the top two strings on the stack equal? ;
+:DOC str>rune-reader ( str -- obj ) Create a rune-reader from a string, see the `[IO]` docs for more info ;
+:DOC each-char ( str quot -- .. ) Execute `quot` for each character(rune) in `str` ;

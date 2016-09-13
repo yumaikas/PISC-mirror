@@ -30,6 +30,7 @@ type codeList struct {
 
 type codeSequence interface {
 	nextWord() (word, error)
+	// TODO: Get current location: (of some sort)
 }
 
 type machine struct {
@@ -48,6 +49,7 @@ type machine struct {
 	definedStackComments map[word]string
 	// The top of the stack it the end of the []stackEntry slice.
 	// Every so many entries, we may need to re-allocate the stack....
+	helpDocs map[word]string
 
 	// Each time we are asked for a symbol, supply the value here, then increment
 	symbolIncr int64
@@ -175,7 +177,6 @@ var (
 	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@#$%^&*<>]+`)
 )
 
-// TODO: run a tokenizer on the code that handles string literals more appropriately.
 // This executes a given code sequence against a given machine
 func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 	var err error
@@ -222,6 +223,8 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 		case wordVal == ":PRE":
 			err = m.readPrefixDefinition(p)
 			// err = m.readPatternDefinition
+		case wordVal == ":DOC":
+			err = m.readWordDocumentation(p)
 		case wordVal == "typeof":
 			m.pushValue(String(m.popValue().Type()))
 		case wordVal == "stack-empty?":
@@ -294,7 +297,11 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 		case len(wordVal) == 0:
 			continue
 		default:
-			if val, ok := m.definedWords[wordVal]; ok {
+			if fn, ok := m.predefinedWords[wordVal]; ok {
+				if ok {
+					err = fn(m)
+				}
+			} else if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
 				val.idx = 0
 				err = executeWordsOnMachine(m, val)
@@ -342,44 +349,28 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 	return nil
 }
 
-// IN PROGRESS: This function.
-func (m *machine) readVectorLiteral(c codeSequence) error {
-	/*
-		array := make([]stackEntry, 0)
-		depth := 0
-		p := &codeList{
-			code: make([]word, 1),
-			idx:  0,
+func (m *machine) tryLocalWord(wordName string) error {
+	// TODO: In progress
+	if len(m.locals) > 0 {
+		if localFunc, found := m.locals[len(m.locals)-1][string(wordName)]; found {
+			if fn, ok := localFunc.(quotation); ok {
+				code := &codeList{idx: 0, code: fn}
+				err := executeWordsOnMachine(m, code)
+				if err != nil {
+					return err
+				}
+			} else if fn, ok := localFunc.(GoFunc); ok {
+				err := fn(m)
+				if err != nil {
+					return err
+				}
+			} else {
+				return fmt.Errorf("Undefined word!")
+			}
+			return nil
 		}
-
-		for err == nil {
-			wordVal, err = c.nextWord()
-			p.code[0] = wordVal
-			// this could be dicey... it's not threadsafe by default..
-			currStackLen := len(m.values) - 1
-			executeWordsOnMachine(m, p)
-			if len(m.values)-currStackLen != 1 {
-				return fmt.Errorf("Word in array returned more than 1 value, this isn't allowed!")
-			}
-			array = append(array, m.popValue())
-			// TODO: Handle nested array literals via recursive calls into readVectorLiteral
-			// !IDEA: Have a isLiteralWord and evaluateLiteralToMachine that wrap all the literals and push them to the machine
-			// -IDEA: Some kind of array that allows for more than 1 value to come from a call
-			if wordVal == "{" {
-				depth++
-			}
-			if wordVal == "}" {
-				depth--
-			}
-			// have to accomodate for the decrement in f in the previous function.
-			if wordVal == "}" && depth == -1 {
-				break
-			}
-
-		}
-		m.pushValue(quotation(quote))
-	*/
-	return nil
+	}
+	return fmt.Errorf("No locals to try")
 }
 
 func (m *machine) readWordBody(c codeSequence) ([]word, error) {
@@ -466,6 +457,47 @@ func getNonPrefixOf(w word) word {
 // Prefix words can only start with symbols like :!@#$%^&*
 func getPrefixOf(w word) word {
 	return word(prefixMatchRegex.FindString(string(w)))
+}
+
+//
+// NB. We're going to allocate a lot for now.
+func stringFromWordDef(definition []word) string {
+	// Copied from std lib's strings.Join
+	if len(definition) == 0 {
+		return ""
+	}
+	if len(definition) == 1 {
+		return string(definition[0])
+	}
+	n := len(" ") * (len(definition) - 1)
+	for i := 0; i < len(definition); i++ {
+		n += len(definition[i])
+	}
+	b := make([]byte, n)
+	bp := copy(b, definition[0])
+
+	for _, s := range definition[1:] {
+		bp += copy(b[bp:], " ")
+		bp += copy(b[bp:], s)
+	}
+	return string(b)
+}
+
+// Document comments, which end in a ;
+func (m *machine) readWordDocumentation(c codeSequence) error {
+	word, err := c.nextWord()
+	if err != nil {
+		return err
+	}
+	if _, found := m.prefixWords[word]; !found {
+	} else if _, found := m.predefinedWords[word]; !found {
+	} else if _, found := m.definedWords[word]; !found {
+		return fmt.Errorf("No definition for word: %s", word)
+	}
+	wordDef, err := m.readWordBody(c)
+	// Save the docs here
+	m.helpDocs[word] = stringFromWordDef(wordDef)
+	return err
 }
 
 // Prefix (:PRE) definitions, which use a prefix

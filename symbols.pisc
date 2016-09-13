@@ -1,5 +1,5 @@
 /*
 Symbols.pisc
 */
-: <symbol> ( -- ) "<symbol>" extern-call ;
-: symb-neq ( -- ) "symb-neq" extern-call ;
+:DOC <symbol> ( -- ) Create a unique symbol ;
+:DOC symb-neq ( -- ) Are these two symboles not equal  ;

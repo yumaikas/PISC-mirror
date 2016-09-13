@@ -19,6 +19,7 @@ func main() {
 		definedStackComments: make(map[word]string),
 		predefinedWords:      make(map[word]GoWord),
 		prefixWords:          make(map[word]*codeList),
+		helpDocs:             make(map[word]string),
 	}
 	m.loadPredefinedValues()
 

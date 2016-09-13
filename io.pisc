@@ -1,7 +1,8 @@
 /* The IO libraries of PISC */
 
-/* 
-	# Readers
+/* This doc isn't for a specific word */
+:DOC IO ( -- ) 
+# Readers
 
 Currently, PISC has reading and writing objects that are bound to underlying go based bufio objects. Each reader has the following functions loaded into its dictionary entries:
 
@@ -17,18 +18,16 @@ Reads a line from the reader, trimming '\r' and '\n' off the end
 ## EOF ( -- EOF? )
 Returns true if the end of the file has been reached, false otherwise
 
-	
-*/
-/*
+;
+
+:DOC open-file-reader ( path -- Reader )
 
 # File readers
 File readers have a `close` entry that can be called to close the underlying file handle
 
-*/
-: open-file-reader ( path -- Reader ) "open-file-reader" extern-call ;
+;
 
-
-/*
+:DOC open-file-writer ( path -- writer ) 
 
 # Writers
 
@@ -40,11 +39,8 @@ Write str to the attached writer.
 ## write-line ( str -- )
 Write str to the attached writer, appending \n to the end
 
-*/
-: open-file-writer ( path -- writer ) "open-file-writer" extern-call ;
+;
 
-/* A utility function for reading small files into strings. Do not use on large files */ 
-: filepath>string ( fileName -- strContents ) "filepath>string" extern-call ;
+:DOC filepath>string ( fileName -- strContents )  A utility function for reading small files into strings. Do not use on large files  ;
 
-/* priv_puts is the underlying word used for printing values */
-: priv_puts ( str -- ) "priv_puts" extern-call ;
+:DOC priv_puts ( str -- )  priv_puts is the underlying word used for printing values  ;

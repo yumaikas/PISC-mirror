@@ -2,6 +2,6 @@
 bools.pisc
 */
 
-: and ( x y -- ? ) "and" extern-call ;
-: or ( x y -- ? ) "or" extern-call ;
-: not ( x -- !x ) "not" extern-call ;
+:DOC and ( x y -- ? )  Boolean and  ;
+:DOC or ( x y -- ? )  Boolean or  ;
+:DOC not ( x -- !x )  Boolean not  ;

@@ -2,5 +2,5 @@
 Loops.pisc
 */
 
-: times ( n quot -- .. ) "times" extern-call ;
-: while ( n quot -- .. ) "while" extern-call ;
+:DOC times ( n quot -- .. ) Execute `quot` n times ;
+:DOC while ( pred quot -- .. ) Execute `quot` while `pred` leaves `t` ;

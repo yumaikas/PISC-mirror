@@ -1,19 +1,14 @@
 /* Dictionaries and their utilities */
 
-/* Place an empty dictionary on the stack */
-: <dict> ( -- dict ) "<dict>" extern-call ;
+:DOC <dict> ( -- dict )  Place an empty dictionary on the stack  ;
 
-/* Get a value from the dictionary for each word in a quotation */
-: dict-get-many ( dict quot --  ) "dict-get-many" extern-call ;
+:DOC dict-get-many ( dict quot --  )  Get a value from the dictionary for each word in a quotation  ;
 
-/* Does this dict have this key? */
-: dict-has-key? ( dict key -- dict bool ) "dict-has-key" extern-call ;
+/* Does this dict have this key? */ : dict-has-key? ( dict key -- dict bool ) "dict-has-key" extern-call ;
 
-/* Set the key to the value, leaving the dict on the stack */
-: dict-set ( dict value key -- dict ) "dict-set" extern-call ;
+:DOC dict-set ( dict value key -- dict )  Set the key to the value, leaving the dict on the stack  ;
 
-/* Get the value from the dictionary */
-: dict-get ( dict key -- value ) "dict-get" extern-call nip ;
+:DOC dict-get ( dict key -- value )  Get the value from the dictionary  ;
 
 : dict-if-empty-stack ( .. -- dict? ) stack-empty? [ <dict> ] when ;
 : dict-if-not-dict ( .. -- dict ) dup typeof "Dictionary" str-neq [ <dict> ] when ;

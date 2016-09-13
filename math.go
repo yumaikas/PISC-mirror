@@ -26,6 +26,9 @@ func isMathWord(w word) bool {
 }
 
 func (m *machine) loadHigherMathWords() error {
+	// Why do we duplicate the work here?
+	// Because we want both the >double word and the
+	// math1arg words
 	m.predefinedWords[">double"] = GoWord(func(m *machine) error {
 		a := m.popValue()
 		if i, ok := a.(Integer); ok {
@@ -38,12 +41,22 @@ func (m *machine) loadHigherMathWords() error {
 		}
 		return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
 	})
+
 	var math1Arg = func(name string, mathyFunc func(float64) float64) {
-		m.predefinedWords[word(name)] = NilWord(func(m *machine) {
-			a := m.popValue().(Double)
-			m.pushValue(Double(mathyFunc(float64(a))))
+		m.predefinedWords[word(name)] = GoWord(func(m *machine) error {
+			a := m.popValue()
+			if i, ok := a.(Integer); ok {
+				m.pushValue(Double(mathyFunc(float64(i))))
+				return nil
+			}
+			if d, ok := a.(Double); ok {
+				m.pushValue(Double(mathyFunc(float64(d))))
+				return nil
+			}
+			return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
 		})
 	}
+
 	math1Arg("acos", math.Acos)
 	math1Arg("acosh", math.Acosh)
 	math1Arg("asin", math.Asin)
