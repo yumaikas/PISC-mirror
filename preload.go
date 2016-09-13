@@ -47,7 +47,6 @@ func (m *machine) loadPredefinedValues() {
 	})
 
 	words := getWordList(`
-		: import ( filepath -- .. ) "import" extern-call ;
 		:PRE # ( name -- .. ) ".pisc" concat import ;
 		"std_lib.pisc" import `)
 	code := &codeList{
@@ -63,6 +62,7 @@ func (m *machine) loadPredefinedValues() {
 	m.loadVectorWords()
 	m.loadSymbolWords()
 	m.loadHigherMathWords()
+	m.loadHelpWords()
 
 	m.loadIOWords()
 	err := executeWordsOnMachine(m, code)
