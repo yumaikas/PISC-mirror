@@ -314,20 +314,8 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				// be used.
 				m.pushValue(String(getNonPrefixOf(wordVal)))
 				err = executeWordsOnMachine(m, prefixFunc)
-			} else if localFunc, ok := m.locals[len(m.locals)-1][string(wordVal)]; ok {
-				if fn, ok := localFunc.(quotation); ok {
-					code := &codeList{idx: 0, code: fn}
-					err = executeWordsOnMachine(m, code)
-					if err != nil {
-						return err
-					}
-				} else {
-					cl := p.(*codeList)
-					fmt.Println(cl.code[cl.idx-1])
-					// fmt.Println(p.(*codeList).code)
-
-					panic(fmt.Sprint("Undefined word: ", wordVal))
-				}
+			} else if err := m.tryLocalWord(string(wordVal)); err != nil && err != ErrNoLocals {
+				return err
 			} else {
 				cl := p.(*codeList)
 				fmt.Println(cl.code[cl.idx-1])
@@ -349,6 +337,8 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 	return nil
 }
 
+var ErrNoLocals = fmt.Errorf("No locals to try !")
+
 func (m *machine) tryLocalWord(wordName string) error {
 	// TODO: In progress
 	if len(m.locals) > 0 {
@@ -365,12 +355,12 @@ func (m *machine) tryLocalWord(wordName string) error {
 					return err
 				}
 			} else {
-				return fmt.Errorf("Undefined word!")
+				return fmt.Errorf("Value is not a word!")
 			}
 			return nil
 		}
 	}
-	return fmt.Errorf("No locals to try")
+	return ErrNoLocals
 }
 
 func (m *machine) readWordBody(c codeSequence) ([]word, error) {

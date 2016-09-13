@@ -22,7 +22,7 @@ drop-locals
 
 "std_lib.pisc" import
 
-: inc ( a -- a' ) 1 + ;
+: inc ( a -- a` ) 1 + ;
 
 get-locals
 0 !num /* Store 0 into num variable */
