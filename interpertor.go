@@ -23,14 +23,17 @@ var (
 type word string
 
 type codeList struct {
-	idx   int
-	code  []word
-	debug bool
+	idx        int
+	code       string
+	fileName   string
+	lineNumber int
+	debug      bool
 }
 
 type codeSequence interface {
 	nextWord() (word, error)
 	// TODO: Get current location: (of some sort)
+	errorOfCurrentLocation() error
 }
 
 type machine struct {
@@ -484,6 +487,7 @@ func (m *machine) readWordDocumentation(c codeSequence) error {
 	} else if _, found := m.definedWords[word]; !found {
 		return fmt.Errorf("No definition for word: %s", word)
 	}
+	// TODO: Make this it's own loop
 	wordDef, err := m.readWordBody(c)
 	// Save the docs here
 	m.helpDocs[word] = stringFromWordDef(wordDef)

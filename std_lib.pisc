@@ -47,18 +47,23 @@ This is the growing standard library of PISC.
 :PRE $ ( name -- val ) get-local ;
 
 /* Stack shufflers */
+:DOC dup ( a -- a a ) Duplicates the top of the stack ;
 : dup ( a -- a a ) 0 pick-dup ;
+
+:DOC 2dup ( a -- a a ) Duplicates the top two elements of the stack ;
 : 2dup ( a b -- a b a b ) 2 [ 1 pick-dup ] times ;
+
+:DOC swap ( a b -- b a ) Swaps the top two elements of the stack ;
 : swap ( a b -- b a ) 1 pick-drop ;
+
 : drop ( a -- ) 0 pick-del ;
 : nip ( a b -- b ) 1 pick-del ;
 : 2drop ( a b -- ) 2 [ drop ] times ;
 : 3drop ( a b c -- ) 3 [ drop ] times ;
 : over ( x y -- x y x ) 1 pick-dup ;
-/* Used locals for fun and profit 
-: dip ( a quot -- a ) swap :a call $a ;
-*/
-:DOC dip ( a quot -- a ) Needs to be implemented as a builtin to keep it local clean ; 
+/* Needs to be implemented as a builtin to keep it local clean */
+:DOC dip ( a quot -- a ) Takes a quotation and a value, and puts the value back on the stack after calling the quotation ; 
+
 : keep ( ..a x quot: [ ..a x --- ..b ] -- ..b x ) over [ call ] dip ;
 : bi ( a quot1 quot2 -- ... ) [ keep ] dip call ;
 
@@ -67,6 +72,7 @@ This is the growing standard library of PISC.
 
 : change ( quot varName -- .. ) drop-locals :name :quot $name get-local $quot call $name set-local get-locals ;
 */
+
 /* Copied from factor */
 : change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
 :PRE $: ( quot varName -- ) change ;
