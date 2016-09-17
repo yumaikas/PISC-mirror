@@ -5,7 +5,7 @@ This is the growing standard library of PISC.
 */
 
 :DOC t ( -- t )  t and f respectively push true and false onto the stack  ;
-:DOC f ( -- t )  t and f respectively push true and false onto the stack  ;
+:DOC f ( -- f )  t and f respectively push true and false onto the stack  ;
 
 /* stack-empty? checks if there are any entries on the stack
 : stack-empty? ( .. -- empty? ) primitive ;

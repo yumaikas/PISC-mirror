@@ -1,5 +1,4 @@
 /* Parsing CSV data in PISC */
-"Dicts.pisc" import
 
 : parse-csv-core ( reader -- vec [ vec ] ) 
 	:reader
@@ -23,11 +22,11 @@
 	[ $reader -$read-rune call nip ] :readRune
 
 	[ notEOF ] [ 
-		readRune
 		/* By default, append a char */
 		t :default
 		[ f :default ] :break
 
+		readRune
 		dup "," str-eq outOfString and [ addCell break ] when
 		dup "\n" str-eq outOfString and [ addCell addLine break ] when
 		dup "\"" str-eq /* Toggle */ [ outOfString :inString break ] when
