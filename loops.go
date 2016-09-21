@@ -15,13 +15,16 @@ func (m *machine) loadLoopWords() error {
 		return nil
 	})
 	// ( pred body -- .. )
-	m.predefinedWords["while"] = NilWord(func(m *machine) {
+	m.predefinedWords["while"] = GoWord(func(m *machine) error {
 		body := m.popValue().(quotation).toCode()
 		pred := m.popValue().(quotation).toCode()
 
 		for {
 			pred.idx = 0
-			executeWordsOnMachine(m, pred)
+			err := executeWordsOnMachine(m, pred)
+			if err != nil {
+				return err
+			}
 
 			if !bool(m.popValue().(Boolean)) {
 				break
@@ -29,6 +32,7 @@ func (m *machine) loadLoopWords() error {
 			body.idx = 0
 			executeWordsOnMachine(m, body)
 		}
+		return nil
 	})
 
 	/*

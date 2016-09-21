@@ -221,7 +221,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				}
 			} else if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
-				fmt.Println("Executing defined word")
 				err = executeWordsOnMachine(m, val.cloneCode())
 				if err != nil {
 					return err
@@ -231,8 +230,9 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				// be used.
 				m.pushValue(String(getNonPrefixOf(wordVal)))
 				err = executeWordsOnMachine(m, prefixFunc.cloneCode())
-			} else if err = m.tryLocalWord(string(wordVal)); err != nil && err != ErrNoLocals {
-				return err
+			} else if err = m.tryLocalWord(string(wordVal)); err == LocalFuncRun {
+				err = nil
+				// return p.wrapError(fmt.Errorf("Undefined word: %v", wordVal))
 			} else {
 				return p.wrapError(fmt.Errorf("Undefined word: %v", wordVal))
 			}
@@ -251,6 +251,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 }
 
 var ErrNoLocals = fmt.Errorf("No locals to try !")
+var LocalFuncRun = fmt.Errorf("Nothing was wrong")
 
 func (m *machine) tryLocalWord(wordName string) error {
 	// TODO: In progress
@@ -274,7 +275,7 @@ func (m *machine) tryLocalWord(wordName string) error {
 			} else {
 				return fmt.Errorf("Value is not a word!")
 			}
-			return nil
+			return LocalFuncRun
 		}
 	}
 	return ErrNoLocals
