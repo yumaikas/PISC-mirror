@@ -20,9 +20,9 @@ func (m *machine) loadPredefinedValues() {
 		m.pushValue(Boolean(false))
 	})
 	m.predefinedWords["dip"] = NilWord(func(m *machine) {
-		quot := m.popValue().(quotation)
+		quot := m.popValue().(quotation).toCode()
 		a := m.popValue()
-		executeWordsOnMachine(m, &codeList{idx: 0, code: quot})
+		executeWordsOnMachine(m, quot)
 		m.pushValue(a)
 	})
 	m.predefinedWords["pick-dup"] = NilWord(func(m *machine) {
@@ -46,12 +46,14 @@ func (m *machine) loadPredefinedValues() {
 		m.pushValue(Integer(length))
 	})
 
-	words := getWordList(`
-		:PRE # ( name -- .. ) ".pisc" concat import ;
-		"std_lib.pisc" import `)
 	code := &codeList{
-		idx:  0,
-		code: words,
+		idx: 0,
+		code: `
+		:PRE # ( name -- .. ) ".pisc" concat import ;
+		"std_lib.pisc" import `,
+		codePosition: codePosition{
+			source: "preloaded:1",
+		},
 	}
 
 	m.loadLocalWords()

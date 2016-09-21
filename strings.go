@@ -83,13 +83,12 @@ func (m *machine) loadStringWords() error {
 	})
 	// ( str quot -- .. )
 	m.predefinedWords["each-char"] = NilWord(func(m *machine) {
-		quot := m.popValue().(quotation)
+		quot := m.popValue().(quotation).toCode()
 		str := m.popValue().(String).String()
-		code := &codeList{idx: 0, code: quot}
 		for _, r := range str {
 			m.pushValue(String(string(r)))
-			code.idx = 0
-			executeWordsOnMachine(m, code)
+			quot.idx = 0
+			executeWordsOnMachine(m, quot)
 		}
 	})
 

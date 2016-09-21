@@ -24,7 +24,7 @@ type word string
 
 type codeSequence interface {
 	nextWord() (word, error)
-	getCodePosition() codePostion
+	getcodePosition() codePosition
 	wrapError(error) error
 	// Returns a codeSequence that starts a 0 for the same code
 	cloneCode() codeSequence
@@ -160,7 +160,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			}
 		case wordVal == "[":
 			// Begin quotation
-			pos := p.getCodePosition()
+			pos := p.getcodePosition()
 			quote := make([]word, 0)
 			depth := 0
 			for err == nil {
@@ -178,7 +178,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				quote = append(quote, wordVal)
 			}
 
-			m.pushValue(quotation{code: quote, codePostion: pos})
+			m.pushValue(quotation{code: quote, codePosition: pos})
 		// Local words that use a parser
 		/* case strings.HasPrefix(string(wordVal), ":"):
 			m.locals[len(m.locals)-1][string(wordVal[1:])] = m.popValue()
@@ -262,9 +262,9 @@ func (m *machine) tryLocalWord(wordName string) error {
 		if localFunc, found := m.locals[len(m.locals)-1][string(wordName)]; found {
 			if fn, ok := localFunc.(quotation); ok {
 				code := &codeQuotation{
-					idx:         0,
-					words:       fn.code,
-					codePostion: fn.codePostion,
+					idx:          0,
+					words:        fn.code,
+					codePosition: fn.codePosition,
 				}
 				err := executeWordsOnMachine(m, code)
 				if err != nil {
@@ -414,7 +414,7 @@ func (m *machine) readWordDocumentation(c codeSequence) error {
 
 // Prefix (:PRE) definitions, which use a prefix
 func (m *machine) readPrefixDefinition(c codeSequence) error {
-	pos := c.getCodePosition()
+	pos := c.getcodePosition()
 	prefix, err := c.nextWord()
 	if err != nil {
 		return err
@@ -427,25 +427,25 @@ func (m *machine) readPrefixDefinition(c codeSequence) error {
 		return err
 	}
 	m.prefixWords[prefix] = &codeQuotation{
-		idx:         0,
-		words:       wordDef,
-		codePostion: pos,
+		idx:          0,
+		words:        wordDef,
+		codePosition: pos,
 	}
 	return nil
 }
 
 // Used for : defined words
 func (m *machine) readWordDefinition(c codeSequence) error {
-	pos := c.getCodePosition()
+	pos := c.getcodePosition()
 	name, err := c.nextWord()
 	wordDef, err := m.readWordBody(c)
 	if err != nil {
 		return err
 	}
 	m.definedWords[name] = &codeQuotation{
-		idx:         0,
-		words:       wordDef,
-		codePostion: pos,
+		idx:          0,
+		words:        wordDef,
+		codePosition: pos,
 	}
 	return nil
 }
@@ -458,9 +458,9 @@ func (m *machine) executeQuotation() error {
 	quoteVal := m.popValue()
 	if q, ok := quoteVal.(quotation); ok {
 		executeWordsOnMachine(m, &codeQuotation{
-			idx:         0,
-			words:       q.code,
-			codePostion: q.codePostion,
+			idx:          0,
+			words:        q.code,
+			codePosition: q.codePosition,
 		})
 		return nil
 	} else if q, ok := quoteVal.(GoFunc); ok {

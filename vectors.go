@@ -23,16 +23,12 @@ func (m *machine) loadVectorWords() error {
 	})
 	// ( vec quot -- .. )
 	m.predefinedWords["vec-each"] = GoWord(func(m *machine) error {
-		quot := m.popValue().(quotation)
+		quot := m.popValue().(quotation).toCode()
 		vect := m.popValue().(Array)
-		code := &codeList{
-			idx:  0,
-			code: quot,
-		}
 		for _, elem := range vect {
 			m.pushValue(elem)
-			code.idx = 0
-			err := executeWordsOnMachine(m, code)
+			quot.idx = 0
+			err := executeWordsOnMachine(m, quot)
 			if err != nil {
 				return err
 			}

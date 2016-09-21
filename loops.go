@@ -3,9 +3,8 @@ package main
 func (m *machine) loadLoopWords() error {
 	m.predefinedWords["times"] = GoWord(func(m *machine) error {
 
-		body := m.popValue().(quotation)
+		toExec := m.popValue().(quotation).toCode()
 		nOfTimes := m.popValue().(Integer)
-		toExec := &codeList{idx: 0, code: body}
 		for i := int(0); i < int(nOfTimes); i++ {
 			toExec.idx = 0
 			err := executeWordsOnMachine(m, toExec)
@@ -17,20 +16,18 @@ func (m *machine) loadLoopWords() error {
 	})
 	// ( pred body -- .. )
 	m.predefinedWords["while"] = NilWord(func(m *machine) {
-		body := m.popValue().(quotation)
-		pred := m.popValue().(quotation)
-		predExec := &codeList{idx: 0, code: pred}
-		bodyExec := &codeList{idx: 0, code: body}
+		body := m.popValue().(quotation).toCode()
+		pred := m.popValue().(quotation).toCode()
 
 		for {
-			predExec.idx = 0
-			executeWordsOnMachine(m, predExec)
+			pred.idx = 0
+			executeWordsOnMachine(m, pred)
 
 			if !bool(m.popValue().(Boolean)) {
 				break
 			}
-			bodyExec.idx = 0
-			executeWordsOnMachine(m, bodyExec)
+			body.idx = 0
+			executeWordsOnMachine(m, body)
 		}
 	})
 

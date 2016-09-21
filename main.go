@@ -15,10 +15,10 @@ func main() {
 	// Run command stuff here.
 	m := &machine{
 		values:               make([]stackEntry, 0),
-		definedWords:         make(map[word]*codeList),
+		definedWords:         make(map[word]codeSequence),
 		definedStackComments: make(map[word]string),
 		predefinedWords:      make(map[word]GoWord),
-		prefixWords:          make(map[word]*codeList),
+		prefixWords:          make(map[word]codeSequence),
 		helpDocs:             make(map[word]string),
 	}
 	m.loadPredefinedValues()
@@ -40,6 +40,7 @@ Independent
 Source
 Code
 `)
+	numEntries := 0
 	for {
 		fmt.Print(">> ")
 		line, err := rl.Readline()
@@ -53,11 +54,14 @@ Code
 		if err != nil {
 			panic(err)
 		}
-		words := getWordList(strings.TrimSpace(line))
+		numEntries++
 		// fmt.Println(words)
 		p := &codeList{
 			idx:  0,
-			code: words,
+			code: line,
+			codePosition: codePosition{
+				source: fmt.Sprint("stdin:", numEntries),
+			},
 		}
 		err = executeWordsOnMachine(m, p)
 		if err != nil {

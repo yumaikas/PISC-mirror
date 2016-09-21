@@ -25,7 +25,15 @@ type Symbol int64
 // This is a separate sematic from arrays.
 type quotation struct {
 	code []word
-	codePostion
+	codePosition
+}
+
+func (q quotation) toCode() *codeQuotation {
+	return &codeQuotation{
+		idx:          0,
+		words:        q.code,
+		codePosition: q.codePosition,
+	}
 }
 
 type GoFunc GoWord
@@ -62,7 +70,7 @@ func (d Double) String() string {
 }
 
 func (q quotation) String() string {
-	return fmt.Sprint([]word(q))
+	return fmt.Sprint([]word(q.code))
 }
 
 func (dict Dict) String() string {

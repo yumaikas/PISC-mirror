@@ -74,10 +74,8 @@ func (m *machine) loadIOWords() error {
 		code := &codeList{
 			idx:  0,
 			code: string(data),
-			codePostion: codePostion{
-				lineNumber: 0,
-				offset:     0,
-				source:     "file:" + string(fileName),
+			codePosition: codePosition{
+				source: "file:" + string(fileName),
 			},
 		}
 		err = executeWordsOnMachine(m, code)
