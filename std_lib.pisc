@@ -5,6 +5,7 @@ This is the growing standard library of PISC.
 */
 
 : print ( a -- ) >string priv_puts ;
+"Hey" print
 :DOC t ( -- t )  t and f respectively push true and false onto the stack  ;
 :DOC f ( -- f )  t and f respectively push true and false onto the stack  ;
 
@@ -25,8 +26,6 @@ This is the growing standard library of PISC.
 
 
 :DOC import ( filepath -- .. ) `import` current takes a file path, and attempts to execute the file at that relative file path. ;
- 
-"Hey" print
 
 "loops.pisc" import
 "bools.pisc" import 

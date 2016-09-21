@@ -3,6 +3,7 @@ package main
 
 import (
 	"fmt"
+	"io"
 	"regexp"
 	"strconv"
 	"strings"
@@ -110,8 +111,11 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 	for err == nil {
 		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
-		if err != nil {
+		if err == io.EOF {
 			return
+		}
+		if err != nil {
+			return err
 		}
 		switch {
 		// Comments are going to be exclusively of the /*  */ variety for now.
@@ -206,8 +210,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			// TODO: capture this space?
 			continue
 		case len(wordVal) == 0:
-			// Make "" EOF?
-			return nil
+			continue
 		default:
 			if fn, ok := m.predefinedWords[wordVal]; ok {
 				if ok {

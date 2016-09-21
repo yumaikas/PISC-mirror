@@ -1,9 +1,5 @@
 package main
 
-import (
-	"fmt"
-)
-
 type GoWord func(*machine) error
 
 func NilWord(f func(*machine)) GoWord {
@@ -59,7 +55,6 @@ func (m *machine) loadPredefinedValues() {
 			source: "preloaded:1",
 		},
 	}
-	fmt.Println("Loading words")
 
 	m.loadLocalWords()
 	m.loadStringWords()
@@ -71,8 +66,6 @@ func (m *machine) loadPredefinedValues() {
 	m.loadHigherMathWords()
 	m.loadHelpWords()
 	m.loadIOWords()
-	fmt.Println("Loaded words")
-
 	err := executeWordsOnMachine(m, code)
 	if err != nil {
 		panic(err)
