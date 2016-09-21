@@ -4,6 +4,7 @@ This is the growing standard library of PISC.
 
 */
 
+: print ( a -- ) >string priv_puts ;
 :DOC t ( -- t )  t and f respectively push true and false onto the stack  ;
 :DOC f ( -- f )  t and f respectively push true and false onto the stack  ;
 
@@ -23,11 +24,9 @@ This is the growing standard library of PISC.
 :DOC len ( lenable -- length )  Len is the go defined word that defers length checking to the go type system  ;
 
 
-:DOC import ( filepath -- .. ) 
-
- `import` current takes a file path, and attempts to execute the file at that relative file path. 
-
- ;
+:DOC import ( filepath -- .. ) `import` current takes a file path, and attempts to execute the file at that relative file path. ;
+ 
+"Hey" print
 
 "loops.pisc" import
 "bools.pisc" import 
@@ -116,7 +115,6 @@ This is the growing standard library of PISC.
 /* : eq ( a b -- ? ) */
 : . ( a -- ) drop ;
 
-: print ( a -- ) >string priv_puts ;
 
 : inspect ( a -- a ) dup print ;
 

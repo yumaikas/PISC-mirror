@@ -150,14 +150,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			} else {
 				m.pushValue(Boolean(false))
 			}
-		case wordVal == "extern-call":
-			wordName := m.popValue().(String).String()
-			fn, ok := m.predefinedWords[word(wordName)]
-			if ok {
-				err = fn(m)
-			} else {
-				err = fmt.Errorf("External call not registered")
-			}
 		case wordVal == "[":
 			// Begin quotation
 			pos := p.getcodePosition()
@@ -214,14 +206,19 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			// TODO: capture this space?
 			continue
 		case len(wordVal) == 0:
-			continue
+			// Make "" EOF?
+			return nil
 		default:
 			if fn, ok := m.predefinedWords[wordVal]; ok {
 				if ok {
 					err = fn(m)
+					if err != nil {
+						return err
+					}
 				}
 			} else if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
+				fmt.Println("Executing defined word")
 				err = executeWordsOnMachine(m, val.cloneCode())
 				if err != nil {
 					return err
@@ -232,13 +229,9 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				m.pushValue(String(getNonPrefixOf(wordVal)))
 				err = executeWordsOnMachine(m, prefixFunc.cloneCode())
 			} else if err = m.tryLocalWord(string(wordVal)); err != nil && err != ErrNoLocals {
-				// Blank here, we're just running the outer code
+				return err
 			} else {
-				cl := p.(*codeList)
-				fmt.Println(cl.code[cl.idx-1])
-				// fmt.Println(p.(*codeList).code)
-
-				panic(fmt.Sprint("Undefined word: ", wordVal))
+				return p.wrapError(fmt.Errorf("Undefined word: %v", wordVal))
 			}
 			// Evaluate a defined word, or complain if a word is not defined.
 
