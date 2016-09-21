@@ -47,7 +47,7 @@ func (m *machine) loadLocalWords() {
 	// Run a quotation for each local
 	m.predefinedWords["each-local"] = GoWord(func(m *machine) error {
 		quot := m.popValue().(quotation)
-		code := &codeList{idx: 0, code: quot}
+		code := &codeQuotation{idx: 0, words: quot.code, codePostion: quot.codePostion}
 		for key, val := range m.locals[len(m.locals)-1] {
 			m.pushValue(val)
 			m.pushValue(String(key))

@@ -70,12 +70,17 @@ func (m *machine) loadIOWords() error {
 		if err != nil {
 			return err
 		}
-		words := getWordList(string(data))
-		p := &codeList{
+		// Reading in the data
+		code := &codeList{
 			idx:  0,
-			code: words,
+			code: string(data),
+			codePostion: codePostion{
+				lineNumber: 0,
+				offset:     0,
+				source:     "file:" + string(fileName),
+			},
 		}
-		err = executeWordsOnMachine(m, p)
+		err = executeWordsOnMachine(m, code)
 		if err != nil {
 			return err
 		}

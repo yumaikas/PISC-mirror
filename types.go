@@ -23,7 +23,10 @@ type String string
 type Symbol int64
 
 // This is a separate sematic from arrays.
-type quotation []word
+type quotation struct {
+	code []word
+	codePostion
+}
 
 type GoFunc GoWord
 

@@ -22,18 +22,12 @@ var (
 
 type word string
 
-type codeList struct {
-	idx        int
-	code       string
-	fileName   string
-	lineNumber int
-	debug      bool
-}
-
 type codeSequence interface {
 	nextWord() (word, error)
-	// TODO: Get current location: (of some sort)
-	errorOfCurrentLocation() error
+	getCodePosition() codePostion
+	wrapError(error) error
+	// Returns a codeSequence that starts a 0 for the same code
+	cloneCode() codeSequence
 }
 
 type machine struct {
@@ -43,9 +37,9 @@ type machine struct {
 	// This is reallocated when locals are used
 	locals []map[string]stackEntry
 	// A map from words to slices of words.
-	definedWords map[word]*codeList
+	definedWords map[word]codeSequence
 	// A map from prefixes to prefix words
-	prefixWords map[word]*codeList
+	prefixWords map[word]codeSequence
 	// A map from words to predefined words (words built in go)
 	predefinedWords map[word]GoWord
 	// TODO: try to work this out later.
@@ -78,95 +72,15 @@ func (m *machine) popValue() stackEntry {
 	return popped
 }
 
-func getWordList(code string) []word {
-	words := make([]word, 0)
-	currentWord := ""
-	skipChar := false
-	inString := false
-	lineno := 1
-	currentLine := ""
-	for _, v := range code {
-		if v == '\n' {
-			// fmt.Println("Parsing:", currentLine)
-			currentLine = ""
-			lineno++
-		}
-		currentLine += string(v)
-		if skipChar {
-			switch v {
-			case 'n':
-				currentWord += "\n"
-				skipChar = false
-				continue
-			case 't':
-				currentWord += "\t"
-				skipChar = false
-				continue
-			case 'r':
-				currentWord += "\n"
-				skipChar = false
-				continue
-			case '\\':
-				currentWord += `\`
-				skipChar = false
-				continue
-			case '"':
-				currentWord += `"`
-				skipChar = false
-				continue
-			default:
-				panic(fmt.Sprint(
-					"Invalid escape sequence:", v,
-					"current word: ", currentWord,
-					"line:", lineno))
-			}
-		}
-		switch v {
-		case '\\':
-			skipChar = true
-			continue
-		case '"':
-			if inString {
-				currentWord += "\""
-				inString = false
-				continue
-			} else {
-				inString = true
-				currentWord += string(v)
-			}
-		case ' ':
-			fallthrough
-		case '\t':
-			fallthrough
-		case '\n':
-			fallthrough
-		case '\r':
-			if inString {
-				currentWord += string(v)
-			} else {
-				words = append(words, word(currentWord))
-				currentWord = ""
-			}
-		default:
-			currentWord += string(v)
-		}
-	}
-	words = append(words, word(currentWord))
-	if inString {
-		panic("Unterminated string!")
-	}
-	return words
-}
-
 func runCode(code string) *machine {
-	words := getWordList(strings.TrimSpace(code))
+	// words := getWordList(strings.TrimSpace(code))
 	p := &codeList{
 		idx:  0,
-		code: words,
+		code: code,
 	}
 	m := &machine{
 		values:               make([]stackEntry, 0),
-		definedWords:         make(map[word]*codeList),
+		definedWords:         make(map[word]codeSequence),
 		definedStackComments: make(map[word]string),
 	}
 	executeWordsOnMachine(m, p)
@@ -246,6 +160,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			}
 		case wordVal == "[":
 			// Begin quotation
+			pos := p.getCodePosition()
 			quote := make([]word, 0)
 			depth := 0
 			for err == nil {
@@ -262,7 +177,8 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				}
 				quote = append(quote, wordVal)
 			}
-			m.pushValue(quotation(quote))
+
+			m.pushValue(quotation{code: quote, codePostion: pos})
 		// Local words that use a parser
 		/* case strings.HasPrefix(string(wordVal), ":"):
 			m.locals[len(m.locals)-1][string(wordVal[1:])] = m.popValue()
@@ -306,19 +222,17 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				}
 			} else if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
-				val.idx = 0
-				err = executeWordsOnMachine(m, val)
+				err = executeWordsOnMachine(m, val.cloneCode())
 				if err != nil {
 					return err
 				}
 			} else if prefixFunc, ok := m.prefixWords[getPrefixOf(wordVal)]; ok {
-				prefixFunc.idx = 0
 				// Put the post-prefix string at the top of the stack, so it can
 				// be used.
 				m.pushValue(String(getNonPrefixOf(wordVal)))
-				err = executeWordsOnMachine(m, prefixFunc)
-			} else if err := m.tryLocalWord(string(wordVal)); err != nil && err != ErrNoLocals {
-				return err
+				err = executeWordsOnMachine(m, prefixFunc.cloneCode())
+			} else if err = m.tryLocalWord(string(wordVal)); err != nil && err != ErrNoLocals {
+				// Blank here, we're just running the outer code
 			} else {
 				cl := p.(*codeList)
 				fmt.Println(cl.code[cl.idx-1])
@@ -347,7 +261,11 @@ func (m *machine) tryLocalWord(wordName string) error {
 	if len(m.locals) > 0 {
 		if localFunc, found := m.locals[len(m.locals)-1][string(wordName)]; found {
 			if fn, ok := localFunc.(quotation); ok {
-				code := &codeList{idx: 0, code: fn}
+				code := &codeQuotation{
+					idx:         0,
+					words:       fn.code,
+					codePostion: fn.codePostion,
+				}
 				err := executeWordsOnMachine(m, code)
 				if err != nil {
 					return err
@@ -496,6 +414,7 @@ func (m *machine) readWordDocumentation(c codeSequence) error {
 
 // Prefix (:PRE) definitions, which use a prefix
 func (m *machine) readPrefixDefinition(c codeSequence) error {
+	pos := c.getCodePosition()
 	prefix, err := c.nextWord()
 	if err != nil {
 		return err
@@ -507,23 +426,26 @@ func (m *machine) readPrefixDefinition(c codeSequence) error {
 	if err != nil {
 		return err
 	}
-	m.prefixWords[prefix] = &codeList{
-		idx:  0,
-		code: wordDef,
+	m.prefixWords[prefix] = &codeQuotation{
+		idx:         0,
+		words:       wordDef,
+		codePostion: pos,
 	}
 	return nil
 }
 
 // Used for : defined words
 func (m *machine) readWordDefinition(c codeSequence) error {
+	pos := c.getCodePosition()
 	name, err := c.nextWord()
 	wordDef, err := m.readWordBody(c)
 	if err != nil {
 		return err
 	}
-	m.definedWords[name] = &codeList{
-		idx:  0,
-		code: wordDef,
+	m.definedWords[name] = &codeQuotation{
+		idx:         0,
+		words:       wordDef,
+		codePostion: pos,
 	}
 	return nil
 }
@@ -535,7 +457,11 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 func (m *machine) executeQuotation() error {
 	quoteVal := m.popValue()
 	if q, ok := quoteVal.(quotation); ok {
-		executeWordsOnMachine(m, &codeList{idx: 0, code: q})
+		executeWordsOnMachine(m, &codeQuotation{
+			idx:         0,
+			words:       q.code,
+			codePostion: q.codePostion,
+		})
 		return nil
 	} else if q, ok := quoteVal.(GoFunc); ok {
 		return q(m)
@@ -573,6 +499,7 @@ func (m *machine) runConditionalOperator() error {
 	}
 }
 
+/*
 func (c *codeList) nextWord() (word, error) {
 	if c.idx < len(c.code) {
 		retval := c.code[c.idx]
@@ -583,3 +510,4 @@ func (c *codeList) nextWord() (word, error) {
 	// fmt.Println("EOF")
 	return word(""), EOF
 }
+*/
