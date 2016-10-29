@@ -49,7 +49,6 @@ func (m *machine) loadPredefinedValues() {
 	code := &codeList{
 		idx: 0,
 		code: `
-		:PRE # ( name -- .. ) ".pisc" concat import ;
 		"std_lib.pisc" import `,
 		codePosition: codePosition{
 			source: "preloaded:1",

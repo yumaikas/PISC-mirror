@@ -7,7 +7,7 @@ import (
 func (m *machine) loadVectorWords() error {
 
 	m.predefinedWords["vec-at"] = GoWord(func(m *machine) error {
-		// ( vec idx -- vec elem )
+		// ( vec idx -- elem )
 		idx := int(m.popValue().(Integer))
 		arr := m.popValue().(Array)
 		if idx > len(arr)-1 || idx < 0 {

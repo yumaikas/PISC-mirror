@@ -92,7 +92,7 @@ var (
 	spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
 	floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
 	intMatch         = regexp.MustCompile(`^-?\d+$`)
-	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@#$%^&*<>]+`)
+	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@$%^&*<>+]+`)
 )
 
 // This executes a given code sequence against a given machine
@@ -126,6 +126,9 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 					break
 				}
 			}
+		case strings.HasPrefix(string(wordVal), "#"):
+			// Skip line comment, potentialy work with it later, but not now.
+			continue
 		case floatMatch.MatchString(string(wordVal)):
 			floatVal, floatErr := strconv.ParseFloat(string(wordVal), 64)
 			if floatErr != nil {

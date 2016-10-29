@@ -27,3 +27,7 @@ Create Table word_documentation (
 
 Create Table kv_store (
 );
+
+-------------------------------------------------
+Search: /\*([^*]+)\*/ : ([\w-]+) (\( [^)]+\)) [^;]+;
+Replace: :DOC \2 \3 \1 ;

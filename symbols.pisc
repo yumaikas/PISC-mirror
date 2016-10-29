@@ -2,4 +2,7 @@
 Symbols.pisc
 */
 :DOC <symbol> ( -- ) Create a unique symbol ;
-:DOC symb-neq ( -- ) Are these two symboles not equal  ;
+:DOC symb-neq ( a b  -- ? ) Are these two symbols not equal  ;
+
+:DOC symb-eq ( a b -- ? ) Are a and b equal symbols? ;
+: symb-eq ( a b -- ? ) symb-neq not ;

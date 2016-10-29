@@ -59,7 +59,7 @@ func (m *machine) loadStringWords() error {
 		m.pushValue(toPush)
 	})
 
-	m.predefinedWords["empty?"] = NilWord(func(m *machine) {
+	m.predefinedWords["str-empty?"] = NilWord(func(m *machine) {
 		a := m.popValue().(String)
 		if len(a) > 0 {
 			m.pushValue(Boolean(len(a) > 0))

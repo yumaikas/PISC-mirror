@@ -1,5 +1,6 @@
 /* Locals in PISC */
 
+# So this is all stuff....
 :DOC set-local ( val name -- ) Set name to val  ;
 
 :DOC get-local ( name -- val ) Get the value associated with a local value  ;
