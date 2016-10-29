@@ -55,6 +55,7 @@ func (m *machine) loadPredefinedValues() {
 		},
 	}
 
+	m.loadDebugWords()
 	m.loadLocalWords()
 	m.loadStringWords()
 	m.loadBooleanWords()

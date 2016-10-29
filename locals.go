@@ -15,6 +15,8 @@ var ErrLocalNotFound = fmt.Errorf("Local variable not found!")
 var ErrNoLocalsExist = fmt.Errorf("A local frame hasn't been allocated with get-locals!")
 
 func (m *machine) loadLocalWords() {
+	// Make sure we always have locals
+	m.locals = append(m.locals, make(map[string]stackEntry))
 	// ( val name -- )
 	m.predefinedWords["set-local"] = GoWord(func(m *machine) error {
 		varName := m.popValue().(String)
@@ -59,5 +61,4 @@ func (m *machine) loadLocalWords() {
 		}
 		return nil
 	})
-
 }

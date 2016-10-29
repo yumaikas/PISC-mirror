@@ -367,7 +367,7 @@ func getNonPrefixOf(w word) word {
 
 // Prefix words can only start with symbols like :!@#$%^&*
 func getPrefixOf(w word) word {
-	return word(prefixMatchRegex.FindString(string(w)))
+	return word(prefixMatchRegex.FindString(strings.TrimSpace(string(w))))
 }
 
 //

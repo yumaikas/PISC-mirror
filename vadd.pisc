@@ -1,5 +1,3 @@
-: vadd ( v1 v2 -- v3 ) 
-	:v2 :v1 
-	0 :i <vector>
-	3 [ $v2 $i vec-at $v1 $i vec-at + vec-append
-		[ 1 + ] $:i ] times ;
+: min ( a b -- smaller ) 2dup > [ nip ] [ drop ] if ;
+
+: vadd ( v1 v2 -- v3 ) [ + ] each2 ;

@@ -34,3 +34,4 @@
 /*
 TODO: all the two arg math functions
 */
+: min ( a b -- smaller ) 2dup > [ nip ] [ drop ] if ;
