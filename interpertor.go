@@ -157,6 +157,40 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			} else {
 				m.pushValue(Boolean(false))
 			}
+		case wordVal == "{":
+			// Begin quotation
+			pos := p.getcodePosition()
+			quote := make([]word, 0)
+			depth := 0
+			for err == nil {
+				wordVal, err = p.nextWord()
+				if wordVal == "{" {
+					depth++
+				}
+				if wordVal == "}" {
+					depth--
+				}
+				// have to accomodate for the decrement in f
+				if wordVal == "}" && depth == -1 {
+					break
+				}
+				quote = append(quote, wordVal)
+			}
+			currIdx := len(m.values)
+			// Run the { } as a quotation
+			m.pushValue(quotation{
+				code:         quote,
+				codePosition: pos,
+				locals:       m.locals[len(m.locals)-1]})
+			err := m.executeQuotation()
+			if err != nil {
+				return err
+			}
+			vals := make([]stackEntry, len(m.values)-currIdx)
+			copy(vals, m.values[currIdx:len(m.values)])
+			m.values = m.values[:currIdx]
+			m.pushValue(Array(vals))
+
 		case wordVal == "[":
 			// Begin quotation
 			pos := p.getcodePosition()
@@ -180,16 +214,6 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				code:         quote,
 				codePosition: pos,
 				locals:       m.locals[len(m.locals)-1]})
-		// Local words that use a parser
-		/* case strings.HasPrefix(string(wordVal), ":"):
-			m.locals[len(m.locals)-1][string(wordVal[1:])] = m.popValue()
-		case strings.HasPrefix(string(wordVal), "$"):
-			val, found := m.locals[len(m.locals)-1][string(wordVal[1:])]
-			if !found {
-				return ErrLocalNotFound
-			}
-			m.pushValue(val)
-		*/
 
 		case isMathWord(wordVal):
 			err = m.executeMathWord(wordVal)

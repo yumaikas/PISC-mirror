@@ -19,11 +19,11 @@
 : 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;
 
 : each2 ( v1 v2 quot -- v3 ) 
-	:v2 :v1 :quot
+	:quot :v2 :v1
 	0 :i <vector>
 	$v2 len $v1 len min [
-		 $v2 $i vec-at 
-		 $v1 $i vec-at quot vec-append
+		 $v1 $i vec-at 
+		 $v2 $i vec-at quot vec-append
 		[ 1 + ] $:i
 	] times ;
 

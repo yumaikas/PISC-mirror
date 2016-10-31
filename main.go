@@ -70,7 +70,7 @@ Code
 		}
 		fmt.Println("Data Stack:")
 		for _, val := range m.values {
-			fmt.Println(val.String())
+			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}
 	}
 }

@@ -59,7 +59,7 @@ This is the growing standard library of PISC.
 : 2drop ( a b -- ) 2 [ drop ] times ;
 : 3drop ( a b c -- ) 3 [ drop ] times ;
 : over ( x y -- x y x ) 1 pick-dup ;
-/* Needs to be implemented as a builtin to keep it local clean */
+
 :DOC dip ( a quot -- a ) Takes a quotation and a value, and puts the value back on the stack after calling the quotation ;
 
 : keep ( ..a x quot: [ ..a x --- ..b ] -- ..b x ) over [ call ] dip ;
@@ -94,6 +94,7 @@ This is the growing standard library of PISC.
 
 
 /* If statement */
+:DOC  ( ? trueQuot, falseQuot, -- result ) if ? is t, call true quot, otherwise call falseQuot. Defined as `? call` ;
 : if ( ? true false -- res ) ? call ;
 /* When statement for when you don't need all of if */
 : when ( ? true -- res ) [ ] ? call ;
