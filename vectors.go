@@ -6,6 +6,18 @@ import (
 
 func (m *machine) loadVectorWords() error {
 
+	// ( vec val idx -- vec )
+	m.predefinedWords["vec-set-at"] = GoWord(func(m *machine) error {
+		idx := int(m.popValue().(Integer))
+		val := m.popValue()
+		arr := m.values[len(m.values)-1].(Array)
+		if idx > len(arr)-1 || idx < 0 {
+			return fmt.Errorf("Index out of bounds! value:", idx)
+		}
+		arr[idx] = val
+		return nil
+	})
+
 	m.predefinedWords["vec-at"] = GoWord(func(m *machine) error {
 		// ( vec idx -- elem )
 		idx := int(m.popValue().(Integer))

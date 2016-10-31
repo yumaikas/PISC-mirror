@@ -176,8 +176,10 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				}
 				quote = append(quote, wordVal)
 			}
-
-			m.pushValue(quotation{code: quote, codePosition: pos})
+			m.pushValue(quotation{
+				code:         quote,
+				codePosition: pos,
+				locals:       m.locals[len(m.locals)-1]})
 		// Local words that use a parser
 		/* case strings.HasPrefix(string(wordVal), ":"):
 			m.locals[len(m.locals)-1][string(wordVal[1:])] = m.popValue()
@@ -457,11 +459,13 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 func (m *machine) executeQuotation() error {
 	quoteVal := m.popValue()
 	if q, ok := quoteVal.(quotation); ok {
+		m.locals = append(m.locals, q.locals)
 		executeWordsOnMachine(m, &codeQuotation{
 			idx:          0,
 			words:        q.code,
 			codePosition: q.codePosition,
 		})
+		m.locals = m.locals[:len(m.locals)-1]
 		return nil
 	} else if q, ok := quoteVal.(GoFunc); ok {
 		return q(m)

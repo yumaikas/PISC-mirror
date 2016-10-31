@@ -1,5 +1,6 @@
 /* Vectors and their utilities */
 
+:DOC vec-set-at ( vec val idx -- elem ) Set vector at idx to value ;
 :DOC vec-at ( vec idx -- elem ) "vec-at" extern-call ;
 :DOC <vector> ( -- vector ) "<vector>" extern-call ;
 :DOC vec-each ( vec quot -- .. ) "vec-each" extern-call ;
@@ -25,3 +26,17 @@
 		 $v1 $i vec-at quot vec-append
 		[ 1 + ] $:i
 	] times ;
+
+: vec-reverse ( vec -- reversevec ) 
+	dup :vec len :end 0 :i
+	[ 1 - ] $:end
+	$end 2 / [ 
+		$vec $i vec-at :x
+		$vec $end vec-at :y
+		$vec $y $i vec-set-at :vec
+		$vec $x $end vec-set-at :vec
+		[ 1 - ] $:end
+		[ 1 + ] $:i
+	] times
+	$vec
+;

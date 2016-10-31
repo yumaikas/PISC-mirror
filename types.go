@@ -24,7 +24,8 @@ type Symbol int64
 
 // This is a separate sematic from arrays.
 type quotation struct {
-	code []word
+	code   []word
+	locals Dict
 	codePosition
 }
 
