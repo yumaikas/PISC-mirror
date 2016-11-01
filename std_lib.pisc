@@ -75,6 +75,10 @@ This is the growing standard library of PISC.
 : change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
 :PRE $: ( quot varName -- ) change ;
 
+# Increment and decrement variables
+:PRE ++ ( varName -- ) [ 1 + ] swap change ;
+:PRE -- ( varname -- ) [ 1 - ] swap change ;
+
 : str-neq ( str-a str-b -- eq? ) str-eq not ; 
 
 /* Symbol manipulation */
@@ -89,8 +93,8 @@ This is the growing standard library of PISC.
 	<vector> :vec
 	<symbol> dup :mark /* Mark the stack */
 	swap call /* Fill the stack with info from the quotation */
-	[ dup $mark symb-neq ] [ [ swap vec-prepend ] $:vec ] while 
-	drop /* the mark */ $vec ;
+	[ dup $mark symb-neq ] [ [ swap vec-append ] $:vec ] while 
+	drop /* the mark */ $vec vec-reverse ;
 
 
 /* If statement */
