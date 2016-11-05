@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"strconv"
 )
@@ -75,7 +76,22 @@ func (q quotation) String() string {
 }
 
 func (dict Dict) String() string {
-	return fmt.Sprint(map[string]stackEntry(dict))
+	var key_order stackEntry
+	var found bool
+	buf := bytes.NewBufferString("map[")
+	if key_order, found = dict["__ordering"]; found {
+		if keys, ok := key_order.(Array); ok {
+			for _, k := range keys {
+				buf.WriteString(fmt.Sprint(k.String(), ":", dict[k.String()], " "))
+			}
+			buf.WriteString("]")
+			return buf.String()
+		}
+		return fmt.Sprint(map[string]stackEntry(dict))
+	} else {
+		return fmt.Sprint(map[string]stackEntry(dict))
+	}
+
 }
 
 func (a Array) String() string {

@@ -66,6 +66,7 @@ func (m *machine) loadPredefinedValues() {
 	m.loadHigherMathWords()
 	m.loadHelpWords()
 	m.loadIOWords()
+	m.loadShellWords()
 	err := executeWordsOnMachine(m, code)
 	if err != nil {
 		panic(err)

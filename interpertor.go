@@ -19,6 +19,7 @@ var (
 	UnexpectedStackDashError  = fmt.Errorf("Found unexpected -- in stack annotation")
 	ParenBeforeStackDashError = fmt.Errorf("Found ) before -- in stack annotation")
 	InvalidPrefixCharError    = fmt.Errorf("Found invalid character in prefix definition")
+	ExitingProgram            = fmt.Errorf("User called `quit`, terminating program")
 )
 
 type word string
@@ -92,7 +93,7 @@ var (
 	spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
 	floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
 	intMatch         = regexp.MustCompile(`^-?\d+$`)
-	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@$%^&*<>+]+`)
+	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@$%^&*<>+?]+`)
 )
 
 // This executes a given code sequence against a given machine
@@ -105,7 +106,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			retErr = fmt.Errorf("%s", pErr)
 		}
 		if retErr != nil {
-			fmt.Println("Error while executing", wordVal, ":", retErr)
+			fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
 		}
 	}()
 	for err == nil {
@@ -118,6 +119,8 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			return err
 		}
 		switch {
+		case wordVal == "quit":
+			return ExitingProgram
 		// Comments are going to be exclusively of the /*  */ variety for now.
 		case wordVal == "/*":
 			for err == nil {
@@ -310,7 +313,7 @@ func (m *machine) tryLocalWord(wordName string) error {
 	return ErrNoLocals
 }
 
-func (m *machine) readWordBody(c codeSequence) ([]word, error) {
+func (m *machine) readWordBody(name word, c codeSequence) ([]word, error) {
 	var err = error(nil)
 	openPar, err2 := c.nextWord()
 	if openPar != "(" {
@@ -322,7 +325,7 @@ func (m *machine) readWordBody(c codeSequence) ([]word, error) {
 		return nil, fmt.Errorf("Errors %s | %s", err.Error(), err2.Error())
 	}
 
-	stackComment := ""
+	stackComment := "( "
 	var wordVal word
 	// read the stack annotation for the word
 	{
@@ -336,6 +339,7 @@ func (m *machine) readWordBody(c codeSequence) ([]word, error) {
 			}
 
 			if wordVal == "--" {
+				stackComment += "-- "
 				break
 			}
 
@@ -356,6 +360,7 @@ func (m *machine) readWordBody(c codeSequence) ([]word, error) {
 				return nil, UnexpectedStackDashError
 			}
 			if wordVal == ")" {
+				stackComment += ")"
 				break
 			}
 			pops++
@@ -363,7 +368,7 @@ func (m *machine) readWordBody(c codeSequence) ([]word, error) {
 		}
 	}
 	// fmt.Println("stackComment is", stackComment)
-	// m.definedStackComments[name] = strings.TrimSpace(stackComment)
+	m.definedStackComments[name] = strings.TrimSpace(stackComment)
 
 	wordDef := make([]word, 0)
 	hasLocal := false
@@ -432,7 +437,7 @@ func (m *machine) readWordDocumentation(c codeSequence) error {
 		return fmt.Errorf("No definition for word: %s", word)
 	}
 	// TODO: Make this it's own loop
-	wordDef, err := m.readWordBody(c)
+	wordDef, err := m.readWordBody(word, c)
 	// Save the docs here
 	m.helpDocs[word] = stringFromWordDef(wordDef)
 	return err
@@ -448,7 +453,7 @@ func (m *machine) readPrefixDefinition(c codeSequence) error {
 	if !prefixMatchRegex.MatchString(string(prefix)) {
 		return InvalidPrefixCharError
 	}
-	wordDef, err := m.readWordBody(c)
+	wordDef, err := m.readWordBody(prefix, c)
 	if err != nil {
 		return err
 	}
@@ -464,8 +469,9 @@ func (m *machine) readPrefixDefinition(c codeSequence) error {
 func (m *machine) readWordDefinition(c codeSequence) error {
 	pos := c.getcodePosition()
 	name, err := c.nextWord()
-	wordDef, err := m.readWordBody(c)
+	wordDef, err := m.readWordBody(name, c)
 	if err != nil {
+		fmt.Println(c.getcodePosition())
 		return err
 	}
 	m.definedWords[name] = &codeQuotation{
@@ -526,16 +532,3 @@ func (m *machine) runConditionalOperator() error {
 		return ConditionalTypeError
 	}
 }
-
-/*
-func (c *codeList) nextWord() (word, error) {
-	if c.idx < len(c.code) {
-		retval := c.code[c.idx]
-		c.idx++
-		// fmt.Println(retval)
-		return retval, nil
-	}
-	// fmt.Println("EOF")
-	return word(""), EOF
-}
-*/

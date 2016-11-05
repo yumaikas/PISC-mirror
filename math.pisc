@@ -35,4 +35,4 @@
 TODO: all the two arg math functions
 */
 : min ( a b -- smaller ) 2dup > [ nip ] [ drop ] if ;
-: max ( a b -- larger)   2dup > [ drop ] [ nip ] if ;
+: max ( a b -- larger )   2dup > [ drop ] [ nip ] if ;

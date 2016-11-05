@@ -5,13 +5,17 @@
 package main
 
 import (
+	"io"
+	// "flag" TODO: Implement flags for file and burst modes
 	"fmt"
 	"gopkg.in/readline.v1"
+	"os"
 	"strings"
 )
 
 // This function starts an interpertor
 func main() {
+	// given_files := flag.Bool("f", false, "Sets the rest of the arguments to list of files")
 	// Run command stuff here.
 	m := &machine{
 		values:               make([]stackEntry, 0),
@@ -28,28 +32,38 @@ func main() {
 		HistoryFile:     "/tmp/readline.tmp",
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
+		Stdout:          os.Stderr,
+		Stderr:          os.Stderr,
 	})
 	if err != nil {
-		fmt.Println(err)
+		fmt.Fprintln(os.Stderr, err)
 		return
 	}
 
-	fmt.Print(
+	fmt.Fprintln(
+		os.Stderr,
 		`Postion
 Independent
 Source
-Code
-`)
+Code`)
 	numEntries := 0
 	for {
-		fmt.Print(">> ")
+		// fmt.Print(">> ")
 		line, err := rl.Readline()
 		if strings.TrimSpace(line) == "exit" {
-			fmt.Println("Exiting")
+			fmt.Fprintln(os.Stderr, "Exiting")
 			return
 		}
 		if strings.TrimSpace(line) == "preload" {
 			m.loadPredefinedValues()
+		}
+		if err == ExitingProgram {
+			fmt.Fprintln(os.Stderr, "Exiting program")
+			return
+		}
+		if err == io.EOF {
+			fmt.Fprintln(os.Stderr, "Exiting program")
+			return
 		}
 		if err != nil {
 			panic(err)
@@ -65,12 +79,12 @@ Code
 		}
 		err = executeWordsOnMachine(m, p)
 		if err != nil {
-			fmt.Println("Error:")
-			fmt.Println(err.Error())
+			fmt.Fprintln(os.Stderr, "Error:")
+			fmt.Fprintln(os.Stderr, err.Error())
 		}
-		fmt.Println("Data Stack:")
+		fmt.Fprintln(os.Stderr, "Data Stack:")
 		for _, val := range m.values {
-			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))
+			fmt.Fprintln(os.Stderr, val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}
 	}
 }

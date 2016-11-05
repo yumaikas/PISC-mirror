@@ -73,11 +73,13 @@ This is the growing standard library of PISC.
 
 /* Copied from factor */
 : change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
+
 :PRE $: ( quot varName -- ) change ;
 
-# Increment and decrement variables
-:PRE ++ ( varName -- ) [ 1 + ] swap change ;
-:PRE -- ( varname -- ) [ 1 - ] swap change ;
+/* Increment and decrement variables */
+
+:PRE ++ ( varName -- . ) [ 1 + ] swap change ;
+:PRE -- ( varname -- . ) [ 1 - ] swap change ;
 
 : str-neq ( str-a str-b -- eq? ) str-eq not ; 
 
@@ -123,3 +125,4 @@ This is the growing standard library of PISC.
 
 : inspect ( a -- a ) dup print ;
 
+: clear-stack ( -- ) [ stack-empty? not ] [ drop ] while ;

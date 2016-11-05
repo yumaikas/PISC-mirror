@@ -32,7 +32,7 @@ func (c codeList) getcodePosition() codePosition {
 }
 
 func (c codeList) wrapError(e error) error {
-	return fmt.Errorf("%v\n in Line: %v column %v", e.Error(), c.lineNumber, c.offset)
+	return fmt.Errorf("%v\n in File: %v Line: %v column %v", e.Error(), c.source, c.lineNumber, c.offset)
 }
 
 func (c codeList) cloneCode() codeSequence {
@@ -160,7 +160,7 @@ func (c *codeQuotation) nextWord() (word, error) {
 }
 
 func (c codeQuotation) wrapError(e error) error {
-	return fmt.Errorf("%v\n in quotation starting on Line: %v column %v", e.Error(), c.lineNumber, c.offset)
+	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v", e.Error(), c.source, c.lineNumber, c.offset)
 }
 
 func (c codeQuotation) getcodePosition() codePosition {
