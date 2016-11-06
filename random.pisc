@@ -1,0 +1,1 @@
+: choice ( vec -- elem ) dup len rand-int swap mod vec-at ;
