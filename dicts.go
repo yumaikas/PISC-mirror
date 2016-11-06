@@ -28,7 +28,6 @@ func (m *machine) loadDictWords() error {
 		key := m.popValue().(String).String()
 		dict := m.popValue().(Dict)
 		_, ok := dict[key]
-		m.pushValue(dict)
 		m.pushValue(Boolean(ok))
 	})
 
@@ -37,14 +36,25 @@ func (m *machine) loadDictWords() error {
 		key := m.popValue().(String).String()
 		value := m.popValue()
 		// Peek, since we have no intention of popping here.
-		dict := m.values[len(m.values)-1].(Dict)
+		dict := m.popValue().(Dict)
 		dict[string(key)] = value
 	})
 
 	// ( dict key -- dict value )
 	m.predefinedWords["dict-get"] = NilWord(func(m *machine) {
 		key := m.popValue().(String).String()
-		m.pushValue(m.values[len(m.values)-1].(Dict)[key])
+		m.pushValue(m.popValue().(Dict)[key])
+	})
+	// ( dict -- key value )
+	m.predefinedWords["dict-get-rand"] = GoWord(func(m *machine) error {
+		dic := m.popValue().(Dict)
+		// Rely on random key ordering
+		for k, v := range dic {
+			m.pushValue(String(k))
+			m.pushValue(v)
+			break
+		}
+		return nil
 	})
 	return nil
 }

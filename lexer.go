@@ -132,8 +132,11 @@ func (c *codeList) nextWord() (word, error) {
 		case '\r':
 			if inString {
 				currentWord += string(v)
-			} else {
+			} else if len(currentWord) > 0 {
 				return word(currentWord), nil
+			} else {
+				// Skip leading whitespace
+				continue
 			}
 		default:
 			currentWord += string(v)

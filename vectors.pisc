@@ -1,12 +1,11 @@
 /* Vectors and their utilities */
 
 :DOC vec-set-at ( vec val idx -- elem ) Set vector at idx to value ;
-:DOC vec-at ( vec idx -- elem ) "vec-at" extern-call ;
+:DOC vec-at ( vec idx -- elem ) Get element at index ;
 :DOC <vector> ( -- vector ) "<vector>" extern-call ;
 :DOC vec-each ( vec quot -- .. ) "vec-each" extern-call ;
 
 
-:DOC vec-at ( -- ) "vec-at" extern-call ;
 :DOC <vector> ( -- vec ) "<vector>" extern-call ;
 :DOC vec-each ( vec quot -- .. ) "vec-each" extern-call ;
 :DOC vec-append ( vec elem --  newVect ) "vec-append" extern-call ;
@@ -18,6 +17,7 @@
 
 : 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;
 
+:DOC each2 ( v1 v2 quot -- v3 ) Applies a quotation to each elementwise pair in v1 and v2, to result in v3 ;
 : each2 ( v1 v2 quot -- v3 ) 
 	:quot :v2 :v1
 	0 :i <vector>
@@ -27,6 +27,10 @@
 		[ 1 + ] $:i
 	] times ;
 
+:DOC splat ( vec -- items ) Dump the contents of the vector onto the stack ;
+: splat ( vec -- items... ) [ ] vec-each ;
+
+:DOC vec-reverse ( vec -- reversevec ) Reverses a vector ;
 : vec-reverse ( vec -- reversevec ) 
 	dup :vec len :end 0 :i
 	[ 1 - ] $:end

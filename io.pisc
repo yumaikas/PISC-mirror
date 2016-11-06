@@ -2,7 +2,6 @@
 
 /* This doc isn't for a specific word */
 :DOC IO ( -- ) 
-/* 
 # Readers
 
 Currently, PISC has reading and writing objects that are bound to underlying go based bufio objects. Each reader has the following functions loaded into its dictionary entries:
@@ -19,7 +18,6 @@ Reads a line from the reader, trimming '\r' and '\n' off the end
 ## EOF ( -- EOF? )
 Returns true if the end of the file has been reached, false otherwise
 
-*/
 ;
 
 :DOC open-file-reader ( path -- Reader ) File readers have a `close` entry that can be called to close the underlying file handle ;

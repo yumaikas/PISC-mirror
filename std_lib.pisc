@@ -100,7 +100,7 @@ This is the growing standard library of PISC.
 
 
 /* If statement */
-:DOC  ( ? trueQuot, falseQuot, -- result ) if ? is t, call true quot, otherwise call falseQuot. Defined as `? call` ;
+:DOC if ( ? trueQuot falseQuot -- result ) if ? is t, call true quot, otherwise call falseQuot. Defined as `? call` ;
 : if ( ? true false -- res ) ? call ;
 /* When statement for when you don't need all of if */
 : when ( ? true -- res ) [ ] ? call ;

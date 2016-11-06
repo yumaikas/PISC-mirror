@@ -57,10 +57,6 @@ Code`)
 		if strings.TrimSpace(line) == "preload" {
 			m.loadPredefinedValues()
 		}
-		if err == ExitingProgram {
-			fmt.Fprintln(os.Stderr, "Exiting program")
-			return
-		}
 		if err == io.EOF {
 			fmt.Fprintln(os.Stderr, "Exiting program")
 			return
@@ -78,6 +74,10 @@ Code`)
 			},
 		}
 		err = executeWordsOnMachine(m, p)
+		if err == ExitingProgram {
+			fmt.Fprintln(os.Stderr, "Exiting program")
+			return
+		}
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error:")
 			fmt.Fprintln(os.Stderr, err.Error())

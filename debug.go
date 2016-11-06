@@ -30,11 +30,11 @@ func (m *machine) loadDebugWords() error {
 	// ( -- )
 	m.predefinedWords["dump-defined-words"] = GoWord(func(m *machine) error {
 		for name, seq := range m.prefixWords {
-			fmt.Println(":PRE ", name, " ", m.definedStackComments[name], " ", DumpToString(seq), " ;")
+			fmt.Println(":PRE", name, m.definedStackComments[name], DumpToString(seq), ";")
 		}
 		for name, seq := range m.definedWords {
-			fmt.Println(":DOC ", name, " ", m.definedStackComments[name], " ", m.helpDocs[name], " ;")
-			fmt.Println(": ", name, " ", m.definedStackComments[name], " ", DumpToString(seq), " ;")
+			fmt.Println(":DOC", name, m.definedStackComments[name], m.helpDocs[name], ";")
+			fmt.Println(":", name, m.definedStackComments[name], DumpToString(seq), ";")
 		}
 		return nil
 	})
@@ -42,6 +42,7 @@ func (m *machine) loadDebugWords() error {
 }
 
 func DumpToString(c codeSequence) string {
+	c = c.cloneCode()
 	words := make([]string, 0)
 	for {
 		w, err := c.nextWord()
