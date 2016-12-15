@@ -1,0 +1,5 @@
+: build ( counter list -- list )
+	:list :counter
+	$counter 0 = [ $list ] [ $counter 1 - { $counter $list } build ] if ;
+
+

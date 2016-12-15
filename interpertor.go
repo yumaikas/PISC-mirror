@@ -93,7 +93,7 @@ var (
 	spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
 	floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
 	intMatch         = regexp.MustCompile(`^-?\d+$`)
-	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:!@$%^&*<>+?]+`)
+	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:~!@$%^&*<>+?]+`)
 )
 
 // This executes a given code sequence against a given machine

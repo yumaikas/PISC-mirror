@@ -72,7 +72,7 @@ This is the growing standard library of PISC.
 */
 
 /* Copied from factor */
-: change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
+: change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ; 
 
 :PRE $: ( quot varName -- ) change ;
 

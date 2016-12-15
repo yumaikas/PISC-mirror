@@ -2,9 +2,13 @@ package main
 
 import (
 	"bufio"
+	"regexp"
 	"strconv"
 	"strings"
 )
+
+type regexEntry struct {
+}
 
 // TODO: Add more words to support strings here, we need a way to handle a lot more cases, like
 // replacement, substringing, joining and so on.
@@ -90,6 +94,16 @@ func (m *machine) loadStringWords() error {
 			quot.idx = 0
 			executeWordsOnMachine(m, quot)
 		}
+	})
+
+	// ( str cont -- ? )
+	m.predefinedWords["str-contains"] = NilWord(func(m *machine) {
+		substr := m.popValue().String()
+		str := m.popValue().String()
+		if strings.Contains(str, substr) {
+			m.pushValue(Boolean(true))
+		}
+		m.pushValue(Boolean(false))
 	})
 
 	return nil

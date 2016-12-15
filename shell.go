@@ -19,6 +19,29 @@ func (m *machine) loadShellWords() {
 		m.pushValue(arr)
 		return nil
 	})
+
+	m.predefinedWords["pwd"] = GoWord(func(m *machine) error {
+		if dir, err := os.Getwd(); err != nil {
+			return err
+		} else {
+			m.pushValue(String(dir))
+			return nil
+		}
+	})
+
+	//
+	m.predefinedWords["cd"] = GoWord(func(m *machine) error {
+		location := m.popValue().String()
+		if err := os.Chdir(location); err != nil {
+			return err
+		}
+		if dir, err := os.Getwd(); err != nil {
+			return err
+		} else {
+			fmt.Println(dir)
+		}
+		return nil
+	})
 }
 
 func fileInfoToDict(info os.FileInfo) Dict {
@@ -27,6 +50,7 @@ func fileInfoToDict(info os.FileInfo) Dict {
 	dict["size"] = Integer(info.Size())
 	// dict["is-dir"] = Boolean(info.IsDir())
 	dict["mode"] = String(info.Mode().String())
+	dict["__type"] = String("inode")
 	dict["__ordering"] = Array{
 		String("name"),
 		String("mode"),

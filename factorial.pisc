@@ -1,0 +1,14 @@
+: factorial ( x -- y ) :x 
+	$x 0 >  [ $x $x 1 - factorial * ] 
+		   [ 1 ]
+	if ;
+
+: decrement-x ( -- ) "x" get-local 1 - "x" set-local ;
+
+: factorial-loop ( x -- y ) dup :x :result 
+ $x [
+ 	decrement-x 
+	$result $x * :result
+ ] times 
+ $result
+ ;
