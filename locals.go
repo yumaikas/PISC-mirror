@@ -54,7 +54,7 @@ func (m *machine) loadLocalWords() {
 			m.pushValue(val)
 			m.pushValue(String(key))
 			code.idx = 0
-			err := executeWordsOnMachine(m, code)
+			err := m.execute(code)
 			if err != nil {
 				return err
 			}

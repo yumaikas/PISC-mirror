@@ -7,7 +7,7 @@ func (m *machine) loadLoopWords() error {
 		nOfTimes := m.popValue().(Integer)
 		for i := int(0); i < int(nOfTimes); i++ {
 			toExec.idx = 0
-			err := executeWordsOnMachine(m, toExec)
+			err := m.execute(toExec)
 			if err != nil {
 				return err
 			}
@@ -21,7 +21,7 @@ func (m *machine) loadLoopWords() error {
 
 		for {
 			pred.idx = 0
-			err := executeWordsOnMachine(m, pred)
+			err := m.execute(pred)
 			if err != nil {
 				return err
 			}
@@ -30,7 +30,7 @@ func (m *machine) loadLoopWords() error {
 				break
 			}
 			body.idx = 0
-			executeWordsOnMachine(m, body)
+			m.execute(body)
 		}
 		return nil
 	})

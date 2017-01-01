@@ -85,7 +85,7 @@ func runCode(code string) *machine {
 		definedWords:         make(map[word]codeSequence),
 		definedStackComments: make(map[word]string),
 	}
-	executeWordsOnMachine(m, p)
+	m.execute(p)
 	return m
 }
 
@@ -97,7 +97,7 @@ var (
 )
 
 // This executes a given code sequence against a given machine
-func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
+func (m *machine) execute(p codeSequence) (retErr error) {
 	var err error
 	var wordVal word
 	defer func() {
@@ -230,10 +230,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 			copy(vals, m.values[currIdx:len(m.values)])
 			m.values = m.values[:currIdx]
 			m.pushValue(Array(vals))
-			executeWordsOnMachine(m, &codeList{
-				idx:  0,
-				code: " \"\" str-join ",
-			})
+			m.execute(&codeList{idx: 0, code: " \"\" str-join "})
 
 		case wordVal == "[":
 			// Begin quotation
@@ -294,7 +291,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				}
 			} else if val, ok := m.definedWords[wordVal]; ok {
 				// Run the definition of this word on this machine.
-				err = executeWordsOnMachine(m, val.cloneCode())
+				err = m.execute(val.cloneCode())
 				if err != nil {
 					return err
 				}
@@ -302,7 +299,7 @@ func executeWordsOnMachine(m *machine, p codeSequence) (retErr error) {
 				// Put the post-prefix string at the top of the stack, so it can
 				// be used.
 				m.pushValue(String(getNonPrefixOf(wordVal)))
-				err = executeWordsOnMachine(m, prefixFunc.cloneCode())
+				err = m.execute(prefixFunc.cloneCode())
 			} else if err = m.tryLocalWord(string(wordVal)); err == LocalFuncRun {
 				err = nil
 				// return p.wrapError(fmt.Errorf("Undefined word: %v", wordVal))
@@ -336,7 +333,7 @@ func (m *machine) tryLocalWord(wordName string) error {
 					words:        fn.code,
 					codePosition: fn.codePosition,
 				}
-				err := executeWordsOnMachine(m, code)
+				err := m.execute(code)
 				if err != nil {
 					return err
 				}
@@ -531,7 +528,7 @@ func (m *machine) executeQuotation() error {
 	quoteVal := m.popValue()
 	if q, ok := quoteVal.(quotation); ok {
 		m.locals = append(m.locals, q.locals)
-		executeWordsOnMachine(m, &codeQuotation{
+		m.execute(&codeQuotation{
 			idx:          0,
 			words:        q.code,
 			codePosition: q.codePosition,

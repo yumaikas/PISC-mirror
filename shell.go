@@ -21,12 +21,12 @@ func (m *machine) loadShellWords() {
 	})
 
 	m.predefinedWords["pwd"] = GoWord(func(m *machine) error {
-		if dir, err := os.Getwd(); err != nil {
+		dir, err := os.Getwd()
+		if err != nil {
 			return err
-		} else {
-			m.pushValue(String(dir))
-			return nil
 		}
+		m.pushValue(String(dir))
+		return nil
 	})
 
 	//

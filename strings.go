@@ -2,12 +2,12 @@ package main
 
 import (
 	"bufio"
-	"regexp"
+	//"regexp"
 	"strconv"
 	"strings"
 )
 
-type regexEntry struct {
+type stringPattern struct {
 }
 
 // TODO: Add more words to support strings here, we need a way to handle a lot more cases, like
@@ -92,7 +92,7 @@ func (m *machine) loadStringWords() error {
 		for _, r := range str {
 			m.pushValue(String(string(r)))
 			quot.idx = 0
-			executeWordsOnMachine(m, quot)
+			m.execute(quot)
 		}
 	})
 

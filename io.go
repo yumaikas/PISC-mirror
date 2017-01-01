@@ -78,7 +78,7 @@ func (m *machine) loadIOWords() error {
 				source: "file:" + string(fileName),
 			},
 		}
-		err = executeWordsOnMachine(m, code)
+		err = m.execute(code)
 		if err != nil {
 			return err
 		}

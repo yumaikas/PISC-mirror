@@ -3,5 +3,5 @@
 	$counter 0 = [ $list ] [ $counter 1 - { $counter $list } build ] if ;
 
 /* Run a test and see what this ends up doing */
-100000 [] build drop
+100000 { } build drop
 

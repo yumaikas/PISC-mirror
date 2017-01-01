@@ -8,15 +8,39 @@ import (
 	"io"
 	// "flag" TODO: Implement flags for file and burst modes
 	"fmt"
-	"gopkg.in/readline.v1"
 	"os"
 	"strings"
+
+	"gopkg.in/readline.v1"
+	cli "gopkg.in/urfave/cli.v1"
 )
 
 // This function starts an interpertor
 func main() {
-	// given_files := flag.Bool("f", false, "Sets the rest of the arguments to list of files")
-	// Run command stuff here.
+	app := cli.NewApp()
+	app.Author = "Andrew Owen, @yumaikas"
+	app.Name = "PISC, aka Posisition Independent Source Code"
+	app.Usage = "A small stack based scripting langauge built for fun"
+	app.Action = handleFlags
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "interactive, i",
+			Usage: "Run the interactive version of PISC",
+		},
+		cli.StringFlag{
+			Name:  "command, c",
+			Usage: "Expressions to run from the command line, before -i, if it exists",
+		},
+		cli.BoolFlag{
+			Name:   "benchmark",
+			Hidden: true,
+			Usage:  "Run various benchmarks, using pprof, and print out pertinent information",
+		},
+	}
+	app.Run(os.Args)
+}
+
+func initMachine() *machine {
 	m := &machine{
 		values:               make([]stackEntry, 0),
 		definedWords:         make(map[word]codeSequence),
@@ -26,6 +50,33 @@ func main() {
 		helpDocs:             make(map[word]string),
 	}
 	m.loadPredefinedValues()
+	return m
+}
+
+func handleFlags(ctx *cli.Context) {
+	m := initMachine()
+	if ctx.IsSet("benchmark") {
+	}
+	if ctx.IsSet("command") {
+		line := ctx.String("command")
+		p := &codeList{
+			idx:  0,
+			code: line,
+			codePosition: codePosition{
+				source: fmt.Sprint("args:"),
+			},
+		}
+		m.execute(p)
+	}
+	if ctx.IsSet("interactive") {
+		loadInteractive(m)
+	}
+}
+
+func loadInteractive(m *machine) {
+
+	// given_files := flag.Bool("f", false, "Sets the rest of the arguments to list of files")
+	// Run command stuff here.
 
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          ">> ",
@@ -73,7 +124,7 @@ Code`)
 				source: fmt.Sprint("stdin:", numEntries),
 			},
 		}
-		err = executeWordsOnMachine(m, p)
+		err = m.execute(p)
 		if err == ExitingProgram {
 			fmt.Fprintln(os.Stderr, "Exiting program")
 			return
@@ -87,4 +138,5 @@ Code`)
 			fmt.Fprintln(os.Stderr, val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}
 	}
+
 }

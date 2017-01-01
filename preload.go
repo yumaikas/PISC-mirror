@@ -22,7 +22,7 @@ func (m *machine) loadPredefinedValues() {
 	m.predefinedWords["dip"] = NilWord(func(m *machine) {
 		quot := m.popValue().(quotation).toCode()
 		a := m.popValue()
-		executeWordsOnMachine(m, quot)
+		m.execute(quot)
 		m.pushValue(a)
 	})
 	m.predefinedWords["pick-dup"] = NilWord(func(m *machine) {
@@ -69,7 +69,7 @@ func (m *machine) loadPredefinedValues() {
 		},
 	}
 
-	err := executeWordsOnMachine(m, code)
+	err := m.execute(code)
 	if err != nil {
 		err = m.loadBackupPod()
 		if err != nil {
@@ -174,5 +174,5 @@ func (m *machine) loadBackupPod() error {
 		code: podBackup,
 	}
 	code.source = "Pod:"
-	return executeWordsOnMachine(m, code)
+	return m.execute(code)
 }

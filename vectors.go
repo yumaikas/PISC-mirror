@@ -40,7 +40,7 @@ func (m *machine) loadVectorWords() error {
 		for _, elem := range vect {
 			m.pushValue(elem)
 			quot.idx = 0
-			err := executeWordsOnMachine(m, quot)
+			err := m.execute(quot)
 			if err != nil {
 				return err
 			}

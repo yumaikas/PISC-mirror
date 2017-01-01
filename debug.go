@@ -10,7 +10,7 @@ import (
 func (m *machine) loadDebugWords() error {
 	// ( -- )
 	m.predefinedWords["show-prefix-words"] = NilWord(func(m *machine) {
-		for name, _ := range m.prefixWords {
+		for name := range m.prefixWords {
 			fmt.Println(name)
 		}
 	})
@@ -21,7 +21,7 @@ func (m *machine) loadDebugWords() error {
 			words: []word{"call"},
 		}
 		start := time.Now()
-		executeWordsOnMachine(m, words)
+		m.execute(words)
 		elapsed := time.Since(start)
 		m.pushValue(String(fmt.Sprint("Code took ", elapsed)))
 		return nil
