@@ -3,11 +3,9 @@
 		   [ 1 ]
 	if ;
 
-: decrement-x ( -- ) "x" get-local 1 - "x" set-local ;
-
 : factorial-loop ( x -- y ) dup :x :result 
  $x [
- 	decrement-x 
+    $x 1 - :x
 	$result $x * :result
  ] times 
  $result

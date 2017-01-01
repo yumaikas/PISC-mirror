@@ -62,7 +62,7 @@ func handleFlags(ctx *cli.Context) {
 	// Execute this before benchmarking since we aren't yet benchmarking file loads
 	m.executeString(`"factorial.pisc" import`)
 	if ctx.IsSet("benchmark") {
-		f, err := os.Create("bench-cpu.prof")
+		f, err := os.Create("bench-cpu-recursion.prof")
 		if err != nil {
 			log.Fatal("Unable to create profiling file")
 			return
@@ -71,6 +71,16 @@ func handleFlags(ctx *cli.Context) {
 			log.Fatal("Unable to start CPU profile")
 		}
 		m.executeString("100000 [ 12 factorial drop ] times")
+		pprof.StopCPUProfile()
+		f, err = os.Create("bench-cpu-iteration.prof")
+		if err != nil {
+			log.Fatal("Unable to create profiling file")
+			return
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("Unable to start CPU profile")
+		}
+		m.executeString("100000 [ 12 factorial-loop drop ] times")
 		defer pprof.StopCPUProfile()
 		return
 	}

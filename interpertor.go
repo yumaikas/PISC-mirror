@@ -105,13 +105,49 @@ var (
 	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:~!@$%^&*<>+?]+`)
 )
 
+var prefixChars = []rune{'-', '[', ']', ':', '~', '!', '@', '$', '%', '^', '&', '*', '<', '>', '+', '?'}
+
+func isPrefixChar(r rune) bool {
+	for _, c := range prefixChars {
+		if r == c {
+			return true
+		}
+	}
+	return false
+}
+
+func (m *machine) hasPrefixWord(w word) (codeSequence, string, bool) {
+	if !isPrefixChar(rune(w[0])) {
+		return nil, "", false
+	}
+	var prefix word
+
+	for i, r := range string(w) {
+		if !isPrefixChar(r) {
+			prefix = word(w[0:i])
+			seq, ok := m.prefixWords[prefix]
+			return seq, string(w[i : len(w)-1]), ok
+		}
+	}
+	return nil, "", false
+}
+
 // Both of the functions below are non-idomatic shenanegains, but chould present some pretty large gains...
 func tryParseInt(w word, intVal *int) bool {
+	// This is a very easy early exit oppurtunity for this function.
+	if !strings.ContainsRune("0123456789-+", rune(w[0])) {
+		return false
+	}
 	var err error
 	*intVal, err = strconv.Atoi(string(w))
 	return err == nil
 }
+
 func tryParseFloat(w word, floatVal *float64) bool {
+	// This is a very easy early exit oppurtunity for this function.
+	if !strings.ContainsRune("0123456789-+", rune(w[0])) {
+		return false
+	}
 	var err error
 	*floatVal, err = strconv.ParseFloat(string(w), 64)
 	return err == nil
@@ -319,10 +355,10 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 				if err != nil {
 					return err
 				}
-			} else if prefixFunc, ok := m.prefixWords[getPrefixOf(wordVal)]; ok {
+			} else if prefixFunc, nonPrefix, ok := m.hasPrefixWord(wordVal); ok {
 				// Put the post-prefix string at the top of the stack, so it can
 				// be used.
-				m.pushValue(String(getNonPrefixOf(wordVal)))
+				m.pushValue(String(nonPrefix))
 				err = m.execute(prefixFunc.cloneCode())
 			} else if err = m.tryLocalWord(string(wordVal)); err == LocalFuncRun {
 				err = nil
