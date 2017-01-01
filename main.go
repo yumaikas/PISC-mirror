@@ -11,6 +11,10 @@ import (
 	"os"
 	"strings"
 
+	"log"
+
+	"runtime/pprof"
+
 	"gopkg.in/readline.v1"
 	cli "gopkg.in/urfave/cli.v1"
 )
@@ -55,7 +59,20 @@ func initMachine() *machine {
 
 func handleFlags(ctx *cli.Context) {
 	m := initMachine()
+	// Execute this before benchmarking since we aren't yet benchmarking file loads
+	m.executeString(`"factorial.pisc" import`)
 	if ctx.IsSet("benchmark") {
+		f, err := os.Create("bench-cpu.prof")
+		if err != nil {
+			log.Fatal("Unable to create profiling file")
+			return
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("Unable to start CPU profile")
+		}
+		m.executeString("100000 [ 12 factorial drop ] times")
+		defer pprof.StopCPUProfile()
+		return
 	}
 	if ctx.IsSet("command") {
 		line := ctx.String("command")

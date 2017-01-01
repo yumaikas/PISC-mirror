@@ -7,6 +7,7 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 )
 
 var (
@@ -74,6 +75,14 @@ func (m *machine) popValue() stackEntry {
 	return popped
 }
 
+func (m *machine) executeString(code string) error {
+	p := &codeList{
+		idx:  0,
+		code: code,
+	}
+	return m.execute(p)
+}
+
 func runCode(code string) *machine {
 	// words := getWordList(strings.TrimSpace(code))
 	p := &codeList{
@@ -90,11 +99,32 @@ func runCode(code string) *machine {
 }
 
 var (
-	spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
-	floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
-	intMatch         = regexp.MustCompile(`^-?\d+$`)
+	// spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
+	// floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
+	// intMatch         = regexp.MustCompile(`^-?\d+$`)
 	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:~!@$%^&*<>+?]+`)
 )
+
+// Both of the functions below are non-idomatic shenanegains, but chould present some pretty large gains...
+func tryParseInt(w word, intVal *int) bool {
+	var err error
+	*intVal, err = strconv.Atoi(string(w))
+	return err == nil
+}
+func tryParseFloat(w word, floatVal *float64) bool {
+	var err error
+	*floatVal, err = strconv.ParseFloat(string(w), 64)
+	return err == nil
+}
+
+func wordIsWhitespace(w word) bool {
+	for _, r := range string(w) {
+		if !unicode.IsSpace(r) {
+			return false
+		}
+	}
+	return true
+}
 
 // This executes a given code sequence against a given machine
 func (m *machine) execute(p codeSequence) (retErr error) {
@@ -118,6 +148,8 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 		if err != nil {
 			return err
 		}
+		var intVal int
+		var floatVal float64
 		switch {
 		case wordVal == "quit":
 			return ExitingProgram
@@ -132,18 +164,10 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 		case strings.HasPrefix(string(wordVal), "#"):
 			// Skip line comment, potentialy work with it later, but not now.
 			continue
-		case floatMatch.MatchString(string(wordVal)):
-			floatVal, floatErr := strconv.ParseFloat(string(wordVal), 64)
-			if floatErr != nil {
-				panic(floatErr)
-			}
-			m.pushValue(Double(floatVal))
-		case intMatch.MatchString(string(wordVal)):
-			intVal, intErr := strconv.Atoi(string(wordVal))
-			if intErr != nil {
-				panic(intErr)
-			}
+		case tryParseInt(wordVal, &intVal):
 			m.pushValue(Integer(intVal))
+		case tryParseFloat(wordVal, &floatVal):
+			m.pushValue(Double(floatVal))
 		// This word needs to be defined before we can allow other things to be defined
 		case wordVal == ":":
 			err = m.readWordDefinition(p)
@@ -276,7 +300,7 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 			panic("Unexpected )")
 		case wordVal == ";":
 			panic("Unexpected ;")
-		case spaceMatch.MatchString(string(wordVal)):
+		case wordIsWhitespace(wordVal):
 			// TODO: capture this space?
 			continue
 		case len(wordVal) == 0:
