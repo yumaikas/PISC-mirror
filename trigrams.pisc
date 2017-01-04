@@ -17,14 +17,13 @@ seed-rand-time
  		] if
 	] each-char
 	 $words $currWord vec-append :words 
-	$words dup len print
+	$words 
 ;
 
 : get-trigram ( words -- key value ) 
 	:words
 	${ $words 0 vec-at " " $words 1 vec-at } 
 	$words 2 vec-at
-	2dup print print 
 ;
 
 : add-trigram ( trigrams key value -- ) 
@@ -78,4 +77,4 @@ seed-rand-time
 "poem.txt" filepath>string :input 
 
 
-$input trigrams-of-string print
+$input text-from-string print
