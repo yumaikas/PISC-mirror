@@ -29,6 +29,7 @@ func (m *machine) loadDebugWords() error {
 
 	// ( -- )
 	m.predefinedWords["dump-defined-words"] = GoWord(func(m *machine) error {
+		// var words = make(Array, 0)
 		for name, seq := range m.prefixWords {
 			fmt.Println(":PRE", name, m.definedStackComments[name], DumpToString(seq), ";")
 		}

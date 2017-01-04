@@ -40,6 +40,7 @@ This is the growing standard library of PISC.
 "vectors.pisc" import
 "symbols.pisc" import
 "math.pisc" import
+"random.pisc" import
 "debug.pisc" import
 
 

@@ -1,0 +1,81 @@
+: , ( -- ) ;
+
+seed-rand-time
+
+"chars.pisc" import
+
+: get-words ( string -- words ) 
+	:input <vector> :words
+	"" :currWord
+	$input [ :c
+	 	$c " \t\n\r\"" char-any [ 
+	 		/* Add the word if it's had a chance to be longer than 0 */
+	 		 $words $currWord vec-append :words 
+	 		"" :currWord
+	 	] [ 
+ 		$c " \t\n\r\"" char-any not [ $currWord $c concat :currWord ] when
+ 		] if
+	] each-char
+	 $words $currWord vec-append :words 
+	$words dup len print
+;
+
+: get-trigram ( words -- key value ) 
+	:words
+	${ $words 0 vec-at " " $words 1 vec-at } 
+	$words 2 vec-at
+	2dup print print 
+;
+
+: add-trigram ( trigrams key value -- ) 
+	:value :key :trigrams
+	$trigrams $key dict-has-key [
+		/* Add the element to the vector */
+		$trigrams $key dict-get :old
+		$old $value vec-append :new
+		/* And then put the vector back into the dictionary */
+		$trigrams $new $key dict-set
+	] [
+	 	$trigrams { $value } $key dict-set 
+	] if
+;
+
+: trigrams-of-string ( string -- trigrams ) 
+	get-words :words
+	/* " " str-split :words */
+	<dict> :trigrams
+	[ $words len 3 >= ] [
+		$trigrams 
+			$words get-trigram 
+		add-trigram
+		$words vec-dropfront :words
+	] while
+	$trigrams
+;
+
+: dict-rand-key ( dict -- key ) dict-get-rand drop ;
+: dict-rand-value ( dict -- value ) dict-get-rand nip ;
+
+: decr ( num -- decr ) 1 - ;
+
+: last-pair ( words -- pair ) 
+	dup :words len , decr dup :end , decr :nextToEnd
+	${ $words $nextToEnd vec-at , " " , $words $end vec-at } 
+;
+
+: text-of-trigrams ( trigrams -- text ) 
+	dup :trigrams dict-rand-key " " str-split :text
+	$text last-pair :key
+	[ $trigrams $key dict-has-key ] [
+	     $text $trigrams $key dict-get choice vec-append :text
+	     $text last-pair :key
+	] while
+	$text " " str-join 
+;
+
+: text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
+
+"poem.txt" filepath>string :input 
+
+
+$input trigrams-of-string print

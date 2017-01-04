@@ -18,10 +18,10 @@
 :PRE -$ ( dict key -- val ) dict-get ;
 
 /* Set dictionary value, and set option (in the tradition of shells) */
-:PRE -: ( dict? val key -- dict ) [ [ ensure-dictionary ] dip ] dip dict-set ;
+:PRE -: ( dict? val key -- dict ) [ [ ensure-dictionary dup :dict ] dip ] dip dict-set $dict ;
 
 /*  Set an entry to true for each unicode character in this string */
-:PRE -% ( dict? key -- dict ) [ ensure-dictionary ] dip [ t swap dict-set ] each-char ;
+:PRE -% ( dict? key -- dict ) [ ensure-dictionary ] dip [ :dict ] dip [ $dict swap t swap dict-set ] each-char $dict ;
 
 :PRE -? ( dict key -- dict ? ) dict-has-key? ;
 

@@ -1,8 +1,6 @@
 package main
 
-import (
 // "strings"
-)
 
 func (m *machine) loadDictWords() error {
 
@@ -40,11 +38,20 @@ func (m *machine) loadDictWords() error {
 		dict[string(key)] = value
 	})
 
-	// ( dict key -- dict value )
+	// ( dict key -- value )
 	m.predefinedWords["dict-get"] = NilWord(func(m *machine) {
 		key := m.popValue().(String).String()
 		m.pushValue(m.popValue().(Dict)[key])
 	})
+	m.predefinedWords["dict-keys"] = NilWord(func(m *machine) {
+		dic := m.popValue().(Dict)
+		// Rely on random key ordering
+		for k, _ := range dic {
+			m.pushValue(String(k))
+			break
+		}
+	})
+
 	// ( dict -- key value )
 	m.predefinedWords["dict-get-rand"] = GoWord(func(m *machine) error {
 		dic := m.popValue().(Dict)

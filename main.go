@@ -110,8 +110,6 @@ func loadInteractive(m *machine) {
 		HistoryFile:     "/tmp/readline.tmp",
 		InterruptPrompt: "^C",
 		EOFPrompt:       "exit",
-		Stdout:          os.Stderr,
-		Stderr:          os.Stderr,
 	})
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
@@ -157,12 +155,12 @@ Code`)
 			return
 		}
 		if err != nil {
-			fmt.Fprintln(os.Stderr, "Error:")
-			fmt.Fprintln(os.Stderr, err.Error())
+			fmt.Println("Error:")
+			fmt.Println(err.Error())
 		}
 		fmt.Fprintln(os.Stderr, "Data Stack:")
 		for _, val := range m.values {
-			fmt.Fprintln(os.Stderr, val.String(), fmt.Sprint("<", val.Type(), ">"))
+			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}
 	}
 

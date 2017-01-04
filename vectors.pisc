@@ -44,3 +44,9 @@
 	] times
 	$vec
 ;
+
+/* :DOC vec-dropfront ( vec -- newvec ) Drop the front of the vector ; */
+: vec-dropfront ( vec -- newvec ) vec-popfront drop ;
+
+/* :DOC vec-dropback ( vec -- newvec ) Drop the back of the vector ; */
+: vec-dropback ( vec -- newvec ) vec-popback drop ;
