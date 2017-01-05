@@ -1,6 +1,7 @@
 /* By turning comma into a no-op, use commas for helping space a few wide expressions later */
 : , ( -- ) ;
 
+/* Seed the random number generator to keep from getting the same result each run */
 seed-rand-time
 
 : char-any ( c chars -- ? )
@@ -14,16 +15,20 @@ seed-rand-time
 	:input <vector> :words
 	"" :currWord
 	$input [ :c
-	 	$c " \t\n\r\"" char-any [ 
+		/* Add words if  */
+	 	$c " \t\n\r\"" char-any :isSpace
+	 	$currWord len 0 > :haveData
+	 	$isSpace $haveData and [ 
 	 		/* Add the word if it's had a chance to be longer than 0 */
-	 		$currWord len 0 > [ $words $currWord vec-append :words ] when
+	 		$words $currWord vec-append :words 
 	 		"" :currWord
 	 	] [ 
+	 		/* Add the char to the current word */
 			$currWord $c concat :currWord 
  		] if
 	] each-char
-	$words $currWord vec-append :words 
-	$words 
+	/* finally, add any leftover word, leaving $words on the stack */
+	$words $currWord vec-append
 ;
 
 : get-trigram ( words -- key value ) 
@@ -47,12 +52,11 @@ seed-rand-time
 
 : trigrams-of-string ( string -- trigrams ) 
 	get-words :words
-	/* " " str-split :words */
 	<dict> :trigrams
+	/* While we still have enough words to build trigrams. */
 	[ $words len 3 >= ] [
 		$trigrams 
-			$words get-trigram 
-		add-trigram
+			$words get-trigram add-trigram
 		$words vec-dropfront :words
 	] while
 	$trigrams
@@ -68,7 +72,6 @@ seed-rand-time
 : dict-rand-key ( dict -- key ) dict-get-rand drop ;
 : dict-rand-value ( dict -- value ) dict-get-rand nip ;
 
-
 : text-of-trigrams ( trigrams -- text ) 
 	dup :trigrams dict-rand-key " " str-split :text
 	$text last-pair :key
@@ -81,5 +84,6 @@ seed-rand-time
 
 : text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
 
+/* Finally, some code to run when this is imported */
 "poem.txt" filepath>string :input 
-$input text-from-string print
+$input text-from-string prin
