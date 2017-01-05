@@ -1,6 +1,14 @@
+/* By turning comma into a no-op, use commas for helping space a few wide expressions later */
 : , ( -- ) ;
 
 seed-rand-time
+
+: char-any ( c chars -- ? )
+	:chars :c
+ 	f :isAny 
+	$chars [ $c str-eq $isAny or :isAny ] each-char
+	$isAny
+; 
 
 "chars.pisc" import
 
@@ -10,13 +18,13 @@ seed-rand-time
 	$input [ :c
 	 	$c " \t\n\r\"" char-any [ 
 	 		/* Add the word if it's had a chance to be longer than 0 */
-	 		 $words $currWord vec-append :words 
+	 		$currWord len 0 > [ $words $currWord vec-append :words ] when
 	 		"" :currWord
 	 	] [ 
- 		$c " \t\n\r\"" char-any not [ $currWord $c concat :currWord ] when
+			$currWord $c concat :currWord 
  		] if
 	] each-char
-	 $words $currWord vec-append :words 
+	$words $currWord vec-append :words 
 	$words 
 ;
 
@@ -55,10 +63,10 @@ seed-rand-time
 : dict-rand-key ( dict -- key ) dict-get-rand drop ;
 : dict-rand-value ( dict -- value ) dict-get-rand nip ;
 
-: decr ( num -- decr ) 1 - ;
-
 : last-pair ( words -- pair ) 
-	dup :words len , decr dup :end , decr :nextToEnd
+	dup :words len :words-len
+	$words-len 1 - :end
+	$words-len 2 - :nextToEnd
 	${ $words $nextToEnd vec-at , " " , $words $end vec-at } 
 ;
 
@@ -75,6 +83,4 @@ seed-rand-time
 : text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
 
 "poem.txt" filepath>string :input 
-
-
 $input text-from-string print

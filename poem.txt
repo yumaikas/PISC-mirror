@@ -1,1 +1,35 @@
-I’ve decided to tackle it It’s going to get done Doesn’t matter if I’m fit Or if it should be fun Sleep becomes an afterthought Thoughts narrow into bytes Solutions, researched and sought slowly form neath flickery lights Abstractions are conceived Ideas are slowly sprung One works this time, I’m relieved Unlike the first 10 things I’d flung But as I go more bugs crawl out My understanding is incomplete Undeterred, I consult cout To render those bugs concrete And through the night errors retreat Further through this code we go “Please work” I oft entreat “I need this for Dr. Guo” And finally the data’s stored and clear And knowing I’ve done it, relief Tho hours blurred to seconds mere My work now strengthens my belief That I can solve problems So it’s done for now Still sits in my head But as sleepy as a cow I go to bed 
+I’ve decided to tackle it
+It’s going to get done
+Doesn’t matter if I’m fit
+Or if it should be fun
+
+Sleep becomes an afterthought
+Thoughts narrow into bytes
+Solutions, researched and sought
+slowly form neath flickery lights
+
+Abstractions are conceived
+Ideas are slowly sprung
+One works this time, I’m relieved
+Unlike the first 10 things I’d flung
+
+But as I go more bugs crawl out
+My understanding is incomplete
+Undeterred, I consult cout
+To render those bugs concrete
+
+And through the night errors retreat
+Further through this code we go
+“Please work” I oft entreat
+“I need this for Dr. Guo”
+
+And finally the data’s stored and clear
+And knowing I’ve done it, relief
+Tho hours blurred to seconds mere
+My work now strengthens my belief
+That I can solve problems
+
+So it’s done for now
+Still sits in my head
+But as sleepy as a cow
+I go to bed 

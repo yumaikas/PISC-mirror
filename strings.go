@@ -96,6 +96,15 @@ func (m *machine) loadStringWords() error {
 		}
 	})
 
+	// ( str pat replace -- replaced )
+	m.predefinedWords["str-replace"] = NilWord(func(m *machine) {
+		replace := m.popValue().String()
+		pat := m.popValue().String()
+		str := m.popValue().String()
+		newstr := strings.Replace(str, pat, replace, -1)
+		m.pushValue(String(newstr))
+	})
+
 	// ( str cont -- ? )
 	m.predefinedWords["str-contains"] = NilWord(func(m *machine) {
 		substr := m.popValue().String()
