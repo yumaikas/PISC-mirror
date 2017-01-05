@@ -10,8 +10,6 @@ seed-rand-time
 	$isAny
 ; 
 
-"chars.pisc" import
-
 : get-words ( string -- words ) 
 	:input <vector> :words
 	"" :currWord
@@ -60,15 +58,16 @@ seed-rand-time
 	$trigrams
 ;
 
-: dict-rand-key ( dict -- key ) dict-get-rand drop ;
-: dict-rand-value ( dict -- value ) dict-get-rand nip ;
-
 : last-pair ( words -- pair ) 
 	dup :words len :words-len
 	$words-len 1 - :end
 	$words-len 2 - :nextToEnd
 	${ $words $nextToEnd vec-at , " " , $words $end vec-at } 
 ;
+
+: dict-rand-key ( dict -- key ) dict-get-rand drop ;
+: dict-rand-value ( dict -- value ) dict-get-rand nip ;
+
 
 : text-of-trigrams ( trigrams -- text ) 
 	dup :trigrams dict-rand-key " " str-split :text
