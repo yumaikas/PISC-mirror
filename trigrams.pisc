@@ -82,8 +82,12 @@ seed-rand-time
 	$text " " str-join 
 ;
 
-: text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
+: text-from-string ( string -- text )
+"building-trigrams.pprof" [ trigrams-of-string ] cpu-pprof
+"Built trigrams, now making text" print
+[ text-of-trigrams ] time print ;
 
 /* Finally, some code to run when this is imported */
-"poem.txt" filepath>string :input 
-$input text-from-string prin
+"sherlock-gutenberg.txt" filepath>string :input 
+"Read file" print
+$input text-from-string print

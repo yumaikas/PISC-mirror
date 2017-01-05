@@ -3,6 +3,9 @@ package main
 import (
 	"fmt"
 	"io"
+	"log"
+	"os"
+	"runtime/pprof"
 	"strings"
 	"time"
 )
@@ -24,6 +27,23 @@ func (m *machine) loadDebugWords() error {
 		m.execute(words)
 		elapsed := time.Since(start)
 		m.pushValue(String(fmt.Sprint("Code took ", elapsed)))
+		return nil
+	})
+	// ( filepath quotation -- )
+	m.predefinedWords["cpu-pprof"] = GoWord(func(m *machine) error {
+		m.executeString("swap")
+		path := m.popValue().String()
+		f, err := os.Create(path)
+		if err != nil {
+			log.Fatal("Unable to create profiling file")
+			return err
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("Unable to start CPU profile")
+			return err
+		}
+		m.executeQuotation()
+		pprof.StopCPUProfile()
 		return nil
 	})
 
