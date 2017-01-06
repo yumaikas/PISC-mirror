@@ -2,11 +2,11 @@ package main
 
 func (m *machine) loadLoopWords() error {
 	m.predefinedWords["times"] = GoWord(func(m *machine) error {
-		toExec := m.popValue().(*quotation).toCode()
+		toExec := m.popValue().(*quotation)
 		nOfTimes := m.popValue().(Integer)
 		for i := int(0); i < int(nOfTimes); i++ {
-			toExec.idx = 0
-			err := m.execute(toExec)
+			m.pushValue(toExec)
+			err := m.executeQuotation()
 			if err != nil {
 				return err
 			}

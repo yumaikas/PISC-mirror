@@ -1,7 +1,5 @@
 : factorial ( x -- y ) :x 
-	$x 0 >  [ $x $x 1 - factorial * ] 
-		   [ 1 ]
-	if ;
+	$x 0 >= [ $x $x 1 - factorial * ] [ 1 ] if ;
 
 : factorial-loop ( x -- y ) dup :x :result 
  $x 1 - [
