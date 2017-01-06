@@ -7,8 +7,8 @@ import (
 
 // Used when parsing words
 func isLocalWordPrefix(w word) bool {
-	return strings.HasPrefix(string(w), ":") ||
-		strings.HasPrefix(string(w), "$")
+	return strings.HasPrefix(w.str, ":") ||
+		strings.HasPrefix(w.str, "$")
 }
 
 var ErrLocalNotFound = fmt.Errorf("Local variable not found!")

@@ -15,14 +15,14 @@ type number interface {
 }
 
 func isMathWord(w word) bool {
-	return w == "+" ||
-		w == "-" ||
-		w == "*" ||
-		w == "/" ||
+	return w.str == "+" ||
+		w.str == "-" ||
+		w.str == "*" ||
+		w.str == "/" ||
 		// w == "div" ||
-		w == "mod" ||
-		w == "<" ||
-		w == "zero?"
+		w.str == "mod" ||
+		w.str == "<" ||
+		w.str == "zero?"
 }
 
 func (m *machine) loadHigherMathWords() error {
@@ -43,7 +43,7 @@ func (m *machine) loadHigherMathWords() error {
 	})
 
 	var math1Arg = func(name string, mathyFunc func(float64) float64) {
-		m.predefinedWords[word(name)] = GoWord(func(m *machine) error {
+		m.predefinedWords[name] = GoWord(func(m *machine) error {
 			a := m.popValue()
 			if i, ok := a.(Integer); ok {
 				m.pushValue(Double(mathyFunc(float64(i))))
@@ -93,32 +93,40 @@ func (m *machine) loadHigherMathWords() error {
 	return nil
 }
 
-func (m *machine) executeMathWord(w word) error {
-	switch w {
-	case "+":
-		return m.executeAdd()
-	case "-":
-		return m.executeSubtract()
-	case "*":
-		return m.executeMultiply()
-	case "/":
-		return m.executeDivide()
-	case "<":
-		return m.executeLessThan()
-	case "zero?":
-		a := m.popValue().(number)
-		if a == Integer(0) || a == Double(0.0) {
-			m.pushValue(Boolean(true))
-		} else {
-			m.pushValue(Boolean(false))
-		}
-	case "mod":
-		m.executeModulus()
+func isZeroPred(m *machine) error {
+	a, ok := m.popValue().(number)
+	if !ok {
+		return fmt.Errorf("value %v was not a number", a)
+	}
+	if a == Integer(0) || a == Double(0.0) {
+		m.pushValue(Boolean(true))
+	} else {
+		m.pushValue(Boolean(false))
 	}
 	return nil
 }
 
-func (m *machine) executeLessThan() error {
+func (m *machine) executeMathWord(w *word) error {
+	switch w.str {
+	case "+":
+		w.impl = executeAdd
+	case "-":
+		w.impl = executeSubtract
+	case "*":
+		w.impl = executeMultiply
+	case "/":
+		w.impl = executeDivide
+	case "<":
+		w.impl = executeLessThan
+	case "zero?":
+		w.impl = isZeroPred
+	case "mod":
+		w.impl = executeModulus
+	}
+	return w.impl(m)
+}
+
+func executeLessThan(m *machine) error {
 	a := m.popValue().(number)
 	b := m.popValue().(number)
 	m.pushValue(b.LessThan(a))
@@ -126,7 +134,7 @@ func (m *machine) executeLessThan() error {
 }
 
 // Run add on doubles and ints
-func (m *machine) executeAdd() error {
+func executeAdd(m *machine) error {
 	a := m.popValue().(number)
 	b := m.popValue().(number)
 	m.pushValue(a.Add(b))
@@ -134,21 +142,21 @@ func (m *machine) executeAdd() error {
 }
 
 // Run subtract on doubles and ints
-func (m *machine) executeSubtract() error {
+func executeSubtract(m *machine) error {
 	a := m.popValue().(number)
 	b := m.popValue().(number)
 	m.pushValue(b.Add(a.Negate()))
 	return nil
 }
 
-func (m *machine) executeMultiply() error {
+func executeMultiply(m *machine) error {
 	a := m.popValue().(number)
 	b := m.popValue().(number)
 	m.pushValue(a.Multiply(b))
 	return nil
 }
 
-func (m *machine) executeDivide() error {
+func executeDivide(m *machine) error {
 	a := m.popValue().(number)
 	b := m.popValue().(number)
 	m.pushValue(b.Divide(a))
@@ -156,7 +164,7 @@ func (m *machine) executeDivide() error {
 }
 
 // Currently modulus is for ints only
-func (m *machine) executeModulus() error {
+func executeModulus(m *machine) error {
 	a := m.popValue().(Integer)
 	b := m.popValue().(Integer)
 	m.pushValue(Integer(b % a))

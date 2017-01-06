@@ -43,14 +43,14 @@ func (c codeList) cloneCode() codeSequence {
 	}
 }
 
-func (c *codeList) nextWord() (word, error) {
+func (c *codeList) nextWord() (*word, error) {
 	currentWord := ""
 	skipChar := false
 	inString := false
 	inLineComment := false
 	currentLine := ""
 	if c.idx >= len(c.code) {
-		return "", io.EOF
+		return &word{str: ""}, io.EOF
 	}
 	for _, v := range c.code[c.idx:] {
 		width := utf8.RuneLen(v)
@@ -68,7 +68,7 @@ func (c *codeList) nextWord() (word, error) {
 			case '\n':
 				fallthrough
 			case '\r':
-				return word(currentWord), nil
+				return &word{str: currentWord}, nil
 			default:
 				currentWord += string(v)
 				continue
@@ -97,7 +97,7 @@ func (c *codeList) nextWord() (word, error) {
 				skipChar = false
 				continue
 			default:
-				return "", fmt.Errorf(fmt.Sprint(
+				return nil, fmt.Errorf(fmt.Sprint(
 					"Invalid escape sequence:", v,
 					"current word: ", currentWord,
 					"line:", c.lineNumber))
@@ -133,7 +133,7 @@ func (c *codeList) nextWord() (word, error) {
 			if inString {
 				currentWord += string(v)
 			} else if len(currentWord) > 0 {
-				return word(currentWord), nil
+				return &word{str: currentWord}, nil
 			} else {
 				// Skip leading whitespace
 				continue
@@ -143,20 +143,20 @@ func (c *codeList) nextWord() (word, error) {
 		}
 	}
 	if inString {
-		return "", fmt.Errorf("Unterminated string!")
+		return nil, fmt.Errorf("Unterminated string!")
 	}
-	return word(currentWord), nil
+	return &word{str: currentWord}, nil
 }
 
 type codeQuotation struct {
 	idx   int
-	words []word
+	words []*word
 	codePosition
 }
 
-func (c *codeQuotation) nextWord() (word, error) {
+func (c *codeQuotation) nextWord() (*word, error) {
 	if c.idx >= len(c.words) {
-		return word(""), io.EOF
+		return nil, io.EOF
 	}
 	c.idx++
 	return c.words[c.idx-1], nil

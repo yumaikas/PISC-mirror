@@ -7,7 +7,7 @@ import (
 
 func (m *machine) loadRandyWords() {
 
-	m.helpDocs[word("seed-rand-time")] = "( -- ) Seeds the PSRNG with the current time"
+	m.helpDocs["seed-rand-time"] = "( -- ) Seeds the PSRNG with the current time"
 	m.predefinedWords["seed-rand-time"] = NilWord(func(m *machine) {
 		rand.Seed(time.Now().UTC().UnixNano())
 	})
@@ -16,7 +16,7 @@ func (m *machine) loadRandyWords() {
 		m.pushValue(Integer(rand.Int()))
 	})
 
-	m.helpDocs[word("range-rand")] = "( min max -- value ) Take a min and max, give a random integer"
+	m.helpDocs["range-rand"] = "( min max -- value ) Take a min and max, give a random integer"
 	m.predefinedWords["range-rand"] = NilWord(func(m *machine) {
 		max := m.popValue().(Integer)
 		min := m.popValue().(Integer)

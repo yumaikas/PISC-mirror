@@ -21,7 +21,7 @@ func (m *machine) loadDebugWords() error {
 	m.predefinedWords["time"] = GoWord(func(m *machine) error {
 		words := &codeQuotation{
 			idx:   0,
-			words: []word{"call"},
+			words: []*word{&word{str: "call"}},
 		}
 		start := time.Now()
 		m.execute(words)
@@ -73,7 +73,7 @@ func DumpToString(c codeSequence) string {
 		if err != nil {
 			panic("Unexpected error!!!")
 		}
-		words = append(words, string(w))
+		words = append(words, w.str)
 	}
 	return strings.Join(words, " ")
 }

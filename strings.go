@@ -10,23 +10,31 @@ import (
 type stringPattern struct {
 }
 
+// TODO: Start replacing anonymous functions with named functions so that profiling is a little clearer
+
 // TODO: Add more words to support strings here, we need a way to handle a lot more cases, like
 // replacement, substringing, joining and so on.
 
+func _concat(m *machine) error {
+	a := m.popValue().(String)
+	b := m.popValue().(String)
+	m.pushValue(String(b + a))
+	return nil
+}
+
+func _toString(m *machine) error {
+	a := m.popValue()
+	if s, ok := a.(String); ok {
+		m.pushValue(String(s))
+		return nil
+	}
+	m.pushValue(String(a.String()))
+	return nil
+}
+
 func (m *machine) loadStringWords() error {
-	m.predefinedWords["concat"] = NilWord(func(m *machine) {
-		a := m.popValue().(String)
-		b := m.popValue().(String)
-		m.pushValue(String(b + a))
-	})
-	m.predefinedWords[">string"] = NilWord(func(m *machine) {
-		a := m.popValue()
-		if s, ok := a.(String); ok {
-			m.pushValue(String(s))
-			return
-		}
-		m.pushValue(String(a.String()))
-	})
+	m.predefinedWords["concat"] = _concat
+	m.predefinedWords[">string"] = _toString
 
 	m.predefinedWords["string>int"] = GoWord(func(m *machine) error {
 		a := m.popValue().(String).String()
