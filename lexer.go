@@ -192,12 +192,12 @@ func (c *codeQuotation) nextWord() (*word, error) {
 
 func (c *codeQuotation) wrapError(e error) error {
 	fmt.Println(c.words)
-	return e
-	/*return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v",
-	e.Error(),
-	c.codePositions[c.idx-1].source,
-	c.codePositions[c.idx-1].lineNumber,
-	c.codePositions[c.idx-1].offset) */
+	// return e
+	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v",
+		e.Error(),
+		c.codePositions[c.idx-1].source,
+		c.codePositions[c.idx-1].lineNumber,
+		c.codePositions[c.idx-1].offset)
 }
 
 func (c *codeQuotation) getcodePosition() codePosition {

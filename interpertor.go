@@ -196,17 +196,15 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 	defer func() {
 		p.idx = old_idx
 	}()
-	/*
-		defer func() {
-			pErr := recover()
-			if pErr != nil {
-				retErr = fmt.Errorf("%s", pErr)
-			}
-			if retErr != nil {
-				fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
-			}
-		}()
-	*/
+	defer func() {
+		pErr := recover()
+		if pErr != nil {
+			retErr = fmt.Errorf("%s", pErr)
+		}
+		if retErr != nil {
+			fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
+		}
+	}()
 	for err == nil {
 		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
@@ -237,7 +235,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				}
 			}
 			wordVal.impl = func(m *machine) error {
-				fmt.Println("From impl")
+				// fmt.Println("From impl")
 				for i := 0; i <= commentWordLen; i++ {
 					p.nextWord()
 				}
@@ -306,6 +304,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				locals: m.locals[len(m.locals)-1]}
 			// Run the { } as a quotation
 			anchorWord.impl = func(m *machine) error {
+				_quot.locals = m.locals[len(m.locals)-1]
 				currIdx := len(m.values)
 				m.pushValue(_quot)
 				//fmt.Println(_quot.inner.words)
@@ -335,7 +334,6 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			depth := 0
 			for err == nil {
 				wordVal, err = p.nextWord()
-				fmt.Println(wordVal)
 				if wordVal.str == "{" {
 					depth++
 				}
@@ -358,7 +356,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				inner:  __quot,
 				locals: m.locals[len(m.locals)-1],
 			}
-			__join, err := stringToQuotation(`" " str-join`, pos)
+			__join, err := stringToQuotation(`"" str-join`, pos)
 			if err != nil {
 				panic(err)
 			}
@@ -372,6 +370,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			// This is an approximation
 			anchorWord.str = fmt.Sprint("[", _quot.inner.words, _join.inner.words, "]")
 			anchorWord.impl = func(m *machine) error {
+				_quot.locals = m.locals[len(m.locals)-1]
 				currIdx := len(m.values)
 				// m.pushValue(_quot)
 				err := m.execute(_quot.inner)
@@ -415,7 +414,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			if p.idx >= len(p.words) {
 				endIdx = len(p.words) - 1
 			}
-			fmt.Println("#positions", len(p.codePositions), "#words", len(p.words), "endIdx", endIdx)
+			// fmt.Println("#positions", len(p.codePositions), "#words", len(p.words), "endIdx", endIdx)
 			p.words = append(p.words[:anchorIdx], p.words[endIdx:]...)
 			p.codePositions = append(
 				p.codePositions[:anchorIdx],
@@ -428,6 +427,8 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			// m.pushValue(_quotation)
 			anchorWord.str = _quotation.String()
 			anchorWord.impl = func(m *machine) error {
+
+				_quotation.locals = m.locals[len(m.locals)-1]
 				m.pushValue(_quotation)
 				return nil
 			}

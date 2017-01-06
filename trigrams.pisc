@@ -24,22 +24,22 @@ seed-rand-time
 	 		"" :currWord
 	 	] [ 
 	 		/* Add the char to the current word */
-			$currWord $c concat :currWord 
+			$isSpace not [ $currWord $c concat :currWord ] when
  		] if
 	] each-char
 	/* finally, add any leftover word, leaving $words on the stack */
-	$words $currWord vec-append :words
-	$words
+	$words $currWord vec-append 
 ;
 
 : get-trigram ( words -- key value ) 
 	:words
 	${ $words 0 vec-at " " $words 1 vec-at }
-	$words 2 vec-at
+	$words 2 vec-at 
 ;
 
 : add-trigram ( trigrams key value -- ) 
 	:value :key :trigrams
+	# ${ $key "|" $value "|" $trigrams $key dict-has-key } print
 	$trigrams $key dict-has-key [
 		/* Add the element to the vector */
 		$trigrams $key dict-get :old
@@ -52,10 +52,10 @@ seed-rand-time
 ;
 
 : trigrams-of-string ( string -- trigrams ) 
-	get-words :words
+	get-words :words 
 	<dict> :trigrams
 	/* While we still have enough words to build trigrams. */
-	[ $words len 3 > ] [
+	[ $words len 3 >= ] [
 		$trigrams 
 			$words get-trigram add-trigram
 		$words vec-dropfront :words
@@ -67,12 +67,8 @@ seed-rand-time
 	dup :words len :words-len
 	$words-len 1 - :end
 	$words-len 2 - :nextToEnd
-	"" $words $nextToEnd vec-at concat
-	   " " concat
-	   $words $end vec-at concat
+	${ $words $nextToEnd vec-at , " " , $words $end vec-at }
 ;
-	/* ${ $words $nextToEnd vec-at  , " " , "XXXX" print $words $end vec-at } ; */
-
 
 : dict-rand-key ( dict -- key ) dict-get-rand drop ;
 : dict-rand-value ( dict -- value ) dict-get-rand nip ;
