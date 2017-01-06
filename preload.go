@@ -20,7 +20,7 @@ func (m *machine) loadPredefinedValues() {
 		m.pushValue(Boolean(false))
 	})
 	m.predefinedWords["dip"] = NilWord(func(m *machine) {
-		quot := m.popValue().(quotation).toCode()
+		quot := m.popValue().(*quotation).toCode()
 		a := m.popValue()
 		m.execute(quot)
 		m.pushValue(a)
@@ -60,16 +60,7 @@ func (m *machine) loadPredefinedValues() {
 	m.loadShellWords()
 	m.loadRandyWords()
 
-	code := &codeList{
-		idx: 0,
-		code: `
-			"std_lib.pisc" import `,
-		codePosition: codePosition{
-			source: "preloaded:1",
-		},
-	}
-
-	err := m.execute(code)
+	err := m.executeString(`"std_lib.pisc" import`)
 	if err != nil {
 		err = m.loadBackupPod()
 		if err != nil {
@@ -166,13 +157,6 @@ func (m *machine) loadBackupPod() error {
 :DOC change ( quot varName -- .. )  ;
 : change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
 :DOC if ( ? true false -- res ) if ? is t, call true quot, otherwise call falseQuot. Defined as '? call' ;
-: if ( ? true false -- res ) ? call ;
-
-`
-	code := &codeList{
-		idx:  0,
-		code: podBackup,
-	}
-	code.source = "Pod:"
-	return m.execute(code)
+: if ( ? true false -- res ) ? call ;`
+	return m.executeString(podBackup)
 }

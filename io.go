@@ -142,15 +142,6 @@ func (m *machine) loadIOWords() error {
 			return goFile.Close()
 		})
 		m.pushValue(file)
-		/*
-			toExec := &codeList{
-				idx:    0,
-				code:   quot,
-				spaces: make([]string, 0),
-			}
-
-			executeWordsOnMachine(m, toExec)
-		*/
 		return nil
 	})
 

@@ -35,7 +35,7 @@ func (m *machine) loadVectorWords() error {
 	})
 	// ( vec quot -- .. )
 	m.predefinedWords["vec-each"] = GoWord(func(m *machine) error {
-		quot := m.popValue().(quotation).toCode()
+		quot := m.popValue().(*quotation).toCode()
 		vect := m.popValue().(Array)
 		for _, elem := range vect {
 			m.pushValue(elem)

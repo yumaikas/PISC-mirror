@@ -28,6 +28,10 @@ type word struct {
 	impl GoWord
 }
 
+func (w word) String() string {
+	return w.str
+}
+
 type codeSequence interface {
 	nextWord() (*word, error)
 	getcodePosition() codePosition
@@ -84,21 +88,6 @@ func (m *machine) executeString(code string) error {
 		code: code,
 	}
 	return m.execute(p)
-}
-
-func runCode(code string) *machine {
-	// words := getWordList(strings.TrimSpace(code))
-	p := &codeList{
-		idx:  0,
-		code: code,
-	}
-	m := &machine{
-		values:               make([]stackEntry, 0),
-		definedWords:         make(map[string]codeSequence),
-		definedStackComments: make(map[string]string),
-	}
-	m.execute(p)
-	return m
 }
 
 var (
@@ -214,11 +203,23 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 			return ExitingProgram
 		// Comments are going to be exclusively of the /*  */ variety for now.
 		case wordVal.str == "/*":
+			commentWordLen := 0
 			for err == nil {
 				wordVal, err = p.nextWord()
+				commentWordLen++
+				if err != nil {
+					break
+				}
 				if wordVal.str == "*/" {
 					break
 				}
+			}
+			wordVal.impl = func(m *machine) error {
+				fmt.Println("From impl")
+				for i := 0; i <= commentWordLen; i++ {
+					p.nextWord()
+				}
+				return nil
 			}
 		case strings.HasPrefix(wordVal.str, "#"):
 			// Skip line comment, potentialy work with it later, but not now.
@@ -245,6 +246,7 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 			}
 		case wordVal.str == "{":
 			// Begin quotation
+			fmt.Println("Not cached")
 			pos := p.getcodePosition()
 			quote := make([]*word, 0)
 			depth := 0
@@ -262,20 +264,32 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 				}
 				quote = append(quote, wordVal)
 			}
-			currIdx := len(m.values)
-			// Run the { } as a quotation
-			m.pushValue(quotation{
+			_quot := &quotation{
 				code:         quote,
 				codePosition: pos,
-				locals:       m.locals[len(m.locals)-1]})
-			err := m.executeQuotation()
-			if err != nil {
-				return err
+				locals:       m.locals[len(m.locals)-1]}
+			// Run the { } as a quotation
+			wordVal.impl = func(m *machine) error {
+				// Current hack to make sure that we keep the word state consistent. Consider implementing a "skip" of some sort...
+				/* for i := 0; i < (len(quote) + 1); /* eat the last } /// i++ {
+					_, err := p.nextWord()
+					if err != nil {
+						return err
+					}
+				}*/
+				currIdx := len(m.values)
+				m.pushValue(_quot)
+				err := m.executeQuotation()
+				if err != nil {
+					return err
+				}
+				vals := make([]stackEntry, len(m.values)-currIdx)
+				copy(vals, m.values[currIdx:len(m.values)])
+				m.values = m.values[:currIdx]
+				m.pushValue(Array(vals))
+				return nil
 			}
-			vals := make([]stackEntry, len(m.values)-currIdx)
-			copy(vals, m.values[currIdx:len(m.values)])
-			m.values = m.values[:currIdx]
-			m.pushValue(Array(vals))
+			err = wordVal.impl(m)
 
 		case wordVal.str == "${":
 			// Begin quotation
@@ -301,19 +315,48 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 			}
 			currIdx := len(m.values)
 			// Run the { } as a quotation
-			m.pushValue(quotation{
+			_quot := &quotation{
 				code:         quote,
 				codePosition: pos,
-				locals:       m.locals[len(m.locals)-1]})
-			err := m.executeQuotation()
-			if err != nil {
-				return err
+				locals:       m.locals[len(m.locals)-1],
 			}
-			vals := make([]stackEntry, len(m.values)-currIdx)
-			copy(vals, m.values[currIdx:len(m.values)])
-			m.values = m.values[:currIdx]
-			m.pushValue(Array(vals))
-			m.executeString(`" " str-join`)
+			_join := &quotation{
+				code: []*word{
+					&word{
+						str: `" "`,
+						impl: func(m *machine) error {
+							m.pushValue(String(" "))
+							return nil
+						},
+					},
+					&word{
+						str:  `str-join`,
+						impl: m.predefinedWords["str-join"],
+					},
+				},
+			}
+			wordVal.impl = func(m *machine) error {
+				// Current hack to make sure that we keep the word state consistent. Consider implementing a "skip" of some sort...
+				for i := 0; i < len(quote); i++ {
+					_, err := p.nextWord()
+					if err != nil {
+						return err
+					}
+				}
+
+				m.pushValue(_quot)
+				err := m.executeQuotation()
+				if err != nil {
+					return err
+				}
+				vals := make([]stackEntry, len(m.values)-currIdx)
+				copy(vals, m.values[currIdx:len(m.values)])
+				m.values = m.values[:currIdx]
+				m.pushValue(Array(vals))
+				m.pushValue(_join)
+				return m.executeQuotation()
+			}
+			wordVal.impl(m)
 
 		case wordVal.str == "[":
 			// Begin quotation
@@ -334,10 +377,25 @@ func (m *machine) execute(p codeSequence) (retErr error) {
 				}
 				quote = append(quote, wordVal)
 			}
-			m.pushValue(quotation{
+			_quotation := &quotation{
 				code:         quote,
 				codePosition: pos,
-				locals:       m.locals[len(m.locals)-1]})
+				locals:       m.locals[len(m.locals)-1],
+			}
+			m.pushValue(_quotation)
+
+			wordVal.impl = func(m *machine) error {
+				fmt.Println("from impl")
+				// Current hack to make sure that we keep the word state consistent. Consider implementing a "skip" of some sort...
+				for i := 0; i < len(quote)+1; i++ {
+					_, err := p.nextWord()
+					if err != nil {
+						return err
+					}
+				}
+				m.pushValue(_quotation)
+				return nil
+			}
 
 		case isMathWord(*wordVal):
 			err = m.executeMathWord(wordVal)
@@ -428,7 +486,7 @@ func (m *machine) tryLocalWord(wordName string) error {
 	// TODO: In progress
 	if len(m.locals) > 0 {
 		if localFunc, found := m.locals[len(m.locals)-1][string(wordName)]; found {
-			if fn, ok := localFunc.(quotation); ok {
+			if fn, ok := localFunc.(*quotation); ok {
 				code := &codeQuotation{
 					idx:          0,
 					words:        fn.code,
@@ -627,7 +685,7 @@ func (m *machine) readWordDefinition(c codeSequence) error {
 // Used for call word.
 func (m *machine) executeQuotation() error {
 	quoteVal := m.popValue()
-	if q, ok := quoteVal.(quotation); ok {
+	if q, ok := quoteVal.(*quotation); ok {
 		m.locals = append(m.locals, q.locals)
 		m.execute(&codeQuotation{
 			idx:          0,

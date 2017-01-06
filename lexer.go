@@ -43,6 +43,25 @@ func (c codeList) cloneCode() codeSequence {
 	}
 }
 
+func stringToQuotation(code string, pos codePosition) (codeQuotation, error) {
+	basis := &codeList{
+		idx:          0,
+		code:         code,
+		codePosition: pos,
+	}
+	//quot := *codeQuotation{
+
+	//}
+
+	var err error
+	//var word *word
+	for err != nil {
+		// word, err = basis.nextWord()
+		// quo
+	}
+	return codeQuotation{}, nil
+}
+
 func (c *codeList) nextWord() (*word, error) {
 	currentWord := ""
 	skipChar := false
@@ -162,15 +181,15 @@ func (c *codeQuotation) nextWord() (*word, error) {
 	return c.words[c.idx-1], nil
 }
 
-func (c codeQuotation) wrapError(e error) error {
+func (c *codeQuotation) wrapError(e error) error {
 	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v", e.Error(), c.source, c.lineNumber, c.offset)
 }
 
-func (c codeQuotation) getcodePosition() codePosition {
+func (c *codeQuotation) getcodePosition() codePosition {
 	return c.codePosition
 }
 
-func (c codeQuotation) cloneCode() codeSequence {
+func (c *codeQuotation) cloneCode() codeSequence {
 	return &codeQuotation{
 		idx:          0,
 		words:        c.words,

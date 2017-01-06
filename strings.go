@@ -95,7 +95,7 @@ func (m *machine) loadStringWords() error {
 	})
 	// ( str quot -- .. )
 	m.predefinedWords["each-char"] = NilWord(func(m *machine) {
-		quot := m.popValue().(quotation).toCode()
+		quot := m.popValue().(*quotation).toCode()
 		str := m.popValue().(String).String()
 		for _, r := range str {
 			m.pushValue(String(string(r)))

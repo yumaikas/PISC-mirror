@@ -10,19 +10,6 @@ func (m *machine) loadDictWords() error {
 		m.pushValue(Dict(dict))
 	})
 
-	// TODO: Consider deprecating this
-	// ( dict quot -- vals.. )
-	/*
-		m.predefinedWords["dict-get-many"] = NilWord(func(m *machine) {
-			q := m.popValue().(quotation)
-			// Keep from popping the dictionary
-			dict := m.values[len(m.values)-1].(Dict)
-			for _, innerWord := range q.code {
-				m.pushValue(dict[string(innerWord)])
-			}
-		})
-	*/
-
 	// ( dict key -- dict bool )
 	m.predefinedWords["dict-has-key"] = NilWord(func(m *machine) {
 		key := m.popValue().(String).String()
