@@ -34,7 +34,7 @@ seed-rand-time
 
 : get-trigram ( words -- key value ) 
 	:words
-	${ $words dup len print 0 vec-at " " $words 1 vec-at } dup print
+	${ $words 0 vec-at " " $words 1 vec-at }
 	$words 2 vec-at
 ;
 
@@ -55,7 +55,7 @@ seed-rand-time
 	get-words :words
 	<dict> :trigrams
 	/* While we still have enough words to build trigrams. */
-	[ $words len 3 >= ] [
+	[ $words len 3 > ] [
 		$trigrams 
 			$words get-trigram add-trigram
 		$words vec-dropfront :words
@@ -65,10 +65,14 @@ seed-rand-time
 
 : last-pair ( words -- pair ) 
 	dup :words len :words-len
-	{ $words-len 1 - :end
+	$words-len 1 - :end
 	$words-len 2 - :nextToEnd
-	${ $words $nextToEnd vec-at , " " , $words $end vec-at } } dup print splat
+	"" $words $nextToEnd vec-at concat
+	   " " concat
+	   $words $end vec-at concat
 ;
+	/* ${ $words $nextToEnd vec-at  , " " , "XXXX" print $words $end vec-at } ; */
+
 
 : dict-rand-key ( dict -- key ) dict-get-rand drop ;
 : dict-rand-value ( dict -- value ) dict-get-rand nip ;
@@ -87,4 +91,4 @@ seed-rand-time
 
 /* Finally, some code to run when this is imported */
 "poem.txt" filepath>string :input 
-# $input text-from-string print
+$input text-from-string print

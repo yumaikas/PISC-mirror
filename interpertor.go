@@ -196,15 +196,17 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 	defer func() {
 		p.idx = old_idx
 	}()
-	defer func() {
-		pErr := recover()
-		if pErr != nil {
-			retErr = fmt.Errorf("%s", pErr)
-		}
-		if retErr != nil {
-			fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
-		}
-	}()
+	/*
+		defer func() {
+			pErr := recover()
+			if pErr != nil {
+				retErr = fmt.Errorf("%s", pErr)
+			}
+			if retErr != nil {
+				fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
+			}
+		}()
+	*/
 	for err == nil {
 		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
@@ -306,10 +308,10 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			anchorWord.impl = func(m *machine) error {
 				currIdx := len(m.values)
 				m.pushValue(_quot)
-				fmt.Println(_quot.inner.words)
+				//fmt.Println(_quot.inner.words)
 				err := m.executeQuotation()
 				if err != nil {
-					return err
+					return p.wrapError(err)
 				}
 				vals := make([]stackEntry, len(m.values)-currIdx)
 				copy(vals, m.values[currIdx:len(m.values)])
@@ -329,9 +331,11 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			}
 			anchorWord := wordVal
 			anchorIdx := p.idx
+			anchorWord.str = "modified"
 			depth := 0
 			for err == nil {
 				wordVal, err = p.nextWord()
+				fmt.Println(wordVal)
 				if wordVal.str == "{" {
 					depth++
 				}
@@ -348,6 +352,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				__quot.codePositions = append(__quot.codePositions, p.getcodePosition())
 				__quot.words = append(__quot.words, wordVal)
 			}
+			// anchorWord.str = fmt.Sprint("herp", len(__quot.words))
 			// Run the { } as a quotation
 			_quot := &quotation{
 				inner:  __quot,
@@ -406,8 +411,15 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				__quot.codePositions = append(__quot.codePositions, p.getcodePosition())
 				__quot.words = append(__quot.words, wordVal)
 			}
-			p.words = append(p.words[:anchorIdx], p.words[p.idx:]...)
-			p.codePositions = append(p.codePositions[:anchorIdx], p.codePositions[p.idx:]...)
+			var endIdx = p.idx
+			if p.idx >= len(p.words) {
+				endIdx = len(p.words) - 1
+			}
+			fmt.Println("#positions", len(p.codePositions), "#words", len(p.words), "endIdx", endIdx)
+			p.words = append(p.words[:anchorIdx], p.words[endIdx:]...)
+			p.codePositions = append(
+				p.codePositions[:anchorIdx],
+				p.codePositions[endIdx:]...)
 			p.idx = anchorIdx
 			_quotation := &quotation{
 				inner:  __quot,
@@ -513,8 +525,6 @@ func (c *quotation) execute(m *machine) error {
 
 func (m *machine) tryLocalWord(w *word) error {
 	// TODO: In progress
-	fmt.Println("Looking up:", w)
-	fmt.Println("Locals:", m.locals)
 	if len(m.locals) > 0 {
 		if localFunc, found := m.locals[len(m.locals)-1][w.str]; found {
 			if fn, ok := localFunc.(*quotation); ok {
@@ -616,8 +626,11 @@ func (m *machine) readWordBody(name word, c codeSequence) ([]*word, []codePositi
 	}
 	if hasLocal == true {
 		wordDef = append([]*word{&word{str: "get-locals"}}, wordDef...)
+		wordInfo = append([]codePosition{codePosition{source: "Hardcoded"}}, wordInfo...)
 		wordDef = append(wordDef, &word{str: "drop-locals"})
+		wordInfo = append(wordInfo, codePosition{source: "Hardcoded"})
 	}
+	// fmt.Println(wordDef, wordInfo)
 	return wordDef, wordInfo, nil
 }
 

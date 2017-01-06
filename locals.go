@@ -20,7 +20,6 @@ func (m *machine) loadLocalWords() {
 	// ( val name -- )
 	m.predefinedWords["set-local"] = GoWord(func(m *machine) error {
 		varName := m.popValue().(String)
-		fmt.Println("VarName:", varName)
 		if len(m.locals) <= 0 {
 			return ErrNoLocalsExist
 		}
