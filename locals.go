@@ -20,6 +20,7 @@ func (m *machine) loadLocalWords() {
 	// ( val name -- )
 	m.predefinedWords["set-local"] = GoWord(func(m *machine) error {
 		varName := m.popValue().(String)
+		fmt.Println("VarName:", varName)
 		if len(m.locals) <= 0 {
 			return ErrNoLocalsExist
 		}
@@ -49,7 +50,7 @@ func (m *machine) loadLocalWords() {
 	// Run a quotation for each local
 	m.predefinedWords["each-local"] = GoWord(func(m *machine) error {
 		quot := m.popValue().(*quotation)
-		code := &codeQuotation{idx: 0, words: quot.code, codePosition: quot.codePosition}
+		code := quot.toCode()
 		for key, val := range m.locals[len(m.locals)-1] {
 			m.pushValue(val)
 			m.pushValue(String(key))

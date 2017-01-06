@@ -34,7 +34,6 @@ seed-rand-time
 
 : get-trigram ( words -- key value ) 
 	:words
-	"CAR" print
 	${ $words dup len print 0 vec-at " " $words 1 vec-at } dup print
 	$words 2 vec-at
 ;
@@ -66,9 +65,9 @@ seed-rand-time
 
 : last-pair ( words -- pair ) 
 	dup :words len :words-len
-	$words-len 1 - :end
+	{ $words-len 1 - :end
 	$words-len 2 - :nextToEnd
-	${ $words $nextToEnd vec-at , " " , $words $end vec-at } 
+	${ $words $nextToEnd vec-at , " " , $words $end vec-at } } dup print splat
 ;
 
 : dict-rand-key ( dict -- key ) dict-get-rand drop ;

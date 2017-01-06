@@ -10,7 +10,7 @@ This is the growing standard library of PISC.
 
 /* Local Prefixes */
 :PRE $ ( name -- val ) get-local ;
-:PRE : ( val name --  ) set-local ;
+:PRE : ( val name -- ) set-local ;
 
 /* stack-empty? checks if there are any entries on the stack
 : stack-empty? ( .. -- empty? ) primitive

@@ -4,7 +4,7 @@
 	if ;
 
 : factorial-loop ( x -- y ) dup :x :result 
- $x [
+ $x 1 - [
     $x 1 - :x
 	$result $x * :result
  ] times 

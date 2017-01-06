@@ -50,9 +50,9 @@ func stringToQuotation(code string, pos codePosition) (*codeQuotation, error) {
 		codePosition: pos,
 	}
 	quot := &codeQuotation{
-		idx:          0,
-		words:        make([]*word, 0),
-		codePosition: pos,
+		idx:           0,
+		words:         make([]*word, 0),
+		codePositions: make([]codePosition, 0),
 	}
 
 	var err error
@@ -66,6 +66,7 @@ func stringToQuotation(code string, pos codePosition) (*codeQuotation, error) {
 			return nil, err
 		}
 		quot.words = append(quot.words, _word)
+		quot.codePositions = append(quot.codePositions, basis.getcodePosition())
 	}
 	return quot, nil
 }
@@ -176,9 +177,9 @@ func (c *codeList) nextWord() (*word, error) {
 }
 
 type codeQuotation struct {
-	idx   int
-	words []*word
-	codePosition
+	idx           int
+	words         []*word
+	codePositions []codePosition
 }
 
 func (c *codeQuotation) nextWord() (*word, error) {
@@ -190,17 +191,23 @@ func (c *codeQuotation) nextWord() (*word, error) {
 }
 
 func (c *codeQuotation) wrapError(e error) error {
-	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v", e.Error(), c.source, c.lineNumber, c.offset)
+	fmt.Println("Idx:", c.idx, "Posistions:", c.codePositions)
+	// return nil
+	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v",
+		e.Error(),
+		c.codePositions[c.idx-1].source,
+		c.codePositions[c.idx-1].lineNumber,
+		c.codePositions[c.idx-1].offset)
 }
 
 func (c *codeQuotation) getcodePosition() codePosition {
-	return c.codePosition
+	return c.codePositions[c.idx-1]
 }
 
 func (c *codeQuotation) cloneCode() codeSequence {
 	return &codeQuotation{
-		idx:          0,
-		words:        c.words,
-		codePosition: c.codePosition,
+		idx:           0,
+		words:         c.words,
+		codePositions: c.codePositions,
 	}
 }

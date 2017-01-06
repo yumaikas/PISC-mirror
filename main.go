@@ -47,10 +47,10 @@ func main() {
 func initMachine() *machine {
 	m := &machine{
 		values:               make([]stackEntry, 0),
-		definedWords:         make(map[string]codeSequence),
+		definedWords:         make(map[string]*codeQuotation),
 		definedStackComments: make(map[string]string),
 		predefinedWords:      make(map[string]GoWord),
-		prefixWords:          make(map[string]codeSequence),
+		prefixWords:          make(map[string]*codeQuotation),
 		helpDocs:             make(map[string]string),
 	}
 	m.loadPredefinedValues()
