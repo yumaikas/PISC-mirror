@@ -31,7 +31,7 @@ func (m *machine) loadDebugWords() error {
 	})
 	// ( filepath quotation -- )
 	m.predefinedWords["cpu-pprof"] = GoWord(func(m *machine) error {
-		m.executeString("swap")
+		m.executeString("swap", codePosition{source: "cpu-pprof GoWord"})
 		path := m.popValue().String()
 		f, err := os.Create(path)
 		if err != nil {

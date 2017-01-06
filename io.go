@@ -71,12 +71,9 @@ func (m *machine) loadIOWords() error {
 			return err
 		}
 		// Reading in the data
-		code := &codeList{
-			idx:  0,
-			code: string(data),
-			codePosition: codePosition{
-				source: "file:" + string(fileName),
-			},
+		code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(fileName)})
+		if err != nil {
+			return err
 		}
 		err = m.execute(code)
 		if err != nil {

@@ -60,38 +60,46 @@ func initMachine() *machine {
 func handleFlags(ctx *cli.Context) {
 	m := initMachine()
 	// Execute this before benchmarking since we aren't yet benchmarking file loads
-	m.executeString(`"factorial.pisc" import`)
 	if ctx.IsSet("benchmark") {
+		err := m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
 		f, err := os.Create("bench-cpu-recursion.prof")
 		if err != nil {
 			log.Fatal("Unable to create profiling file")
 			return
 		}
+		pos := codePosition{source: "Benchmark recursive"}
 		if err := pprof.StartCPUProfile(f); err != nil {
 			log.Fatal("Unable to start CPU profile")
 		}
-		m.executeString("100000 [ 12 factorial drop ] times")
+		err = m.executeString("100000 [ 12 factorial drop ] times", pos)
+		if err != nil {
+			log.Fatal("Recursive benchmark failed:", err)
+		}
 		pprof.StopCPUProfile()
 		f, err = os.Create("bench-cpu-iteration.prof")
 		if err != nil {
 			log.Fatal("Unable to create profiling file")
 			return
 		}
+		pos = codePosition{source: "Benchmark loop"}
 		if err := pprof.StartCPUProfile(f); err != nil {
 			log.Fatal("Unable to start CPU profile")
+			return
 		}
-		m.executeString("100000 [ 12 factorial-loop drop ] times")
-		defer pprof.StopCPUProfile()
+		err = m.executeString("100000 [ 12 factorial-loop drop ] times", pos)
+		if err != nil {
+			log.Fatal("Recursive benchmark failed:", err)
+			pprof.StopCPUProfile()
+			return
+		}
+		pprof.StopCPUProfile()
 		return
 	}
 	if ctx.IsSet("command") {
 		line := ctx.String("command")
-		p := &codeList{
-			idx:  0,
-			code: line,
-			codePosition: codePosition{
-				source: fmt.Sprint("args:"),
-			},
+		p, err := stringToQuotation(line, codePosition{source: "args"})
+		if err != nil {
+			log.Fatal("Error in command: ", err)
 		}
 		m.execute(p)
 	}
@@ -142,14 +150,8 @@ Code`)
 		}
 		numEntries++
 		// fmt.Println(words)
-		p := &codeList{
-			idx:  0,
-			code: line,
-			codePosition: codePosition{
-				source: fmt.Sprint("stdin:", numEntries),
-			},
-		}
-		err = m.execute(p)
+
+		err = m.executeString(line, codePosition{source: fmt.Sprint("stdin:", numEntries)})
 		if err == ExitingProgram {
 			fmt.Fprintln(os.Stderr, "Exiting program")
 			return
@@ -157,6 +159,7 @@ Code`)
 		if err != nil {
 			fmt.Println("Error:")
 			fmt.Println(err.Error())
+			return
 		}
 		fmt.Fprintln(os.Stderr, "Data Stack:")
 		for _, val := range m.values {

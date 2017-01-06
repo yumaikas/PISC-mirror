@@ -43,25 +43,31 @@ func (c codeList) cloneCode() codeSequence {
 	}
 }
 
-func stringToQuotation(code string, pos codePosition) (codeQuotation, error) {
-	/*
-		basis := &codeList{
-			idx:          0,
-			code:         code,
-			codePosition: pos,
-		}
-	*/
-	//quot := *codeQuotation{
-
-	//}
+func stringToQuotation(code string, pos codePosition) (*codeQuotation, error) {
+	basis := &codeList{
+		idx:          0,
+		code:         code,
+		codePosition: pos,
+	}
+	quot := &codeQuotation{
+		idx:          0,
+		words:        make([]*word, 0),
+		codePosition: pos,
+	}
 
 	var err error
-	//var word *word
-	for err != nil {
-		// word, err = basis.nextWord()
-		// quo
+	var _word *word
+	for err == nil {
+		_word, err = basis.nextWord()
+		if err == io.EOF {
+			return quot, nil
+		}
+		if err != nil {
+			return nil, err
+		}
+		quot.words = append(quot.words, _word)
 	}
-	return codeQuotation{}, nil
+	return quot, nil
 }
 
 func (c *codeList) nextWord() (*word, error) {

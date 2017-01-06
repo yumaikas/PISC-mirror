@@ -2,7 +2,6 @@ package main
 
 func (m *machine) loadLoopWords() error {
 	m.predefinedWords["times"] = GoWord(func(m *machine) error {
-
 		toExec := m.popValue().(*quotation).toCode()
 		nOfTimes := m.popValue().(Integer)
 		for i := int(0); i < int(nOfTimes); i++ {
@@ -30,7 +29,10 @@ func (m *machine) loadLoopWords() error {
 				break
 			}
 			body.idx = 0
-			m.execute(body)
+			err = m.execute(body)
+			if err != nil {
+				return err
+			}
 		}
 		return nil
 	})

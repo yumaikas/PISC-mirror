@@ -60,7 +60,7 @@ func (m *machine) loadPredefinedValues() {
 	m.loadShellWords()
 	m.loadRandyWords()
 
-	err := m.executeString(`"std_lib.pisc" import`)
+	err := m.executeString(`"std_lib.pisc" import`, codePosition{source: "preload.go standard library import"})
 	if err != nil {
 		err = m.loadBackupPod()
 		if err != nil {
@@ -158,5 +158,5 @@ func (m *machine) loadBackupPod() error {
 : change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ;
 :DOC if ( ? true false -- res ) if ? is t, call true quot, otherwise call falseQuot. Defined as '? call' ;
 : if ( ? true false -- res ) ? call ;`
-	return m.executeString(podBackup)
+	return m.executeString(podBackup, codePosition{source: "Backup Pod"})
 }

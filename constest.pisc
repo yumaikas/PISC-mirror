@@ -2,6 +2,10 @@
 	:list :counter
 	$counter 0 = [ $list ] [ $counter 1 - { $counter $list } build ] if ;
 
-/* Run a test and see what this ends up doing */
-100000 { } build drop
+: build-loop ( counter list -- list )
+	:list :counter
+	[ $counter 0 = not ] [  { $counter $list } :list $counter 1 - :counter ] while
+;
 
+/* Run a test and see what this ends up doing */
+100000 { } build-loop drop

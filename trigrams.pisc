@@ -28,12 +28,14 @@ seed-rand-time
  		] if
 	] each-char
 	/* finally, add any leftover word, leaving $words on the stack */
-	$words $currWord vec-append
+	$words $currWord vec-append :words
+	$words
 ;
 
 : get-trigram ( words -- key value ) 
 	:words
-	${ $words 0 vec-at " " $words 1 vec-at } 
+	"CAR" print
+	${ $words dup len print 0 vec-at " " $words 1 vec-at } dup print
 	$words 2 vec-at
 ;
 
@@ -82,12 +84,8 @@ seed-rand-time
 	$text " " str-join 
 ;
 
-: text-from-string ( string -- text )
-"building-trigrams.pprof" [ trigrams-of-string ] cpu-pprof
-"Built trigrams, now making text" print
-[ text-of-trigrams ] time print ;
+: text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
 
 /* Finally, some code to run when this is imported */
-"sherlock-gutenberg.txt" filepath>string :input 
-"Read file" print
-$input text-from-string print
+"poem.txt" filepath>string :input 
+# $input text-from-string print
