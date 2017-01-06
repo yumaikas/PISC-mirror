@@ -44,11 +44,13 @@ func (c codeList) cloneCode() codeSequence {
 }
 
 func stringToQuotation(code string, pos codePosition) (codeQuotation, error) {
-	basis := &codeList{
-		idx:          0,
-		code:         code,
-		codePosition: pos,
-	}
+	/*
+		basis := &codeList{
+			idx:          0,
+			code:         code,
+			codePosition: pos,
+		}
+	*/
 	//quot := *codeQuotation{
 
 	//}
