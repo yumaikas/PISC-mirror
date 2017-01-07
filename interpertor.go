@@ -267,7 +267,6 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 		case wordVal.str == "}":
 			panic("Unbalanced }!")
 		case wordVal.str == "{":
-			// Begin quotation
 			// fmt.Println("Not cached")
 			__quot := &codeQuotation{
 				words:         make([]*word, 0),
