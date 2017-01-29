@@ -1,12 +1,19 @@
 package main
 
+// GoWord a wrapper for functions that implement pieces of PISC
 type GoWord func(*machine) error
 
+// NilWord a wrapper for GoWords that should never fail
 func NilWord(f func(*machine)) GoWord {
 	return GoWord(func(m *machine) error {
 		f(m)
 		return nil
 	})
+}
+
+func (m *machine) addGoWord(name, docstring string, impl GoWord) {
+	m.helpDocs[name] = docstring
+	m.predefinedWords[name] = impl
 }
 
 func (m *machine) loadPredefinedValues() {
