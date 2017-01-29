@@ -13,7 +13,7 @@ func (m *machine) loadVectorWords() error {
 			val := m.popValue()
 			arr := m.values[len(m.values)-1].(Array)
 			if idx > len(arr)-1 || idx < 0 {
-				return fmt.Errorf("index out of bounds idx:", idx)
+				return fmt.Errorf("index out of bounds: %v", idx)
 			}
 			arr[idx] = val
 			return nil
@@ -25,7 +25,7 @@ func (m *machine) loadVectorWords() error {
 			idx := int(m.popValue().(Integer))
 			arr := m.popValue().(Array)
 			if idx > len(arr)-1 || idx < 0 {
-				return fmt.Errorf("Index out of bounds!")
+				return fmt.Errorf("index out of bounds: %v", idx)
 			}
 			m.pushValue(arr[idx])
 			return nil
