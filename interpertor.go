@@ -314,7 +314,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			// Begin quotation
 			pos := p.getcodePosition()
 			//quote := make([]*word, 0)
-			__quot := &codeQuotation{
+			quot := &codeQuotation{
 				words:         make([]*word, 0),
 				codePositions: make([]codePosition, 0),
 			}
@@ -334,21 +334,21 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				if wordVal.str == "}" && depth == -1 {
 					break
 				}
-				__quot.codePositions = append(__quot.codePositions, p.getcodePosition())
-				__quot.words = append(__quot.words, wordVal)
+				quot.codePositions = append(quot.codePositions, p.getcodePosition())
+				quot.words = append(quot.words, wordVal)
 			}
 			// anchorWord.str = fmt.Sprint("herp", len(__quot.words))
 			// Run the { } as a quotation
 			_quot := &quotation{
-				inner:  __quot,
+				inner:  quot,
 				locals: m.locals[len(m.locals)-1],
 			}
-			__join, err := stringToQuotation(`"" str-join`, pos)
+			join, err := stringToQuotation(`"" str-join`, pos)
 			if err != nil {
 				panic(err)
 			}
 			_join := &quotation{
-				inner:  __join,
+				inner:  join,
 				locals: m.locals[len(m.locals)-1],
 			}
 			_quot.locals = m.locals[len(m.locals)-1]
