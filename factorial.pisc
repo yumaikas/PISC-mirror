@@ -8,4 +8,4 @@
 	$result $x * :result
  ] times 
  $result
- ;: test ( x -- y ) dup print 1 - :x $x 0 > [ $x test ] [ $x ] if ;
+ ;
