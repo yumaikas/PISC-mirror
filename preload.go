@@ -1,5 +1,7 @@
 package main
 
+import "fmt"
+
 // GoWord a wrapper for functions that implement pieces of PISC
 type GoWord func(*machine) error
 
@@ -66,8 +68,12 @@ func (m *machine) loadPredefinedValues() {
 	m.loadIOWords()
 	m.loadShellWords()
 	m.loadRandyWords()
+	err := m.loadBoltWords()
+	if err != nil {
+		panic(fmt.Sprint("Error loading boltdb: ", err))
+	}
 
-	err := m.executeString(`"std_lib.pisc" import`, codePosition{source: "preload.go standard library import"})
+	err = m.executeString(`"std_lib.pisc" import`, codePosition{source: "preload.go standard library import"})
 	if err != nil {
 		err = m.loadBackupPod()
 		if err != nil {

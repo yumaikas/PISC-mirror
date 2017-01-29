@@ -8,6 +8,8 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+
+	"github.com/asdine/storm"
 )
 
 var (
@@ -60,6 +62,7 @@ type machine struct {
 
 	// Each time we are asked for a symbol, supply the value here, then increment
 	symbolIncr int64
+	db         *storm.DB
 }
 
 //TODO: Optimize append pattern?

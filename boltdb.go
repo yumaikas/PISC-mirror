@@ -8,35 +8,62 @@ import (
 )
 
 // This default DB is for doing stuff like saving "globals", if you need your
-var defaultDB *storm.DB
 
 // ErrBucketNotFound indicates that a database file doesn't have it's string bucket.
 var ErrBucketNotFound = fmt.Errorf("could not find strings bucket in database")
 
+type counter int
+
 func (m *machine) loadBoltWords() error {
 
 	var err error
-	var strKey = []byte("strings")
-	defaultDB, err = storm.Open(".piscdb", storm.Codec(gob.Codec))
+	m.db, err = storm.Open(".piscdb", storm.Codec(gob.Codec))
 	if err != nil {
 		return err
 	}
 
-	m.addGoWord("save-str", " ( key val -- ) ",
+	m.addGoWord("incr-counter", "( key -- newval )", GoWord(func(m *machine) error {
+		key := m.popValue().String()
+		tx, err := m.db.Begin(true)
+		defer tx.Rollback()
+		var c counter
+		err = tx.Get("counter", key, &c)
+		if err == storm.ErrNotFound {
+			tx.Set("counter", key, 0)
+			c = 0
+			err = nil
+		}
+		if err != nil {
+			return err
+		}
+		c++
+		err = tx.Set("counter", key, c)
+		if err != nil {
+			return err
+		}
+		err = tx.Commit()
+		if err != nil {
+			return err
+		}
+		m.pushValue(Integer(c))
+		return nil
+	}))
+
+	m.addGoWord("save-str", " ( val key -- ) ",
 		GoWord(func(m *machine) error {
-			val := m.popValue().String()
 			key := m.popValue().String()
-			return defaultDB.Set("strings", key, val)
+			val := m.popValue().String()
+			return m.db.Set("strings", key, val)
 		}))
 	m.addGoWord("load-str", " ( key -- val ) ",
 		GoWord(func(m *machine) error {
 			key := m.popValue().String()
-			var val *string
-			err := defaultDB.Get("strings", key, val)
+			var val string
+			err := m.db.Get("strings", key, &val)
 			if err != nil {
 				return err
 			}
-			m.pushValue(String(*val))
+			m.pushValue(String(val))
 			return nil
 		}))
 
