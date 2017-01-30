@@ -55,6 +55,11 @@ func (m *machine) loadPredefinedValues() {
 		m.pushValue(Integer(length))
 	})
 
+	m.addGoWord("error", "( msg -- !! )", GoWord(func(m *machine) error {
+		msg := m.popValue().String()
+		return fmt.Errorf(msg)
+	}))
+
 	m.loadDebugWords()
 	m.loadLocalWords()
 	m.loadStringWords()
@@ -68,6 +73,7 @@ func (m *machine) loadPredefinedValues() {
 	m.loadIOWords()
 	m.loadShellWords()
 	m.loadRandyWords()
+	m.loadQuotWords()
 	err := m.loadBoltWords()
 	if err != nil {
 		panic(fmt.Sprint("Error loading boltdb: ", err))

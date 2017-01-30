@@ -2,7 +2,7 @@
 
 :DOC <dict> ( -- dict )  Place an empty dictionary on the stack  ;
 
-:DOC dict-get-many ( dict quot --  )  Get a value from the dictionary for each word in a quotation  ;
+/* :DOC dict-get-many ( dict quot --  )  Get a value from the dictionary for each word in a quotation  ; */
 
 /* Does this dict have this key? */ : dict-has-key? ( dict key -- dict bool ) "dict-has-key" extern-call ;
 
@@ -23,6 +23,8 @@
 /*  Set an entry to true for each unicode character in this string */
 :PRE -% ( dict? key -- dict ) [ ensure-dictionary ] dip [ :dict ] dip [ $dict swap t swap dict-set ] each-char $dict ;
 
-:PRE -? ( dict key -- dict ? ) dict-has-key? ;
+ :PRE -? ( dict key -- dict ? ) dict-has-key? ;
+
+ :PRE . ( dict key -- .. ) dict-get call ;
 
 : quot>dict ( quot -- dict ) get-locals call <dict> [ dict-set ] each-local drop-locals ;

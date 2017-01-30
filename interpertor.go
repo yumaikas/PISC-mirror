@@ -111,10 +111,10 @@ var (
 	// spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
 	// floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
 	// intMatch         = regexp.MustCompile(`^-?\d+$`)
-	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:~!@$%^&*<>+?]+`)
+	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:~!@$%^&*<>+?.]+`)
 )
 
-var prefixChars = []rune{'-', '[', ']', ':', '~', '!', '@', '$', '%', '^', '&', '*', '<', '>', '+', '?'}
+var prefixChars = []rune{'-', '[', ']', ':', '~', '!', '@', '$', '%', '^', '&', '*', '<', '>', '+', '?', '.'}
 
 func isPrefixChar(r rune) bool {
 	for _, c := range prefixChars {
@@ -463,8 +463,9 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				}
 			} else if err = m.tryLocalWord(wordVal); err == LocalFuncRun {
 				err = nil
+				fmt.Println("Ran local word")
 			} else {
-				return p.wrapError(fmt.Errorf("Undefined word: %v, %v", wordVal, err))
+				err = p.wrapError(fmt.Errorf("Undefined word: %v, %v", wordVal, err))
 			}
 			// Evaluate a defined word, or complain if a word is not defined.
 
@@ -499,6 +500,7 @@ func (m *machine) tryLocalWord(w *word) error {
 				}
 				return LocalFuncRun
 			} else if fn, ok := localFunc.(GoFunc); ok {
+				fmt.Println("HEX")
 				w.impl = GoWord(fn)
 				err := fn(m)
 				if err != nil {
@@ -508,8 +510,9 @@ func (m *machine) tryLocalWord(w *word) error {
 				return fmt.Errorf("value is not a word")
 			}
 			return LocalFuncRun
+		} else {
+			return fmt.Errorf("word not found %v", w.str)
 		}
-		return LocalFuncRun
 	}
 	return ErrNoLocals
 }
