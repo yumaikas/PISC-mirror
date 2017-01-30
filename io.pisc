@@ -31,3 +31,16 @@ Returns true if the end of the file has been reached, false otherwise
 :DOC filepath>string ( fileName -- strContents )  A utility function for reading small files into strings. Do not use on large files  ;
 
 :DOC priv_puts ( str -- )  priv_puts is the underlying word used for printing values  ;
+
+: with-output ( path quot -- .. )
+	:quot
+	open-file-writer dup $quot with .close
+;
+
+# TODO
+# : with-append-out 
+
+: with-input ( path quot -- .. ) 
+	:quot
+	open-file-reader dup $quot with .close
+;

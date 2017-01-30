@@ -14,8 +14,8 @@
 	[ $tempVec $tempStr vec-append :tempVec resetCell ] :addCell
 	[ $results $tempVec vec-append :results resetLine ] :addLine
 
-	[ $reader -$EOF call not nip ] :notEOF
-	[ $reader -$read-rune call nip ] :readRune
+	[ $reader .EOF not ] :notEOF
+	[ $reader .read-rune ] :readRune
 
 	[ notEOF ] [ 
 		/* By default, append a char */

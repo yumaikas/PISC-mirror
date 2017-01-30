@@ -7,7 +7,7 @@ import (
 )
 
 func (m *machine) loadShellWords() {
-	m.predefinedWords["ls"] = GoWord(func(m *machine) error {
+	m.addGoWord("list-files", "( -- files ) ", GoWord(func(m *machine) error {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
 			fmt.Println("Error: ", err)
@@ -18,16 +18,27 @@ func (m *machine) loadShellWords() {
 		}
 		m.pushValue(arr)
 		return nil
-	})
+	}))
 
-	m.predefinedWords["pwd"] = GoWord(func(m *machine) error {
+	m.addGoWord("pwd", "( -- workingdir )", GoWord(func(m *machine) error {
 		dir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
 		m.pushValue(String(dir))
 		return nil
-	})
+	}))
+
+	m.addGoWord("env-get", " ( key -- envVal ) ", GoWord(func(m *machine) error {
+		key := m.popValue().String()
+		m.pushValue(String(os.Getenv(key)))
+		return nil
+	}))
+	m.addGoWord("env-set", " ( key value -- ) ", GoWord(func(m *machine) error {
+		val := m.popValue().String()
+		key := m.popValue().String()
+		return os.Setenv(key, val)
+	}))
 
 	//
 	m.predefinedWords["cd"] = GoWord(func(m *machine) error {

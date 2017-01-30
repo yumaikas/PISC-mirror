@@ -1,0 +1,13 @@
+/* withable objects */
+
+:PRE @ ( wordName -- .. ) "_with" get-local swap dict-get call ;
+
+: with ( obj quot -- .. ) :quot :obj
+	<dict> :wvar
+	$quot "_with" quot-has-var [ $quot "_with" quot-get-var :wvar ] when
+	/* If this quot has _with set, append it to a stack */
+	$quot "_with" $obj quot-set-var
+	# Call quot using _with metavar
+	$quot call
+	$quot "_with" $wvar quot-set-var
+;

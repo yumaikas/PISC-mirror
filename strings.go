@@ -119,6 +119,7 @@ func (m *machine) loadStringWords() error {
 		str := m.popValue().String()
 		if strings.Contains(str, substr) {
 			m.pushValue(Boolean(true))
+			return
 		}
 		m.pushValue(Boolean(false))
 	})

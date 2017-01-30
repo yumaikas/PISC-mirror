@@ -45,6 +45,13 @@
 	$vec
 ;
 
+: vec-filter ( vec quot -- filteredVec ) 
+<vector> :newvec
+:quot
+ [ dup quot [ $newvec swap vec-append :newvec ] [ drop ] if ] vec-each
+$newvec
+ ;
+
 /* :DOC vec-dropfront ( vec -- newvec ) Drop the front of the vector ; */
 : vec-dropfront ( vec -- newvec ) vec-popfront drop ;
 

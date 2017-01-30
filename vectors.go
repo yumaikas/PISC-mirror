@@ -42,12 +42,12 @@ func (m *machine) loadVectorWords() error {
 	m.addGoWord("vec-each",
 		" ( vec quot -- .. ) ",
 		GoWord(func(m *machine) error {
-			quot := m.popValue().(*quotation).toCode()
+			quot := m.popValue().(*quotation)
 			vect := m.popValue().(Array)
 			for _, elem := range vect {
 				m.pushValue(elem)
-				quot.idx = 0
-				err := m.execute(quot)
+				m.pushValue(quot)
+				err := m.executeQuotation()
 				if err != nil {
 					return err
 				}

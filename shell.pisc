@@ -1,0 +1,29 @@
+
+: ls ( -- ) list-files [ print ] vec-each ;
+
+: shell-module ( quot -- )
+	<vector> :pathhist
+	[ $pathhist pwd vec-append :pathhist ] :pushd
+	[ $pathhist vec-popback swap :pathhist ] :popd
+
+	<dict> dup :sh 
+	[ list-files [ print ] vec-each ] -:ls
+	#TODO: This command seems to not be working?
+	[ list-files 
+		[ 
+			dup -$mode "d" str-contains [ print ] [ drop ] if 
+		] vec-each 
+	] -:lsd 
+	[ pushd ".." cd ] -:up
+	[ pushd cd ] -:cd
+	[ popd cd ] -:back
+	[ filepath>string ] -:cat
+	[ "\n" str-count ] -:wcl
+	[ "PATH" getenv ] -:PATH
+	[ getenv ] -:env
+	[ [ -$mode "d" str-contains ] ] -:is-dir
+	[ "Shell 0.1" ] -:modname
+;
+
+# use this to set the shell as the withscope
+: use-shell ( -- ) shell-module "_with" set-local ;

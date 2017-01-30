@@ -42,7 +42,8 @@ This is the growing standard library of PISC.
 "math.pisc" import
 "random.pisc" import
 "debug.pisc" import
-
+"with.pisc" import
+"shell.pisc" import
 
 
 /* Stack shufflers */
