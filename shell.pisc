@@ -8,7 +8,6 @@
 
 	<dict> dup :sh 
 	[ list-files [ print ] vec-each ] -:ls
-	#TODO: This command seems to not be working?
 	[ list-files 
 		[ 
 			dup -$mode "d" str-contains [ print ] [ drop ] if 
