@@ -49,12 +49,13 @@ func (m *machine) loadBoltWords() error {
 		return nil
 	}))
 
-	m.addGoWord("save-str", " ( val key -- ) ",
+	m.addGoWord("save-str", " ( key val -- ) ",
 		GoWord(func(m *machine) error {
-			key := m.popValue().String()
 			val := m.popValue().String()
+			key := m.popValue().String()
 			return m.db.Set("strings", key, val)
 		}))
+
 	m.addGoWord("load-str", " ( key -- val ) ",
 		GoWord(func(m *machine) error {
 			key := m.popValue().String()
@@ -66,6 +67,75 @@ func (m *machine) loadBoltWords() error {
 			m.pushValue(String(val))
 			return nil
 		}))
+
+	m.addGoWord("with-bucket", " ( str quot -- .. ) ", GoWord(func(m *machine) error {
+		quot := m.popValue().(*quotation)
+		bucketName := m.popValue().String()
+		tx, err := m.db.Begin(true)
+		if err != nil {
+			return err
+		}
+		defer tx.Rollback()
+		dict := make(Dict)
+
+		// ( key val -- )
+		dict["put-int"] = GoFunc(func(m *machine) error {
+			val := m.popValue().(Integer)
+			fmt.Println("value?", val)
+			key := m.popValue().String()
+			tx.Set(bucketName, key, int(val))
+			return nil
+		})
+
+		// ( key -- val )
+		dict["get-int"] = GoFunc(func(m *machine) error {
+			var val int
+			key := m.popValue().String()
+			err := tx.Get(bucketName, key, &val)
+			if err == storm.ErrNotFound {
+				err = nil
+				val = 0
+			}
+			if err != nil {
+				return err
+			}
+			m.pushValue(Integer(val))
+			return nil
+		})
+
+		// ( key val -- )
+		dict["put-str"] = GoFunc(func(m *machine) error {
+			val := m.popValue().String()
+			key := m.popValue().String()
+			return tx.Set(bucketName, key, val)
+		})
+
+		// ( key -- val )
+		dict["get-str"] = GoFunc(func(m *machine) error {
+			var val string
+			key := m.popValue().String()
+			err := tx.Get(bucketName, key, &val)
+			if err == storm.ErrNotFound {
+				err = nil
+				val = ""
+			}
+			if err != nil {
+				return err
+			}
+			m.pushValue(String(val))
+			return nil
+		})
+
+		m.pushValue(dict)
+		m.pushValue(quot)
+		err = m.executeString("with", quot.toCode().codePositions[0])
+		if err != nil {
+			return err
+		} else {
+			tx.Commit()
+			return nil
+		}
+	}))
 
 	// TODO: Implement individual DBs..
 	/*
