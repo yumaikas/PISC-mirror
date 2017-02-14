@@ -7,7 +7,8 @@
 	[ $pathhist vec-popback swap :pathhist ] :popd
 
 	<dict> dup :sh 
-	[ list-files [ print ] vec-each ] -:ls
+	[ list-files ] -:ls
+	[ list-files [ print ] vec-each ] -:dir
 	[ list-files 
 		[ 
 			dup -$mode "d" str-contains [ print ] [ drop ] if 
@@ -18,11 +19,28 @@
 	[ popd cd ] -:back
 	[ filepath>string ] -:cat
 	[ "\n" str-count ] -:wcl
-	[ "PATH" getenv ] -:PATH
-	[ getenv ] -:env
+	[ "PATH" env-get ] -:PATH
+	[ env-get ] -:env
 	[ [ -$mode "d" str-contains ] ] -:is-dir
 	[ "Shell 0.1" ] -:modname
 ;
+
+: awk-init ( options -- .. )
+	[ ] :BEGIN
+	[ ] :END
+	"\t" :IFS 
+	"\n" :OFS
+	"" :0
+	t :needs-split
+	<vector> :line
+	[ ] :reset-for-line
+	[ :ii $ii $line len >= [ "" ] [ $line $ii vec-at ] if ] :line-at
+	[ $needs-split [ $0 $IFS str-split :line ] when ] :ensure-split
+	[ ensure-split  ] :1
+	<dict>
+	[ :BEGIN ] -:BEGIN
+	[ :END ] -:END
+ ;
 
 # use this to set the shell as the withscope
 : use-shell ( -- ) shell-module "_with" set-local ;
