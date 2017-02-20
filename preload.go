@@ -1,6 +1,7 @@
 package main
 
 import "fmt"
+import "reflect"
 
 // GoWord a wrapper for functions that implement pieces of PISC
 type GoWord func(*machine) error
@@ -18,47 +19,92 @@ func (m *machine) addGoWord(name, docstring string, impl GoWord) {
 	m.predefinedWords[name] = impl
 }
 
+func t(m *machine) error {
+	m.pushValue(Boolean(true))
+	return nil
+}
+
+func f(m *machine) error {
+	m.pushValue(Boolean(false))
+	return nil
+}
+
+func dip(m *machine) error {
+	quot := m.popValue().(*quotation).toCode()
+	a := m.popValue()
+	err := m.execute(quot)
+	if err != nil {
+		return err
+	}
+	m.pushValue(a)
+	return nil
+}
+
+func pickDup(m *machine) error {
+	distBack := int(m.popValue().(Integer))
+	if distBack > len(m.values)+1 {
+		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.values))
+	}
+	m.pushValue(m.values[len(m.values)-distBack-1])
+	return nil
+}
+
+func pickDrop(m *machine) error {
+	distBack := int(m.popValue().(Integer))
+	if distBack > len(m.values)+1 {
+		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.values))
+	}
+	valIdx := len(m.values) - distBack - 1
+	val := m.values[valIdx]
+	m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
+	m.pushValue(val)
+	return nil
+}
+
+func pickDel(m *machine) error {
+	distBack := int(m.popValue().(Integer))
+	if distBack > len(m.values)+1 {
+		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.values))
+	}
+	valIdx := len(m.values) - distBack - 1
+	m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
+	return nil
+}
+
+func lenEntry(m *machine) error {
+	length := m.popValue().(lenable).Length()
+	m.pushValue(Integer(length))
+	return nil
+}
+
+func errorFromEntry(m *machine) error {
+	msg := m.popValue().String()
+	return fmt.Errorf(msg)
+}
+
+func reflectEq(m *machine) error {
+	a := m.popValue()
+	b := m.popValue()
+	m.pushValue(Boolean(reflect.DeepEqual(a, b)))
+	return nil
+}
+
 func (m *machine) loadPredefinedValues() {
 	if m.predefinedWords == nil {
 		panic("Uninitialized stack machine!")
 	}
-	m.predefinedWords["t"] = NilWord(func(m *machine) {
-		m.pushValue(Boolean(true))
-	})
-	m.predefinedWords["f"] = NilWord(func(m *machine) {
-		m.pushValue(Boolean(false))
-	})
-	m.predefinedWords["dip"] = NilWord(func(m *machine) {
-		quot := m.popValue().(*quotation).toCode()
-		a := m.popValue()
-		m.execute(quot)
-		m.pushValue(a)
-	})
-	m.predefinedWords["pick-dup"] = NilWord(func(m *machine) {
-		distBack := int(m.popValue().(Integer))
-		m.pushValue(m.values[len(m.values)-distBack-1])
-	})
-	m.predefinedWords["pick-drop"] = NilWord(func(m *machine) {
-		distBack := int(m.popValue().(Integer))
-		valIdx := len(m.values) - distBack - 1
-		val := m.values[valIdx]
-		m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
-		m.pushValue(val)
-	})
-	m.predefinedWords["pick-del"] = NilWord(func(m *machine) {
-		distBack := int(m.popValue().(Integer))
-		valIdx := len(m.values) - distBack - 1
-		m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
-	})
-	m.predefinedWords["len"] = NilWord(func(m *machine) {
-		length := m.popValue().(lenable).Length()
-		m.pushValue(Integer(length))
-	})
+	m.addGoWord("t", "( -- t )", GoWord(t))
+	m.addGoWord("f", "( -- f )", GoWord(f))
+	m.addGoWord("dip", "( a quot -- ... a )", GoWord(dip))
+	m.predefinedWords["pick-dup"] = GoWord(pickDup)
+	m.predefinedWords["pick-drop"] = GoWord(pickDrop)
+	m.predefinedWords["pick-del"] = GoWord(pickDel)
+	m.addGoWord("len", "( e -- lenOfE ) ", GoWord(lenEntry))
 
-	m.addGoWord("error", "( msg -- !! )", GoWord(func(m *machine) error {
-		msg := m.popValue().String()
-		return fmt.Errorf(msg)
-	}))
+	m.addGoWord("eq", " ( a b -- same? ) ", GoWord(runEq))
+	// Discourage use of reflection based eq via long name
+	m.addGoWord("deep-slow-reflect-eq", "( a b -- same? )", GoWord(reflectEq))
+	m.addGoWord("error", "( msg -- !! )", GoWord(errorFromEntry))
 
 	m.loadDebugWords()
 	m.loadLocalWords()
