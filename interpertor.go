@@ -80,15 +80,6 @@ func (m *machine) popValue() stackEntry {
 		panic("Data underflow")
 	}
 
-	// Allow pieces of the stack to be GCd?
-	/*
-		if cap(m.values) > 4*len(m.values) {
-			fmt.Println("Copying stack for GC purposes")
-			dest := make([]stackEntry, len(m.values))
-			copy(m.values[:], dest[:])
-			m.values = dest
-		}
-	*/
 	popped := m.values[len(m.values)-1]
 	// Snip the length of value
 	m.values = m.values[:len(m.values)-1]
