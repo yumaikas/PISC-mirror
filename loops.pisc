@@ -1,6 +1,0 @@
-/*
-Loops.pisc
-*/
-
-:DOC times ( n quot -- .. ) Execute `quot` n times ;
-:DOC while ( pred quot -- .. ) Execute `quot` while `pred` leaves `t` ;
