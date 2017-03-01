@@ -63,24 +63,45 @@ func makeReader(reader PISCReader) Dict {
 	return file
 }
 
+func importPISC(m *machine) error {
+	fileName := m.popValue().(String)
+	data, err := ioutil.ReadFile(string(fileName))
+	if err != nil {
+		return err
+	}
+	// Reading in the data
+	code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(fileName)})
+	if err != nil {
+		return err
+	}
+	err = m.execute(code)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func importAssetPISC(m *machine) error {
+	fileName := m.popValue().(String)
+	data, err := Asset(string(fileName))
+	if err != nil {
+		return err
+	}
+	// Reading in the data
+	code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(fileName)})
+	if err != nil {
+		return err
+	}
+	err = m.execute(code)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (m *machine) loadIOWords() error {
-	m.predefinedWords["import"] = GoWord(func(m *machine) error {
-		fileName := m.popValue().(String)
-		data, err := ioutil.ReadFile(string(fileName))
-		if err != nil {
-			return err
-		}
-		// Reading in the data
-		code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(fileName)})
-		if err != nil {
-			return err
-		}
-		err = m.execute(code)
-		if err != nil {
-			return err
-		}
-		return nil
-	})
+	m.addGoWord("import", "( file-path -- )", GoWord(importPISC))
+	m.addGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
 
 	m.predefinedWords["filepath>string"] = GoWord(func(m *machine) error {
 		fileName := m.popValue().(String)

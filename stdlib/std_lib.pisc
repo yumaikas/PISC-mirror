@@ -31,19 +31,19 @@ This is the growing standard library of PISC.
 :DOC import ( filepath -- .. ) `import` current takes a file path, and attempts to execute the file at that relative file path. ;
 
 
-"loops.pisc" import
-"bools.pisc" import 
-"strings.pisc" import
-"locals.pisc" import
-"io.pisc" import
-"dicts.pisc" import
-"vectors.pisc" import
-"symbols.pisc" import
-"math.pisc" import
-"random.pisc" import
-"debug.pisc" import
-"with.pisc" import
-"shell.pisc" import
+"stdlib/loops.pisc" import-asset
+"stdlib/bools.pisc" import-asset
+"stdlib/strings.pisc" import-asset
+"stdlib/locals.pisc" import-asset
+"stdlib/io.pisc" import-asset
+"stdlib/dicts.pisc" import-asset
+"stdlib/vectors.pisc" import-asset
+"stdlib/symbols.pisc" import-asset
+"stdlib/math.pisc" import-asset
+"stdlib/random.pisc" import-asset
+"stdlib/debug.pisc" import-asset
+"stdlib/with.pisc" import-asset
+"stdlib/shell.pisc" import-asset
 
 
 /* Stack shufflers */

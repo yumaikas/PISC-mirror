@@ -35,6 +35,10 @@ func main() {
 			Name:  "command, c",
 			Usage: "Expressions to run from the command line, before -i, if it exists",
 		},
+		cli.StringFlag{
+			Name:  "file, f",
+			Usage: "Execute a file as a bit of pisc",
+		},
 		cli.BoolFlag{
 			Name:   "benchmark",
 			Hidden: true,
@@ -102,6 +106,12 @@ func handleFlags(ctx *cli.Context) {
 			log.Fatal("Error in command: ", err)
 		}
 		m.execute(p)
+	}
+	if ctx.IsSet("file") {
+		m.pushValue(String(ctx.String("file")))
+		m.executeString("import", codePosition{
+			source: "argument line",
+		})
 	}
 	if ctx.IsSet("interactive") {
 		loadInteractive(m)
