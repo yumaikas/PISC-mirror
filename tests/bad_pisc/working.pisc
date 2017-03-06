@@ -1,0 +1,5 @@
+#!  /usr/local/pisc -f
+: foo ( -- ) "I am a thing" print 
+;
+
+1 .

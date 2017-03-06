@@ -1,0 +1,17 @@
+/* Tests for various bits of PISC */
+
+:DOC assert ( message quot1 quot2 -- ) 
+	Use eq to assert that both quotations result in the same test result
+;
+: assert ( message quot1 quot2 -- ) :q2 :q1 :msg
+ 	{ q1 } { q2 } eq not [ $msg error ] if 
+;
+
+:DOC assert-deep-slow ( message quot1 quot2 -- ) 
+	Use deep-slow-reflect-eq to assert both quotoations result in the same test result 
+;
+
+: assert-deep-slow ( message quot1 quot2 -- ) 
+	:q2 :q1 :msg 
+ 	{ q1 } { q2 } deep-slow-reflect-eq not [ $msg error ] if 
+;
