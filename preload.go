@@ -129,4 +129,5 @@ func (m *machine) loadPredefinedValues() {
 	if err != nil {
 		panic("Error loading standard library! " + err.Error())
 	}
+	xLOG = true
 }

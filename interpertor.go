@@ -141,6 +141,9 @@ func (i intPusher) pushInt(m *machine) error {
 
 // Both of the functions below are non-idomatic shenanegains, but chould present some pretty large gains...
 func tryParseInt(w *word, intVal *int) bool {
+	if len(w.str) <= 0 {
+		return false
+	}
 	// This is a very easy early exit oppurtunity for this function.
 	if !strings.ContainsRune("0123456789-+", rune(w.str[0])) {
 		return false
@@ -160,6 +163,9 @@ func (f floatPusher) pushFloat(m *machine) error {
 	return nil
 }
 func tryParseFloat(w *word, floatVal *float64) bool {
+	if len(w.str) <= 0 {
+		return false
+	}
 	// This is a very easy early exit oppurtunity for this function.
 	if !strings.ContainsRune("0123456789-+", rune(w.str[0])) {
 		return false
@@ -190,6 +196,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 	defer func() {
 		p.idx = old_idx
 	}()
+	// TODO: Should this even be here?
 	defer func() {
 		pErr := recover()
 		if pErr != nil {
