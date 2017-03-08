@@ -99,6 +99,12 @@ func handleFlags(ctx *cli.Context) {
 		pprof.StopCPUProfile()
 		return
 	}
+	if ctx.IsSet("file") {
+		m.pushValue(String(ctx.String("file")))
+		m.executeString("import", codePosition{
+			source: "argument line",
+		})
+	}
 	if ctx.IsSet("command") {
 		line := ctx.String("command")
 		p, err := stringToQuotation(line, codePosition{source: "args"})
@@ -106,12 +112,6 @@ func handleFlags(ctx *cli.Context) {
 			log.Fatal("Error in command: ", err)
 		}
 		m.execute(p)
-	}
-	if ctx.IsSet("file") {
-		m.pushValue(String(ctx.String("file")))
-		m.executeString("import", codePosition{
-			source: "argument line",
-		})
 	}
 	if ctx.IsSet("interactive") {
 		loadInteractive(m)
