@@ -28,3 +28,5 @@
  :PRE . ( dict key -- .. ) dict-get call ;
 
 : quot>dict ( quot -- dict ) get-locals call <dict> [ dict-set ] each-local drop-locals ;
+
+: dict-keys ( dict -- keysvec ) { push-dict-keys } ;

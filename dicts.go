@@ -32,12 +32,11 @@ func (m *machine) loadDictWords() error {
 		key := m.popValue().(String).String()
 		m.pushValue(m.popValue().(Dict)[key])
 	})
-	m.predefinedWords["dict-keys"] = NilWord(func(m *machine) {
+
+	m.predefinedWords["push-dict-keys"] = NilWord(func(m *machine) {
 		dic := m.popValue().(Dict)
-		// Rely on random key ordering
 		for k, _ := range dic {
 			m.pushValue(String(k))
-			break
 		}
 	})
 
