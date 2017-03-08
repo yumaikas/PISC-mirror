@@ -459,16 +459,14 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 					m.pushValue(String(nonPrefix))
 					return m.execute(prefixFunc)
 				}
-			} else if err = m.tryLocalWord(wordVal); err == LocalFuncRun {
+			} else if err = m.tryLocalWord(wordVal); err == LocalFuncRun || err == WordNotFound {
+				if err == WordNotFound {
+					return p.wrapError(fmt.Errorf("Undefined word: %v, %v", wordVal, err))
+				}
 				err = nil
-				fmt.Println("Ran local word")
 			} else {
-				err = p.wrapError(fmt.Errorf("Undefined word: %v, %v", wordVal, err))
+				return p.wrapError(err)
 			}
-			// Evaluate a defined word, or complain if a word is not defined.
-
-			// Plan of attack: Expand word definition, and push terms into current spot on stack.
-			// Hrm....
 		}
 		if err != nil {
 			// TODO: add some ways to debug here....
@@ -481,6 +479,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 
 var ErrNoLocals = fmt.Errorf("No locals to try !")
 var LocalFuncRun = fmt.Errorf("Nothing was wrong")
+var WordNotFound = fmt.Errorf("word was undefined")
 
 func (c *quotation) execute(m *machine) error {
 	return m.execute(c.inner)
@@ -491,21 +490,19 @@ func (m *machine) tryLocalWord(w *word) error {
 	if len(m.locals) > 0 {
 		if localFunc, found := m.locals[len(m.locals)-1][w.str]; found {
 			if fn, ok := localFunc.(*quotation); ok {
-				w.impl = fn.execute
-				err := w.impl(m)
+				err := fn.execute(m)
 				if err != nil {
 					return err
 				}
 				return LocalFuncRun
 			} else if fn, ok := localFunc.(GoFunc); ok {
-				fmt.Println("HEX")
-				w.impl = GoWord(fn)
+				// fmt.Println("HEX")
 				err := fn(m)
 				if err != nil {
 					return err
 				}
 			} else {
-				return fmt.Errorf("value is not a word")
+				return WordNotFound
 			}
 			return LocalFuncRun
 		} else {
@@ -693,9 +690,10 @@ func (m *machine) executeQuotation() error {
 	if q, ok := quoteVal.(*quotation); ok {
 		// q.inner = q.inner.cloneCode()
 		m.locals = append(m.locals, q.locals)
-		m.execute(q.toCode())
+		err := m.execute(q.toCode())
 		m.locals = m.locals[:len(m.locals)-1]
-		return nil
+		// Works if the err is nil or
+		return err
 	} else if q, ok := quoteVal.(GoFunc); ok {
 		return q(m)
 
