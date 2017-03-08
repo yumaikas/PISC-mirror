@@ -38,6 +38,7 @@ func vecEach(m *machine) error {
 		m.pushValue(quot)
 		err := m.executeQuotation()
 		if err != nil {
+			fmt.Println("ERROR HAPPENED")
 			return err
 		}
 	}
