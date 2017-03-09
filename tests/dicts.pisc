@@ -1,0 +1,19 @@
+# Importing the test core
+"tests/test_root.pisc" import
+
+"Dictionaries" <test-suite> :dict-suite
+
+"Basic functions" [
+	<dict> :subject
+	"Stack is left empty after dict-set" 
+		[ $subject 1 "a" dict-set ] [ ] assert
+	"Key can be retrived" 
+		[ $subject "a" dict-get ] [ 1 ] assert
+	"Key can have value checked" 
+		[ $subject "a" dict-has-key? ] [ t ] assert
+	"Non-existing keys are reported properly"
+		[ $subject "b" dict-has-key? ] [ f ] assert
+] $dict-suite .addTest
+
+
+$dict-suite .runTests
