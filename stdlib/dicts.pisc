@@ -4,9 +4,9 @@
 
 /* :DOC dict-get-many ( dict quot --  )  Get a value from the dictionary for each word in a quotation  ; */
 
-/* Does this dict have this key? */ : dict-has-key? ( dict key -- dict bool ) "dict-has-key" extern-call ;
+/* Does this dict have this key? */ 
 
-:DOC dict-set ( dict key set -- dict )  Set the key to the value, leaving the dict on the stack  ;
+:DOC dict-set ( dict value key -- dict )  Set the key to the value, leaving the dict on the stack  ;
 
 :DOC dict-get ( dict key -- value )  Get the value from the dictionary  ;
 

@@ -11,7 +11,7 @@ func (m *machine) loadDictWords() error {
 	})
 
 	// ( dict key -- bool )
-	m.predefinedWords["dict-has-key"] = NilWord(func(m *machine) {
+	m.predefinedWords["dict-has-key?"] = NilWord(func(m *machine) {
 		key := m.popValue().(String).String()
 		dict := m.popValue().(Dict)
 		_, ok := dict[key]
