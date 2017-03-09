@@ -203,7 +203,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			retErr = fmt.Errorf("%s", pErr)
 		}
 		if retErr != nil {
-			fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
+			// fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
 		}
 	}()
 	for err == nil {
@@ -392,7 +392,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				inner:  __quot,
 				locals: m.locals[len(m.locals)-1],
 			}
-			_quotation.locals = m.locals[len(m.locals)-1]
+			// _quotation.locals = m.locals[len(m.locals)-1]
 			m.pushValue(_quotation)
 
 		case isMathWord(*wordVal):
@@ -490,7 +490,11 @@ func (m *machine) tryLocalWord(w *word) error {
 	if len(m.locals) > 0 {
 		if localFunc, found := m.locals[len(m.locals)-1][w.str]; found {
 			if fn, ok := localFunc.(*quotation); ok {
+				// Push the locals on
+				m.locals = append(m.locals, fn.locals)
 				err := fn.execute(m)
+				// Take the local off
+				m.locals = m.locals[:len(m.locals)-1]
 				if err != nil {
 					return err
 				}
