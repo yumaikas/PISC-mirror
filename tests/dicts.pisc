@@ -1,9 +1,10 @@
 # Importing the test core
 "tests/test_root.pisc" import
 
-"Dictionaries" <test-suite> :dict-suite
+"Dictionary and lexical closure" <test-suite> :dict-suite
 
 "Basic functions" [
+	get-locals  /* Make sure we don't pollute global scope */
 	<dict> :subject
 	"Stack is left empty after dict-set" 
 		[ $subject 1 "a" dict-set ] [ ] assert
@@ -13,7 +14,51 @@
 		[ $subject "a" dict-has-key? ] [ t ] assert
 	"Non-existing keys are reported properly"
 		[ $subject "b" dict-has-key? ] [ f ] assert
+
+	$subject 2 "q" dict-set
+
+	"Getting the keys returns all the keys" 
+		[ $subject dict-keys len ] [ 2 ] assert
+	drop-locals
 ] $dict-suite .addTest
 
+"Prefix tests" [ 
+	get-locals
+
+	-%abwq :char-set
+
+	"Each char in the char-set is set to true" 
+		[ 
+			$char-set -$a
+			$char-set -$b and
+			$char-set -$w and 
+			$char-set -$q and
+		] [ t ] assert
+
+		"test" -:1
+		"of" -:2
+		"ensuring" -:3 
+	:seq-dict
+
+	"Ensuring a dictionary on the stack works" 
+		[ 
+			${ $seq-dict -$1 $seq-dict -$2  $seq-dict -$3 }
+		] [ "testofensuring" ] assert
+
+	<dict> dup :self
+		0 -:count
+		[ $self dup -$count 1 + -:count drop ] -:incr
+		[ $self dup -$count 1 - -:count drop ] -:decr
+		drop /* take the running definition off the stack */
+
+	"State tracking also works" 
+		[ $self .incr $self -$count ] [ 1 ] assert
+
+	"Further state tracking"
+		[ 3 [ $self .decr ] times $self -$count ] [ -2 ] assert
+
+
+	drop-locals
+] $dict-suite .addTest
 
 $dict-suite .runTests
