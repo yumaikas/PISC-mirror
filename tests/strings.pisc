@@ -1,0 +1,25 @@
+"tests/test_root.pisc" import
+
+"String basics" <test-suite> :string-suite
+
+"Concatenation and joins" [
+	"\"a\" and \"b\" concat to \"ab\""
+		[ "a" "b" concat ] [ "ab" ] assert
+	"\"Longer\" \"strings\" concat to \"Longerstrings\""
+		[ "Longer" "strings" concat ] [ "Longerstrings" ] assert
+	"Arrays of strings concat as expected" 
+		[ { "one" "two" "three" } "-" str-join ] [ "one-two-three" ] assert
+] $string-suite .addTest
+
+"Conversions of types" [
+	"12" [ 12 >string ] [ "12" ] assert
+	"-14" [ -14 >string ] [ "-14" ] assert
+	"34.2" [ 34.2 >string ] [ "34.2" ] assert
+	# TODO: consider finding a more self-representative 
+	# way of converting collections to strings
+	"{ 1 2 3 }" [ { 1 2 3 } >string ] [ "[1 2 3]" ] assert
+	"-%abc" [ -%abc >string ] [ "map[a:t b:t c:t]" ] assert
+
+] $string-suite .addTest
+
+$string-suite .runTests
