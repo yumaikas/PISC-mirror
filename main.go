@@ -63,6 +63,7 @@ func initMachine() *machine {
 
 func handleFlags(ctx *cli.Context) {
 	m := initMachine()
+	m.logAndResetDispatchCount(os.Stderr)
 	// Execute this before benchmarking since we aren't yet benchmarking file loads
 	if ctx.IsSet("benchmark") {
 		err := m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
@@ -101,9 +102,13 @@ func handleFlags(ctx *cli.Context) {
 	}
 	if ctx.IsSet("file") {
 		m.pushValue(String(ctx.String("file")))
-		m.executeString("import", codePosition{
+		err := m.executeString("import", codePosition{
 			source: "argument line",
 		})
+		if err != nil {
+			log.Fatal("Error running file")
+		}
+		m.logAndResetDispatchCount(os.Stderr)
 	}
 	if ctx.IsSet("command") {
 		line := ctx.String("command")
@@ -111,7 +116,11 @@ func handleFlags(ctx *cli.Context) {
 		if err != nil {
 			log.Fatal("Error in command: ", err)
 		}
-		m.execute(p)
+		err = m.execute(p)
+		if err != nil {
+			log.Fatal("Error in command: ", err)
+		}
+		m.logAndResetDispatchCount(os.Stderr)
 	}
 	if ctx.IsSet("interactive") {
 		loadInteractive(m)
@@ -171,6 +180,7 @@ Code`)
 			fmt.Println(err.Error())
 			return
 		}
+		m.logAndResetDispatchCount(os.Stderr)
 		fmt.Fprintln(os.Stderr, "Data Stack:")
 		for _, val := range m.values {
 			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))

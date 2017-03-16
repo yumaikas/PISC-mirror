@@ -61,8 +61,14 @@ type machine struct {
 	helpDocs map[string]string
 
 	// Each time we are asked for a symbol, supply the value here, then increment
-	symbolIncr int64
-	db         *storm.DB
+	symbolIncr    int64
+	db            *storm.DB
+	numDispatches int64
+}
+
+func (m *machine) logAndResetDispatchCount(w io.Writer) {
+	fmt.Fprintln(w, m.numDispatches, "dispatches have occured")
+	m.numDispatches = 0
 }
 
 //TODO: Optimize append pattern?
@@ -215,6 +221,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 		if err != nil {
 			return err
 		}
+		m.numDispatches++
 		var intVal int
 		var floatVal float64
 		switch {
