@@ -40,7 +40,7 @@ seed-rand-time
 : add-trigram ( trigrams key value -- ) 
 	:value :key :trigrams
 	# ${ $key "|" $value "|" $trigrams $key dict-has-key } print
-	$trigrams $key dict-has-key [
+	$trigrams $key dict-has-key? [
 		/* Add the element to the vector */
 		$trigrams $key dict-get :old
 		$old $value vec-append :new
@@ -76,7 +76,7 @@ seed-rand-time
 : text-of-trigrams ( trigrams -- text ) 
 	dup :trigrams dict-rand-key " " str-split :text
 	$text last-pair :key
-	[ $trigrams $key dict-has-key ] [
+	[ $trigrams $key dict-has-key? ] [
 	     $text $trigrams $key dict-get choice vec-append :text
 	     $text last-pair :key
 	] while
