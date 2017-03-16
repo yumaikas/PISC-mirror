@@ -32,18 +32,15 @@
 
 : <test-suite> ( name -- suite ) 
 	<vector> :tests
+
 	<dict> dup :self
-		swap -:name
-
-		[ $tests ] -:tests
-
+		swap <<-name
+		[ $tests ] <<-tests
 		/* ( name quot -- ) */
-		[ 2vector $tests swap vec-append :tests ] -:addTest
+		[ 2vector $tests swap vec-append :tests ] <<-addTest
 
 		[ 
-			${ "Running the " $self -$name " tests" } print
+			${ "Running the " $self ->name " tests" } print
 			$tests [ splat run-single-test ] vec-each
-		] -:runTests
+		] <<-runTests
 ;
-
-# "math.pisc" import

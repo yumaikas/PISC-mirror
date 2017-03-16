@@ -2,6 +2,6 @@
 : <counter> ( val -- counter ) 
 	dup :val :orig
 	<dict> 
-		[ $val 1 - dup :val 0 > ] -:down
-		[ $orig :val ] -:reset 
+		[ $val 1 - dup :val 0 > ] <<-down
+		[ $orig :val ] <<-reset 
 ;

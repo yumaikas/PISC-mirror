@@ -6,12 +6,16 @@
 "Basic functions" [
 	get-locals  /* Make sure we don't pollute global scope */
 	<dict> :subject
+	
 	"Stack is left empty after dict-set" 
 		[ $subject 1 "a" dict-set ] [ ] assert
+
 	"Key can be retrived" 
 		[ $subject "a" dict-get ] [ 1 ] assert
+
 	"Key can have value checked" 
 		[ $subject "a" dict-has-key? ] [ t ] assert
+
 	"Non-existing keys are reported properly"
 		[ $subject "b" dict-has-key? ] [ f ] assert
 
@@ -29,33 +33,31 @@
 
 	"Each char in the char-set is set to true" 
 		[ 
-			$char-set -$a
-			$char-set -$b and
-			$char-set -$w and 
-			$char-set -$q and
+			$char-set ->a
+			$char-set ->b and
+			$char-set ->w and 
+			$char-set ->q and
 		] [ t ] assert
 
-		"test" -:1
-		"of" -:2
-		"ensuring" -:3 
-	:seq-dict
 
-	"Ensuring a dictionary on the stack works" 
-		[ 
-			${ $seq-dict -$1 $seq-dict -$2  $seq-dict -$3 }
-		] [ "testofensuring" ] assert
+	<dict> dup :triangle
+		4 <<-a
+		5 <<-b
+		3 <-c
+
+	"Testing <<- and ->>" [ $triangle ->>a ->>b ->c ] [ 4 5 3 ] assert
+
 
 	<dict> dup :self
-		0 -:count
-		[ $self dup -$count 1 + -:count drop ] -:incr
-		[ $self dup -$count 1 - -:count drop ] -:decr
-		drop /* take the running definition off the stack */
+		0 <<-count
+		[ $self dup ->count 1 + <-count ] <<-incr
+		[ $self dup ->count 1 - <-count ] <-decr
 
 	"State tracking also works" 
-		[ $self .incr $self -$count ] [ 1 ] assert
+		[ $self .incr $self ->count ] [ 1 ] assert
 
 	"Further state tracking"
-		[ 3 [ $self .decr ] times $self -$count ] [ -2 ] assert
+		[ 3 [ $self .decr ] times $self ->count ] [ -2 ] assert
 
 
 	drop-locals

@@ -15,15 +15,19 @@
 : ensure-dictionary ( .. -- dict ) dict-if-empty-stack dict-if-not-dict ;
 
 /* Fetch from dictionary */
- :PRE -$ ( dict key -- val ) dict-get ;
+ :PRE -> ( dict key -- val ) dict-get ;
+ :PRE ->> ( dict key -- val dict ) [ dup :d ] dip dict-get $d ;
 
-/* Set dictionary value, and set option (in the tradition of shells) */
- :PRE -: ( dict? val key -- dict ) [ [ ensure-dictionary dup :dict ] dip ] dip dict-set $dict ;
+/* Set the key for a given dictinoary value, but leave the dictionary on the stack */
+ :PRE <<- ( dict val key -- dict )  [ [ dup :dict ] dip ] dip dict-set $dict ;
+ :PRE <- ( dict val key -- ) dict-set ;
+
+/* :PRE <-$ ( dict val key -- ) get-local dict-set ; */
 
 /*  Set an entry to true for each unicode character in this string */
  :PRE -% ( dict? key -- dict ) [ ensure-dictionary ] dip [ :dict ] dip [ $dict swap t swap dict-set ] each-char $dict ;
 
- :PRE -? ( dict key -- dict ? ) dict-has-key? ;
+ :PRE ->? ( dict key -- dict ? ) dict-has-key? ;
 
  :PRE . ( dict key -- .. ) dict-get call ;
 
