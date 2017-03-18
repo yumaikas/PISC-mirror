@@ -61,7 +61,8 @@ type machine struct {
 	helpDocs map[string]string
 
 	// Each time we are asked for a symbol, supply the value here, then increment
-	symbolIncr    int64
+	symbolIncr int64
+	// Keep a default database around...
 	db            *storm.DB
 	numDispatches int64
 }
