@@ -2,6 +2,18 @@ package main
 
 // "strings"
 
+var ModDictionaryCore = PISCModule{
+	Author:  "Andrew Owen",
+	Name:    "DictionaryCore",
+	License: "MIT", // TODO: Clarify here
+	Load:    loadDictMod,
+	// Possible: indicate PISC files to be loaded?
+}
+
+func loadDictMod(m *machine) error {
+	return m.loadDictWords()
+}
+
 func (m *machine) loadDictWords() error {
 
 	// Push a dictionary to the stack.

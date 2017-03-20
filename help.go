@@ -5,9 +5,22 @@ import (
 	"strings"
 )
 
+// TODO: Indicate deps modules?
+var ModHelpCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "HelpCore",
+	License:   "MIT",
+	DocString: "TODO: Fill this in",
+	Load:      loadHelpModule,
+}
+
+func loadHelpModule(m *machine) error {
+	return m.loadHelpWords()
+}
+
 // These are the help words
 
-func (m *machine) loadHelpWords() {
+func (m *machine) loadHelpWords() error {
 	// ( val name -- )
 	m.predefinedWords["help"] = GoWord(func(m *machine) error {
 		searchTerm := m.popValue().(String).String()
@@ -23,5 +36,7 @@ func (m *machine) loadHelpWords() {
 			return nil
 		}
 	})
+
+	return nil
 
 }

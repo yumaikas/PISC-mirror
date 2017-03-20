@@ -30,6 +30,26 @@ type word struct {
 	impl GoWord
 }
 
+// PISCModule The type for a function that extends PISC via adding words
+type PISCModule struct {
+	Author    string
+	Name      string
+	License   string
+	DocString string
+	Load      func(m *machine) error
+}
+
+// LoadModules Load a bunch of modules into this instance of the VM
+func (m *machine) LoadModules(modules ...PISCModule) error {
+	for _, mod := range modules {
+		err := mod.Load(m)
+		if err != nil {
+
+		}
+	}
+	return nil
+}
+
 func (w word) String() string {
 	return w.str
 }
