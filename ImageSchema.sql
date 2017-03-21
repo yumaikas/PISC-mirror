@@ -1,5 +1,7 @@
--- This is the schemda for a PISC image
+-- TODO: I don't think I'm going to use this, at least for the known future
+-- TODO: BoltDB seems like a better fit for now.
 
+-- This was the schemda for a PISC image 
 
 Create Table vocabulary (
 	vocab_id INTEGER PRIMARY KEY,
@@ -28,6 +30,3 @@ Create Table word_documentation (
 Create Table kv_store (
 );
 
--------------------------------------------------
-Search: /\*([^*]+)\*/ : ([\w-]+) (\( [^)]+\)) [^;]+;
-Replace: :DOC \2 \3 \1 ;
