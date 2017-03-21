@@ -5,6 +5,18 @@ import (
 	"math"
 )
 
+var MathCore = PISCModule{
+	Author:    "Andreb Owen",
+	Name:      "MathCore",
+	License:   "MIT",
+	DocString: `Basic math stuff.`,
+	Load:      loadMathCore,
+}
+
+func loadMathCore(m *machine) error {
+	return m.loadHigherMathWords()
+}
+
 type number interface {
 	stackEntry
 	Add(number) number
@@ -14,18 +26,16 @@ type number interface {
 	LessThan(number) Boolean
 }
 
-func isMathWord(w word) bool {
-	return w.str == "+" ||
-		w.str == "-" ||
-		w.str == "*" ||
-		w.str == "/" ||
-		// w == "div" ||
-		w.str == "mod" ||
-		w.str == "<" ||
-		w.str == "zero?"
-}
-
 func (m *machine) loadHigherMathWords() error {
+
+	m.addGoWord("+", "( a b -- c )  addition", executeAdd)
+	m.addGoWord("-", " ( a b -- c ) subtraction ", executeSubtract)
+	m.addGoWord("*", " ( a b -- c ) multiplication ", executeMultiply)
+	m.addGoWord("/", " ( a b -- c ) division ", executeDivide)
+	m.addGoWord("mod", " ( a b -- c ) modulus ", executeModulus)
+	m.addGoWord("<", " ( a b -- c ) numeric less than ", executeLessThan)
+	m.addGoWord("zero?", " ( a -- isZero? ) returns if a is zero or not ", isZeroPred)
+
 	// Why do we duplicate the work here?
 	// Because we want both the >double word and the
 	// math1arg words
@@ -104,26 +114,6 @@ func isZeroPred(m *machine) error {
 		m.pushValue(Boolean(false))
 	}
 	return nil
-}
-
-func (m *machine) executeMathWord(w *word) error {
-	switch w.str {
-	case "+":
-		w.impl = executeAdd
-	case "-":
-		w.impl = executeSubtract
-	case "*":
-		w.impl = executeMultiply
-	case "/":
-		w.impl = executeDivide
-	case "<":
-		w.impl = executeLessThan
-	case "zero?":
-		w.impl = isZeroPred
-	case "mod":
-		w.impl = executeModulus
-	}
-	return w.impl(m)
 }
 
 func executeLessThan(m *machine) error {

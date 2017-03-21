@@ -1,12 +1,15 @@
 # This is the test section
 "tests/test_root.pisc" import
 
-"Math" <test-suite> :basic-suite
+"Math" <test-suite> :math-suite
+
+/* Little shortcut */
+[ $math-suite .addTest ] :test
 
 "Addition" [
 	"3 + 3 should be 6" [ 3 3 + ] [ 6 ] assert
 	"2 + 1 should be 3" [ 2 1 + ] [ 3 ] assert
- ] $basic-suite .addTest
+ ] test
 
 "Subtraction" [
 	"2 - 1 should be 1" [ 2 1 - ] [ 1 ] assert
@@ -14,11 +17,23 @@
 	"8 - 3 should be 5" [ 8 3 - ] [ 5 ] assert 
 	"8 - 3 should be 5" [ 8 3 - ] [ 5 ] assert 
 	"8 - 3 should be 5" [ 8 3 - ] [ 5 ] assert 
-] $basic-suite .addTest
+] test
 
-"phail" [
-	"this should have" /* failed */ [ 2 ] [ 4 ] assert
-] $basic-suite .addTest
+"Multiplication" [
+	"2 * 4 should be 8" [ 4 2 * ] [ 8 ] assert
+	"3.5 * 2 should be 7.0" [ 3.5 2 * ] [ 7.0 ] assert
+] test
 
-$basic-suite .runTests
+"Division" [
+	"6 / 3 should be 2" [ 6 3 / ] [ 2 ] assert
+	"42.0 / 4 should be 10.5" [ 42 4.0 / ] [ 10.5 ] assert 
+	"7 / 2 should be 3 " [ 7 2 / ] [ 3 ] assert
+] test
+
+"Modulus" [
+	"10 mod 2 should be 0 " [ 10 2 mod ] [ 0 ] assert
+	"6 mod 4 should be 2 " [ 6 4 mod ] [ 2 ] assert
+] test
+
+$math-suite .runTests
 

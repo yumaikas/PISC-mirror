@@ -423,8 +423,6 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			// _quotation.locals = m.locals[len(m.locals)-1]
 			m.pushValue(_quotation)
 
-		case isMathWord(*wordVal):
-			err = m.executeMathWord(wordVal)
 		case wordVal.str == "]":
 			// panic here.
 			panic("Unbalanced ]")
