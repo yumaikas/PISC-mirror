@@ -81,14 +81,13 @@ func importPISC(m *machine) error {
 	return nil
 }
 
-func importAssetPISC(m *machine) error {
-	fileName := m.popValue().(String)
-	data, err := Asset(string(fileName))
+func (m *machine) importPISCAsset(assetkey string) error {
+	data, err := Asset(string(assetkey))
 	if err != nil {
 		return err
 	}
 	// Reading in the data
-	code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(fileName)})
+	code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(assetkey)})
 	if err != nil {
 		return err
 	}
@@ -97,6 +96,12 @@ func importAssetPISC(m *machine) error {
 		return err
 	}
 	return nil
+
+}
+
+func importAssetPISC(m *machine) error {
+	fileName := m.popValue().(String).String()
+	return m.importPISCAsset(fileName)
 }
 
 func (m *machine) loadIOWords() error {

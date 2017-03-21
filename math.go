@@ -36,6 +36,12 @@ func (m *machine) loadHigherMathWords() error {
 	m.addGoWord("<", " ( a b -- c ) numeric less than ", executeLessThan)
 	m.addGoWord("zero?", " ( a -- isZero? ) returns if a is zero or not ", isZeroPred)
 
+	// For now, PISC words are late-bound, so we can get away with this.
+	err := m.importPISCAsset("stdlib/math.pisc")
+	if err != nil {
+		return err
+	}
+
 	// Why do we duplicate the work here?
 	// Because we want both the >double word and the
 	// math1arg words
