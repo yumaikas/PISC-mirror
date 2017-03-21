@@ -1,0 +1,91 @@
+%YAML 1.2
+---
+# See http://www.sublimetext.com/docs/3/syntax.html
+name: PISC
+file_extensions:
+  - pisc 
+scope: source.pisc
+contexts:
+  main:
+    # Strings begin and end with quotes, and use backslashes as an escape
+    # character
+    - match: '"'
+      scope: punctuation.definition.string.begin.pisc
+      push: double_quoted_string
+
+    - include: comments
+
+    - match: '\['
+      scope: meta.brackets meta.block.section.brackets.begin
+
+    - match: '\]'
+      scope: meta.brackets meta.block.section.brackets.end 
+
+    - match: '(?<!\w)[-\[\]:!@$%^&*<>+]+[^\s]+'
+      scope: punctuation.definition.variable
+
+    # Numbers
+    - match: '\b(-)?[0-9.]+\b'
+      scope: constant.numeric.pisc
+
+    - match: '^\s*\:\s+'
+      scope: punctuation.definition.keyword
+      set: [word_def_comment, word_def_start]
+
+    - match: '^\s*\:DOC\s+'
+      scope: punctuation.definition.keyword
+      set: [word_body_comment, word_def_comment, word_def_start]
+
+    - match: '^\s*\:PRE\s+'
+      scope: punctuation.definition.keyword
+      set: [word_def_comment, word_def_start]
+
+    # Boolean 
+    - match: (^|\s)(t|f|\?)\s
+      scope: constant.pisc
+
+  comments: 
+    # Comments begin with a '/*' and finish at the */
+    - match: '/\*'
+      scope: punctuation.definition.comment.block.pisc
+      push: 
+        - meta_scope: comment.block.pisc
+        - match: '\*/'
+          pop: true
+
+    - match: '#'
+      scope: punctuation.definition.comment.pisc
+      push: 
+        - meta_scope: comment.line.pisc
+        - match: $
+          pop: true
+
+
+  word_def_start:
+    - meta_scope: entity.name.function
+    - match: /\*
+      scope: invalid.illegal
+    - match: '[^\s]+'
+      pop: true
+
+  word_def_comment:
+    - match: \(\s*(.*)?\s(--)\s(.*)?\s?\) 
+      scope: comment.punctuation.pisc
+      pop: true
+
+  word_body_comment:
+    - match: '[^;\n\r]+'
+      scope: comment.block.pisc
+      push: 
+      - match: (.+);$
+        scope: punctuation.definition.pisc
+        pop: true
+      pop: true
+
+  double_quoted_string:
+    - meta_scope: string.quoted.double.pisc
+    - match: '\\.'
+      scope: constant.character.escape.pisc
+    - match: '"'
+      scope: punctuation.definition.string.end.pisc
+      pop: true

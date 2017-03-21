@@ -1,0 +1,21 @@
+/* This is a block comment */
+# SYNTAX TEST PISC "Packages/PISC/pisc.sublime-syntax"
+"string" 
+# ^ source.pisc 
+: word ( a -- b ) 1 2 + ;
+: otherFunction ( a -- b ) ;
+
+: if ( a b -- c )  ;
+
+:DOC if ( a b -- c ) /* This is commentary about comments ;
+/*
+ this is another comment line that isn't getting hit. 
+*/
+
+
+: if ( a b -- c ) [ + ] call ;
+
+
+/* 
+This is a multline comment
+*/
