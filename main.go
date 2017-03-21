@@ -37,7 +37,7 @@ func main() {
 		},
 		cli.StringFlag{
 			Name:  "file, f",
-			Usage: "Execute a file as a bit of pisc",
+			Usage: "Execute a file as a bit of pisc, runs before -i or -c",
 		},
 		cli.BoolFlag{
 			Name:   "benchmark",

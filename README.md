@@ -3,44 +3,15 @@ Position Independent Source Code. A small, stack-based, concatenative language.
 
 ## About 
 
-This is currently a small side project to see how far a small stack-based scripting language can go in spare time. Inspired by Factor (80%), Forth (5%) and Python (5%) and Tcl (5%) (not 100% inspired yet.)
-Plans are currently for an interperated language that uses a "arrays and hashtables" approach to data stucturing.
+PISC's source and documentation are hosted at [https://pisc.junglecoder.com](https://pisc.junglecoder.com).
+A quick starter can be found at [PISC in Y Minutes](https://pisc.junglecoder.com/home/apps/fossil/PISC.fossil/wiki?name=PISC+in+Y+Minutes)
 
-## TODO:
+## Building 
 
-If you can understand what is going on, please submit a pull request to add something that I'm missing. I'm not trying to compete with [factor](http://factorcode.org) or [forth](http://www.forth.com/forth/) for performance/features, but I trying out their style of programming to see how it goes. Ports of this interpretor to the language of your choice are welcome as well. 
+PISC requires go 1.7 or higher to build. Installation instructions [here](https://golang.org/doc/install)
 
-With that in mind, things that I will be adding (or accepting PRs for) as [time](http://www.catb.org/jargon/html/C/copious-free-time.html) allows:
+Once go is installed, you can run `go get` to fetch the depenencies for PISC, and `go build -o pisc` to get a PISC executable. You can launch a REPL with `pisc -i` and play with it there.
 
-  - More tests for different combinators (if, loop, while)
-  - A standard library build from a minimal core (this is a lot of the things below)
-  - Stack shuffling combinators (see the ones in factor):
-  -- drop ( x -- )
-  -- 2drop ( x y -- )
-  -- 3drop ( x y z -- )
-  -- nip ( x y -- y )
-  -- 2nip ( x y z -- z )
-  -- dup  ( x -- x x )
-  -- 2dup ( x y -- x y x y )
-  -- 3dup ( x y z -- x y z )
-  -- 2over ( x y z -- x y z x y )
-  -- pick ( x y z -- x y z x )
-  -- swap ( x y -- y x )
-  - Add a way for modules to be added without a lot of major modifications in the core loop of the interp.
-  - Math words. A lot is needed here, and in double/int versions ( >, <, =, -, +, div, mod ) 
-  - String manipulation words (concat, >upper, >lower, int>string, double>string, etc)
-  - Array and map manipulating words (ways to define them, literals, member access, so on.)
-  - A basic compliation step for reducing cache misses in the core loop (transforming words into constant lookup codes, so that word lookup isn't proportional to the number of words in the core loop)
-  - STDIN/STDOUT words.
-  - Regex facilties. 
-  - File i/o words
-  - A plan for multiprocessing. (I want to pull from TCL on this one if I can)
-  - Combinators for quotations, like bi and tri. 
-  - A plan for a module system.
-  - Syscalls
-  - shellout words. 
-  - struct words (when this thing allows for partial compilation or some such thing.)
-  - Bindings to awesome libraries (SDL, Tk, ImageMagick)
+## Flags
 
-
-.pisc is the file extension for these files. 
+The PISC binary accepts 4 flags -i or --interactive, -c  or --command, -f or --file (useful for shebang lines), and -help, which displays their documentation
