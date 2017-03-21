@@ -19,3 +19,5 @@ String handling words and such
 	[ $inner str-eq [ ++i ] when ] each-char 
 	$i
 ;
+
+: str-neq ( str-a str-b -- eq? ) str-eq not ; 

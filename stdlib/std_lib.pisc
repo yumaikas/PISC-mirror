@@ -31,6 +31,7 @@ This is the growing standard library of PISC.
 :DOC import ( filepath -- .. ) `import` current takes a file path, and attempts to execute the file at that relative file path. ;
 
 
+# TODO: Move the statments that import these to their respective modules
 "stdlib/loops.pisc" import-asset
 "stdlib/bools.pisc" import-asset
 "stdlib/strings.pisc" import-asset
@@ -83,7 +84,6 @@ This is the growing standard library of PISC.
 :PRE ++ ( varName -- . ) [ 1 + ] swap change ;
 :PRE -- ( varname -- . ) [ 1 - ] swap change ;
 
-: str-neq ( str-a str-b -- eq? ) str-eq not ; 
 
 /* Symbol manipulation */
 : symb-eq ( symb symb  -- eq? ) symb-neq not ;
