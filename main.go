@@ -106,6 +106,7 @@ func handleFlags(ctx *cli.Context) {
 			source: "argument line",
 		})
 		if err != nil {
+			log.Println(err)
 			log.Fatal("Error running file")
 		}
 		m.logAndResetDispatchCount(os.Stderr)
