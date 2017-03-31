@@ -124,5 +124,21 @@ func (m *machine) loadStringWords() error {
 		m.pushValue(Boolean(false))
 	})
 
+	m.addGoWord("str-substr", "( str start end -- substr )", func(m *machine) error {
+		end := m.popValue().(Integer)
+		start := m.popValue().(Integer)
+		str := m.popValue().String()
+
+		m.pushValue(String(str[start:end]))
+		return nil
+	})
+	m.addGoWord("str-idx-of", "( str sub -- idx )", func(m *machine) error {
+		substr := m.popValue().String()
+		str := m.popValue().String()
+		idx := strings.Index(str, substr)
+		m.pushValue(Integer(idx))
+		return nil
+	})
+
 	return nil
 }
