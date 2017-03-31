@@ -80,9 +80,9 @@ This is the growing standard library of PISC.
 :PRE $: ( quot varName -- ) change ;
 
 /* Increment and decrement variables */
-
-:PRE ++ ( varName -- . ) [ 1 + ] swap change ;
-:PRE -- ( varname -- . ) [ 1 - ] swap change ;
+ :PRE ++ ( varName -- . ) dup get-local 1 + 1 pick-drop set-local ;
+# :PRE ++ ( varName -- . ) dup [ get-local 1 + ] dip set-local ;
+ :PRE -- ( varname -- . ) dup get local 1 - 1 pick-drop set-local ;
 
 
 /* Symbol manipulation */
