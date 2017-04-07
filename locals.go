@@ -5,6 +5,14 @@ import (
 	"strings"
 )
 
+var ModLocalsCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "LocalsCore",
+	License:   "MIT",
+	DocString: "TODO: Fill this in",
+	Load:      loadLocalCore,
+}
+
 // Used when parsing words
 func isLocalWordPrefix(w word) bool {
 	return strings.HasPrefix(w.str, ":") ||
@@ -13,8 +21,9 @@ func isLocalWordPrefix(w word) bool {
 
 var ErrLocalNotFound = fmt.Errorf("Local variable not found!")
 var ErrNoLocalsExist = fmt.Errorf("A local frame hasn't been allocated with get-locals!")
+var ErrAttemtToIncrementNonNumber = fmt.Errorf("Attempted to increment a non-integer")
 
-func (m *machine) loadLocalWords() {
+func loadLocalCore(m *machine) error {
 	// Make sure we always have locals
 	m.locals = append(m.locals, make(map[string]stackEntry))
 	// ( val name -- )
@@ -61,4 +70,44 @@ func (m *machine) loadLocalWords() {
 		}
 		return nil
 	})
+
+	// TODO: compress this
+	// incr-local-var is here to help ++ be faster
+	m.addGoWord("incr-local-var", "( name -- )", GoWord(func(m *machine) error {
+		varName := m.popValue().(String)
+		if len(m.locals) <= 0 {
+			return ErrNoLocalsExist
+		}
+		if val, ok := m.locals[len(m.locals)-1][varName.String()]; ok {
+			// TODO: Clean up this cast
+			v, canNumber := val.(Integer)
+			if canNumber {
+				m.pushValue(v + 1)
+				return nil
+			} else {
+				return ErrAttemtToIncrementNonNumber
+			}
+		} else {
+			return ErrLocalNotFound
+		}
+	}))
+	m.addGoWord("decr-local-var", "( name -- )", GoWord(func(m *machine) error {
+		varName := m.popValue().(String)
+		if len(m.locals) <= 0 {
+			return ErrNoLocalsExist
+		}
+		if val, ok := m.locals[len(m.locals)-1][varName.String()]; ok {
+			// TODO: Clean up this cast
+			v, canNumber := val.(Integer)
+			if canNumber {
+				m.pushValue(v - 1)
+				return nil
+			} else {
+				return ErrAttemtToIncrementNonNumber
+			}
+		} else {
+			return ErrLocalNotFound
+		}
+	}))
+	return m.importPISCAsset("stdlib/locals.pisc")
 }

@@ -9,6 +9,85 @@ import (
 	"strings"
 )
 
+var ModIOCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "IOCore",
+	License:   "MIT",
+	DocString: "TODO: Fill this in",
+	Load:      loadIOCore,
+}
+
+func loadIOCore(m *machine) error {
+	m.addGoWord("import", "( file-path -- )", GoWord(importPISC))
+	m.addGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
+
+	m.predefinedWords["filepath>string"] = GoWord(func(m *machine) error {
+		fileName := m.popValue().(String)
+		data, err := ioutil.ReadFile(string(fileName))
+		if err != nil {
+			return err
+		}
+		m.pushValue(String(string(data)))
+		return nil
+	})
+
+	m.predefinedWords["open-file-writer"] = GoWord(func(m *machine) error {
+		fileName := m.popValue().(String)
+		goFile, err := os.Create(string(fileName))
+		if err != nil {
+			return err
+		}
+		err = goFile.Chmod(os.ModePerm | 0644)
+		if err != nil {
+			return err
+		}
+		fileWriter := bufio.NewWriter(goFile)
+		var file = Dict(make(map[string]stackEntry))
+		file["close"] = GoFunc(func(m *machine) error {
+			return goFile.Close()
+		})
+		file["write-line"] = GoFunc(func(m *machine) error {
+			str := m.popValue().String()
+			_, err := fileWriter.WriteString(str + "\n")
+			fileWriter.Flush()
+			return err
+		})
+
+		file["write-string"] = GoFunc(func(m *machine) error {
+			str := m.popValue().String()
+			_, err := fileWriter.WriteString(str)
+			fileWriter.Flush()
+			return err
+		})
+		m.pushValue(file)
+
+		return m.importPISCAsset("stdlib/io.pisc")
+
+	})
+
+	m.predefinedWords["open-file-reader"] = GoWord(func(m *machine) error {
+		var fileName = m.popValue().(String)
+		// var file = Dict(make(map[string]stackEntry))
+		goFile, err := os.Open(string(fileName))
+		if err != nil {
+			return err
+		}
+		var reader = bufio.NewReader(goFile)
+		file := makeReader(reader)
+		file["close"] = GoFunc(func(m *machine) error {
+			return goFile.Close()
+		})
+		m.pushValue(file)
+		return nil
+	})
+
+	m.predefinedWords["priv_puts"] = NilWord(func(m *machine) {
+		data := m.popValue().(String)
+		fmt.Println(string(data))
+	})
+	return nil
+}
+
 type PISCReader interface {
 	io.RuneReader
 	io.ByteReader
@@ -102,75 +181,4 @@ func (m *machine) importPISCAsset(assetkey string) error {
 func importAssetPISC(m *machine) error {
 	fileName := m.popValue().(String).String()
 	return m.importPISCAsset(fileName)
-}
-
-func (m *machine) loadIOWords() error {
-	m.addGoWord("import", "( file-path -- )", GoWord(importPISC))
-	m.addGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
-
-	m.predefinedWords["filepath>string"] = GoWord(func(m *machine) error {
-		fileName := m.popValue().(String)
-		data, err := ioutil.ReadFile(string(fileName))
-		if err != nil {
-			return err
-		}
-		m.pushValue(String(string(data)))
-		return nil
-	})
-
-	m.predefinedWords["open-file-writer"] = GoWord(func(m *machine) error {
-		fileName := m.popValue().(String)
-		goFile, err := os.Create(string(fileName))
-		if err != nil {
-			return err
-		}
-		err = goFile.Chmod(os.ModePerm | 0644)
-		if err != nil {
-			return err
-		}
-		fileWriter := bufio.NewWriter(goFile)
-		var file = Dict(make(map[string]stackEntry))
-		file["close"] = GoFunc(func(m *machine) error {
-			return goFile.Close()
-		})
-		file["write-line"] = GoFunc(func(m *machine) error {
-			str := m.popValue().String()
-			_, err := fileWriter.WriteString(str + "\n")
-			fileWriter.Flush()
-			return err
-		})
-
-		file["write-string"] = GoFunc(func(m *machine) error {
-			str := m.popValue().String()
-			_, err := fileWriter.WriteString(str)
-			fileWriter.Flush()
-			return err
-		})
-		m.pushValue(file)
-
-		return nil
-
-	})
-
-	m.predefinedWords["open-file-reader"] = GoWord(func(m *machine) error {
-		var fileName = m.popValue().(String)
-		// var file = Dict(make(map[string]stackEntry))
-		goFile, err := os.Open(string(fileName))
-		if err != nil {
-			return err
-		}
-		var reader = bufio.NewReader(goFile)
-		file := makeReader(reader)
-		file["close"] = GoFunc(func(m *machine) error {
-			return goFile.Close()
-		})
-		m.pushValue(file)
-		return nil
-	})
-
-	m.predefinedWords["priv_puts"] = NilWord(func(m *machine) {
-		data := m.popValue().(String)
-		fmt.Println(string(data))
-	})
-	return nil
 }

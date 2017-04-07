@@ -10,7 +10,15 @@ import (
 	"time"
 )
 
-func (m *machine) loadDebugWords() error {
+var ModDebugCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "IOCore",
+	License:   "MIT",
+	DocString: "The debug words used in PISC",
+	Load:      loadDebugCore,
+}
+
+func loadDebugCore(m *machine) error {
 	// ( -- )
 	m.predefinedWords["show-prefix-words"] = NilWord(func(m *machine) {
 		for name := range m.prefixWords {
@@ -59,9 +67,10 @@ func (m *machine) loadDebugWords() error {
 		}
 		return nil
 	})
-	return nil
+	return m.importPISCAsset("stdlib/debug.pisc")
 }
 
+// TODO: See about this...
 func DumpToString(c codeSequence) string {
 	c = c.cloneCode()
 	words := make([]string, 0)
@@ -75,5 +84,4 @@ func DumpToString(c codeSequence) string {
 		}
 		words = append(words, w.str)
 	}
-	return strings.Join(words, " ")
 }

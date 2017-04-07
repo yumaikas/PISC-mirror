@@ -7,6 +7,15 @@ import (
 	"strings"
 )
 
+var ModStringsCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "StringCore",
+	License:   "MIT",
+	DocString: "TODO: Fill this in",
+	Load:      loadStringCore,
+}
+
+// TODO: Implement Lua Patterns
 type stringPattern struct {
 }
 
@@ -33,6 +42,10 @@ func _toString(m *machine) error {
 }
 
 func (m *machine) loadStringWords() error {
+	return loadStringCore(m)
+}
+
+func loadStringCore(m *machine) error {
 	m.predefinedWords["concat"] = _concat
 	m.predefinedWords[">string"] = _toString
 
@@ -124,6 +137,7 @@ func (m *machine) loadStringWords() error {
 		m.pushValue(Boolean(false))
 	})
 
+	// TODO: Add test
 	m.addGoWord("str-substr", "( str start end -- substr )", func(m *machine) error {
 		end := m.popValue().(Integer)
 		start := m.popValue().(Integer)
@@ -132,6 +146,7 @@ func (m *machine) loadStringWords() error {
 		m.pushValue(String(str[start:end]))
 		return nil
 	})
+	// TODO: Add tests
 	m.addGoWord("str-idx-of", "( str sub -- idx )", func(m *machine) error {
 		substr := m.popValue().String()
 		str := m.popValue().String()
@@ -140,5 +155,5 @@ func (m *machine) loadStringWords() error {
 		return nil
 	})
 
-	return nil
+	return m.importPISCAsset("stdlib/strings.pisc")
 }

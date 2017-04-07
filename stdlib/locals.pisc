@@ -1,6 +1,5 @@
 /* Locals in PISC */
 
-# So this is all stuff....
 :DOC set-local ( val name -- ) Set name to val  ;
 
 :DOC get-local ( name -- val ) Get the value associated with a local value  ;
@@ -10,3 +9,18 @@
 :DOC drop-locals ( -- ) Pop a frame of locals off the locals stack  ;
 
 :DOC each-local ( quot [ k v - .. ] -- locals.. )  Run a quotation for each local in the current stack frame SEE: quot>dict  ;
+
+/* Copied from factor */
+: change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ; 
+
+# Attempting to change a local
+:PRE $: ( quot varName -- ) change ;
+
+/* Local Prefixes */
+# Increment and decrement
+ :PRE -- ( name -- ) decr-local-var ;
+ :PRE ++ ( name -- ) incr-local-var ;
+
+# Get and set local
+ :PRE $ ( name -- val ) get-local ;
+ :PRE : ( val name -- ) set-local ;

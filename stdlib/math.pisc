@@ -36,3 +36,16 @@ TODO: all the two arg math functions
 */
 : min ( a b -- smaller ) 2dup > [ nip ] [ drop ] if ;
 : max ( a b -- larger )   2dup > [ drop ] [ nip ] if ;
+
+/* Some basic math */
+: even? ( n -- ? ) 2 mod zero? ;
+: divisor? ( n m -- ? ) mod zero? ;
+
+: = ( a b -- ? ) - zero? ;
+
+/* < is already defined */
+: >= ( a b -- ? ) < not ;
+: <= ( a b -- ? ) 2dup < [ = ] dip or ;
+: > ( a b -- ? ) <= not ;
+
+: abs ( a -- a ) dup 0 < [ -1 * ] when ; 

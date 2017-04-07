@@ -6,7 +6,15 @@ import (
 	"os"
 )
 
-func (m *machine) loadShellWords() {
+var ModShellUtils = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "ShellUtils",
+	License:   "MIT",
+	DocString: `A set of fucntions that are used to provide some shell-like functionality`,
+	Load:      loadShellWords,
+}
+
+func loadShellWords(m *machine) error {
 	m.addGoWord("list-files", "( -- files ) ", GoWord(func(m *machine) error {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
@@ -18,6 +26,19 @@ func (m *machine) loadShellWords() {
 		}
 		m.pushValue(arr)
 		return nil
+	}))
+
+	m.addGoWord("stat", "( filepath -- info )", GoWord(func(m *machine) error {
+		path := m.popValue().String()
+		info, err := os.Stat(path)
+		if err != nil {
+			return err
+		}
+
+		// Hrm... Is there a way to avoid this double allocation (struct into dict)
+		m.pushValue(fileInfoToDict(info))
+		return nil
+
 	}))
 
 	m.addGoWord("pwd", "( -- workingdir )", GoWord(func(m *machine) error {
@@ -41,7 +62,7 @@ func (m *machine) loadShellWords() {
 	}))
 
 	//
-	m.predefinedWords["cd"] = GoWord(func(m *machine) error {
+	m.addGoWord("cd", "( new-dir -- ) ", GoWord(func(m *machine) error {
 		location := m.popValue().String()
 		if err := os.Chdir(location); err != nil {
 			return err
@@ -52,7 +73,9 @@ func (m *machine) loadShellWords() {
 			fmt.Println(dir)
 		}
 		return nil
-	})
+	}))
+
+	return m.importPISCAsset("stdlib/shell.pisc")
 }
 
 func fileInfoToDict(info os.FileInfo) Dict {

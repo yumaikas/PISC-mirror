@@ -5,7 +5,15 @@ import (
 	"time"
 )
 
-func (m *machine) loadRandyWords() {
+var ModRandomCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "RandomCore",
+	License:   "MIT",
+	DocString: "Functions for random choice",
+	Load:      loadRandy,
+}
+
+func loadRandy(m *machine) error {
 
 	m.helpDocs["seed-rand-time"] = "( -- ) Seeds the PSRNG with the current time"
 	m.predefinedWords["seed-rand-time"] = NilWord(func(m *machine) {
@@ -22,4 +30,5 @@ func (m *machine) loadRandyWords() {
 		min := m.popValue().(Integer)
 		m.pushValue(min + Integer(rand.Intn(int(max-min))))
 	})
+	return m.importPISCAsset("stdlib/random.pisc")
 }

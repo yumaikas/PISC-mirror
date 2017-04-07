@@ -7,14 +7,22 @@ import (
 	"github.com/asdine/storm/codec/gob"
 )
 
-// This default DB is for doing stuff like saving "globals", if you need your
+var ModBoltDB = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "BoltDBExt",
+	License:   "MIT",
+	DocString: "WIP: This module is for interfacing with BoltDB",
+	Load:      loadBoltDB,
+}
+
+// This default DB is intended to act like a single file registry
 
 // ErrBucketNotFound indicates that a database file doesn't have it's string bucket.
 var ErrBucketNotFound = fmt.Errorf("could not find strings bucket in database")
 
 type counter int
 
-func (m *machine) loadBoltWords() error {
+func loadBoltDB(m *machine) error {
 
 	var err error
 	m.db, err = storm.Open(".piscdb", storm.Codec(gob.Codec))

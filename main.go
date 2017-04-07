@@ -35,6 +35,10 @@ func main() {
 			Name:  "command, c",
 			Usage: "Expressions to run from the command line, before -i, if it exists",
 		},
+		cli.BoolFlag{
+			Name:  "database, d",
+			Usage: "Tells PISC to attach to the boltDB file at .piscdb",
+		},
 		cli.StringFlag{
 			Name:  "file, f",
 			Usage: "Execute a file as a bit of pisc, runs before -i or -c",
@@ -57,16 +61,23 @@ func initMachine() *machine {
 		prefixWords:          make(map[string]*codeQuotation),
 		helpDocs:             make(map[string]string),
 	}
-	m.loadPredefinedValues()
 	return m
 }
 
 func handleFlags(ctx *cli.Context) {
 	m := initMachine()
-	m.logAndResetDispatchCount(os.Stderr)
 	// Execute this before benchmarking since we aren't yet benchmarking file loads
 	if ctx.IsSet("benchmark") {
-		err := m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
+		err := m.loadForCLI()
+		if err != nil {
+			log.Fatalf("Unable to start benchmark due to error %v", err.Error())
+			return
+		}
+		err = m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
+		if err != nil {
+			log.Fatalf("Unable to start benchmark due to error %v", err.Error())
+			return
+		}
 		f, err := os.Create("bench-cpu-recursion.prof")
 		if err != nil {
 			log.Fatal("Unable to create profiling file")
@@ -99,6 +110,23 @@ func handleFlags(ctx *cli.Context) {
 		}
 		pprof.StopCPUProfile()
 		return
+	}
+	// Load PISC with libraries, according to the context
+	if ctx.IsSet("file") || ctx.IsSet("command") || ctx.IsSet("interactive") {
+		if ctx.IsSet("database") {
+			err := m.loadForDB()
+			if err != nil {
+				fmt.Println(err.Error())
+				log.Fatal("Error while loading modules")
+			}
+		} else {
+			err := m.loadForCLI()
+			if err != nil {
+				fmt.Println(err.Error())
+				log.Fatal("Error while loading modules")
+			}
+		}
+		m.logAndResetDispatchCount(os.Stderr)
 	}
 	if ctx.IsSet("file") {
 		m.pushValue(String(ctx.String("file")))
@@ -157,9 +185,6 @@ Code`)
 		if strings.TrimSpace(line) == "exit" {
 			fmt.Fprintln(os.Stderr, "Exiting")
 			return
-		}
-		if strings.TrimSpace(line) == "preload" {
-			m.loadPredefinedValues()
 		}
 		if err == io.EOF {
 			fmt.Fprintln(os.Stderr, "Exiting program")

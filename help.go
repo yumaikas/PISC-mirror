@@ -10,17 +10,13 @@ var ModHelpCore = PISCModule{
 	Author:    "Andrew Owen",
 	Name:      "HelpCore",
 	License:   "MIT",
-	DocString: "TODO: Fill this in",
-	Load:      loadHelpModule,
+	DocString: "A function to look up help for words",
+	Load:      loadHelpCore,
 }
 
-func loadHelpModule(m *machine) error {
-	return m.loadHelpWords()
-}
-
-// These are the help words
-
-func (m *machine) loadHelpWords() error {
+// TODO: Pull from more sources of docs, like word defs, not just
+// :DOC directives
+func loadHelpCore(m *machine) error {
 	// ( val name -- )
 	m.predefinedWords["help"] = GoWord(func(m *machine) error {
 		searchTerm := m.popValue().(String).String()

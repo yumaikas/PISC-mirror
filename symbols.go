@@ -2,7 +2,15 @@ package main
 
 import "fmt"
 
-func (m *machine) loadSymbolWords() error {
+var ModSymbolCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "",
+	License:   "MIT",
+	DocString: "SymbolCore",
+	Load:      loadSymbolCore,
+}
+
+func loadSymbolCore(m *machine) error {
 
 	// Push a symbol onto the stack
 	// ( -- #symbol )
@@ -26,6 +34,5 @@ func (m *machine) loadSymbolWords() error {
 		return nil
 
 	})
-
-	return nil
+	return m.importPISCAsset("stdlib/symbols.pisc")
 }

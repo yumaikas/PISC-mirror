@@ -63,5 +63,5 @@ func (m *machine) loadDictWords() error {
 		}
 		return nil
 	})
-	return nil
+	return m.importPISCAsset("stdlib/dicts.pisc")
 }

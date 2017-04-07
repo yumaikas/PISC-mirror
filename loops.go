@@ -1,6 +1,14 @@
 package main
 
-func (m *machine) loadLoopWords() error {
+var ModLoopCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "LoopCore",
+	License:   "MIT",
+	DocString: "times is the standard counted loop, while takes two conditions",
+	Load:      loadLoopCore,
+}
+
+func loadLoopCore(m *machine) error {
 	m.predefinedWords["times"] = GoWord(func(m *machine) error {
 		toExec := m.popValue().(*quotation)
 		nOfTimes := m.popValue().(Integer)
@@ -37,5 +45,5 @@ func (m *machine) loadLoopWords() error {
 		return nil
 	})
 
-	return nil
+	return m.importPISCAsset("stdlib/loops.pisc")
 }

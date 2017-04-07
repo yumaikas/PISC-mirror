@@ -5,16 +5,6 @@ This is the growing standard library of PISC.
 */
 
 : print ( a --  ) >string priv_puts ;
-:DOC t ( -- t )  t and f respectively push true and false onto the stack  ;
-:DOC f ( -- f )  t and f respectively push true and false onto the stack  ;
-
-/* Local Prefixes */
-:PRE $ ( name -- val ) get-local ;
-:PRE : ( val name -- ) set-local ;
-
-/* stack-empty? checks if there are any entries on the stack
-: stack-empty? ( .. -- empty? ) primitive
-*/
 
 /* The following calls are the current stack-shuffling primitives */
 
@@ -32,20 +22,6 @@ This is the growing standard library of PISC.
 
 
 # TODO: Move the statments that import these to their respective modules
-"stdlib/loops.pisc" import-asset
-"stdlib/bools.pisc" import-asset
-"stdlib/strings.pisc" import-asset
-"stdlib/locals.pisc" import-asset
-"stdlib/io.pisc" import-asset
-"stdlib/dicts.pisc" import-asset
-"stdlib/vectors.pisc" import-asset
-"stdlib/symbols.pisc" import-asset
-"stdlib/math.pisc" import-asset
-"stdlib/random.pisc" import-asset
-"stdlib/debug.pisc" import-asset
-"stdlib/with.pisc" import-asset
-"stdlib/shell.pisc" import-asset
-
 
 /* Stack shufflers */
 :DOC dup ( a -- a a ) Duplicates the top of the stack ;
@@ -68,58 +44,12 @@ This is the growing standard library of PISC.
 : keep ( ..a x quot: [ ..a x --- ..b ] -- ..b x ) over [ call ] dip ;
 : bi ( a quot1 quot2 -- ... ) [ keep ] dip call ;
 
-/*
-: change ( quot name -- ... ) drop-locals :name :quot  ;
-
-: change ( quot varName -- .. ) drop-locals :name :quot $name get-local $quot call $name set-local get-locals ;
-*/
-
-/* Copied from factor */
-: change ( quot varName -- .. ) swap [ [ get-local ] keep ] dip dip set-local ; 
-
-:PRE $: ( quot varName -- ) change ;
-
-/* Increment and decrement variables */
- :PRE ++ ( varName -- . ) dup get-local 1 + 1 pick-drop set-local ;
-# :PRE ++ ( varName -- . ) dup [ get-local 1 + ] dip set-local ;
- :PRE -- ( varname -- . ) dup get local 1 - 1 pick-drop set-local ;
-
-
-/* Symbol manipulation */
-: symb-eq ( symb symb  -- eq? ) symb-neq not ;
-
-/* Arrays */
-
-/* Take all the elements placed on the stack by quot and put in an array */
-:DOC quot>vector ( quot -- vec ) Take all the elements placed on the stack by quot, and put them in an array. Not local clean. ; 
-/* TODO: somehow make this local-clean */
-: quot>vector ( quot -- vec ) 
-	<vector> :vec
-	<symbol> dup :mark /* Mark the stack */
-	swap call /* Fill the stack with info from the quotation */
-	[ dup $mark symb-neq ] [ [ swap vec-append ] $:vec ] while 
-	drop /* the mark */ $vec vec-reverse ;
-
-
 /* If statement */
 :DOC if ( ? trueQuot falseQuot -- result ) if ? is t, call true quot, otherwise call falseQuot. Defined as `? call` ;
 : if ( ? true false -- res ) ? call ;
 /* When statement for when you don't need all of if */
 : when ( ? true -- res ) [ ] ? call ;
 
-
-/* Some basic math */
-: even? ( n -- ? ) 2 mod zero? ;
-: divisor? ( n m -- ? ) mod zero? ;
-
-: = ( a b -- ? ) - zero? ;
-
-/* < is already defined */
-: >= ( a b -- ? ) < not ;
-: <= ( a b -- ? ) 2dup < [ = ] dip or ;
-: > ( a b -- ? ) <= not ;
-
-: abs ( a -- a ) dup 0 < [ -1 * ] when ; 
 
 /* : eq ( a b -- ? ) */
 : . ( a -- ) drop ;

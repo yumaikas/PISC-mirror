@@ -4,6 +4,27 @@ import (
 	"fmt"
 )
 
+var ModVectorCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "VectorCore",
+	License:   "MIT",
+	DocString: "TODO: Fill this in",
+	Load:      loadVectorCore,
+}
+
+func loadVectorCore(m *machine) error {
+	m.addGoWord("vec-set-at", " ( vec val idx -- vec ) ", GoWord(vecSetAt))
+	m.addGoWord("vec-at", " ( vec idx -- elem ) ", GoWord(vecAt))
+	m.addGoWord("<vector>", " ( -- vector )", GoWord(makeVec))
+	m.addGoWord("vec-each", " ( vec quot -- .. ) ", GoWord(vecEach))
+	m.addGoWord("vec-append", " ( vec elem -- newVect ) ", GoWord(vecAppend))
+	m.addGoWord("vec-prepend", " ( vec elem -- newVect ) ", GoWord(vecPrepend))
+	m.addGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
+	m.addGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
+	// Return success if we can load out PISC file as well.
+	return m.importPISCAsset("stdlib/vectors.pisc")
+}
+
 func vecSetAt(m *machine) error {
 	idx := int(m.popValue().(Integer))
 	val := m.popValue()
@@ -82,17 +103,5 @@ func vecPopfront(m *machine) error {
 	arr = arr[1:]
 	m.pushValue(arr)
 	m.pushValue(val)
-	return nil
-}
-
-func (m *machine) loadVectorWords() error {
-	m.addGoWord("vec-set-at", " ( vec val idx -- vec ) ", GoWord(vecSetAt))
-	m.addGoWord("vec-at", " ( vec idx -- elem ) ", GoWord(vecAt))
-	m.addGoWord("<vector>", " ( -- vector )", GoWord(makeVec))
-	m.addGoWord("vec-each", " ( vec quot -- .. ) ", GoWord(vecEach))
-	m.addGoWord("vec-append", " ( vec elem -- newVect ) ", GoWord(vecAppend))
-	m.addGoWord("vec-prepend", " ( vec elem -- newVect ) ", GoWord(vecPrepend))
-	m.addGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
-	m.addGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
 	return nil
 }

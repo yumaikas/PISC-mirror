@@ -89,7 +89,45 @@ func reflectEq(m *machine) error {
 	return nil
 }
 
-func (m *machine) loadPredefinedValues() {
+var ModPISCCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "PISCCore",
+	License:   "MIT",
+	DocString: "Eventally, the small batch of core PISC words",
+	Load:      loadPISCCore,
+}
+
+// These are the standard libraries that are currently trusted to not
+var StandardModules = []PISCModule{
+	ModLoopCore,
+	ModLocalsCore,
+	ModDictionaryCore,
+	ModHelpCore,
+	ModStringsCore,
+	ModMathCore,
+	ModBoolCore,
+	ModVectorCore,
+	ModSymbolCore,
+	ModRandomCore,
+	ModMetaQuoation,
+	ModPISCCore,
+}
+
+func (m *machine) loadForCLI() error {
+	return m.LoadModules(append(StandardModules,
+		ModIOCore, ModDebugCore, ModShellUtils)...)
+}
+func (m *machine) loadForDB() error {
+	return m.LoadModules(append(StandardModules,
+		ModBoltDB, ModIOCore, ModIOCore, ModShellUtils)...)
+}
+
+func (m *machine) loadForChatbot() error {
+	return m.LoadModules(append(StandardModules,
+		ModBoltDB, ModIRCKit)...)
+}
+
+func loadPISCCore(m *machine) error {
 	if m.predefinedWords == nil {
 		panic("Uninitialized stack machine!")
 	}
@@ -100,34 +138,9 @@ func (m *machine) loadPredefinedValues() {
 	m.predefinedWords["pick-drop"] = GoWord(pickDrop)
 	m.predefinedWords["pick-del"] = GoWord(pickDel)
 	m.addGoWord("len", "( e -- lenOfE ) ", GoWord(lenEntry))
-
 	m.addGoWord("eq", " ( a b -- same? ) ", GoWord(runEq))
 	// Discourage use of reflection based eq via long name
 	m.addGoWord("deep-slow-reflect-eq", "( a b -- same? )", GoWord(reflectEq))
 	m.addGoWord("error", "( msg -- !! )", GoWord(errorFromEntry))
-
-	m.loadDebugWords()
-	m.loadLocalWords()
-	m.loadStringWords()
-	m.loadBooleanWords()
-	m.loadLoopWords()
-	m.loadDictWords()
-	m.loadVectorWords()
-	m.loadSymbolWords()
-	m.loadHigherMathWords()
-	m.loadHelpWords()
-	m.loadIOWords()
-	m.loadShellWords()
-	m.loadRandyWords()
-	m.loadQuotWords()
-	err := m.loadBoltWords()
-	if err != nil {
-		panic(fmt.Sprint("Error loading boltdb: ", err))
-	}
-
-	err = m.executeString(`"stdlib/std_lib.pisc" import-asset`, codePosition{source: "preload.go standard library import"})
-	if err != nil {
-		panic("Error loading standard library! " + err.Error())
-	}
-	xLOG = true
+	return m.importPISCAsset("stdlib/std_lib.pisc")
 }

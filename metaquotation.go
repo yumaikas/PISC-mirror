@@ -5,7 +5,15 @@ import (
 	"strings"
 )
 
-func (m *machine) loadQuotWords() error {
+var ModMetaQuoation = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "MetaQuotation",
+	License:   "MIT",
+	DocString: "Words that manipulate quotations. Use with care",
+	Load:      loadQuotWords,
+}
+
+func loadQuotWords(m *machine) error {
 	// This is probably a dangerous word...
 	m.addGoWord("quot-set-var", " ( quot key val -- ) ", GoWord(func(m *machine) error {
 		val := m.popValue()
@@ -46,5 +54,5 @@ func (m *machine) loadQuotWords() error {
 		m.pushValue(quot.locals[key])
 		return nil
 	}))
-	return nil
+	return m.importPISCAsset("stdlib/with.pisc")
 }

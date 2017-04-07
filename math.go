@@ -5,7 +5,7 @@ import (
 	"math"
 )
 
-var MathCore = PISCModule{
+var ModMathCore = PISCModule{
 	Author:    "Andreb Owen",
 	Name:      "MathCore",
 	License:   "MIT",

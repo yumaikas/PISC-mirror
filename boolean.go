@@ -1,6 +1,14 @@
 package main
 
-func (m *machine) loadBooleanWords() error {
+var ModBoolCore = PISCModule{
+	Author:    "Andrew Owen",
+	Name:      "BoolCore",
+	License:   "MIT",
+	DocString: "The 3 basic boolean operation, and/or and not",
+	Load:      loadBoolCore,
+}
+
+func loadBoolCore(m *machine) error {
 	m.predefinedWords["and"] = NilWord(func(m *machine) {
 		a := m.popValue().(Boolean)
 		b := m.popValue().(Boolean)
@@ -15,5 +23,5 @@ func (m *machine) loadBooleanWords() error {
 		a := m.popValue().(Boolean)
 		m.pushValue(Boolean(!a))
 	})
-	return nil
+	return m.importPISCAsset("stdlib/bools.pisc")
 }
