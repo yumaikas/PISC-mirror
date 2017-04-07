@@ -44,7 +44,7 @@ func (m *machine) LoadModules(modules ...PISCModule) error {
 	for _, mod := range modules {
 		err := mod.Load(m)
 		if err != nil {
-
+			return fmt.Errorf("Error loading %s, %s", mod.Name, err.Error())
 		}
 	}
 	return nil
