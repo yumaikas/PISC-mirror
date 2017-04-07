@@ -15,8 +15,6 @@
 	"2 - 1 should be 1" [ 2 1 - ] [ 1 ] assert
 	"5 - 3 should be 2" [ 5 3 - ] [ 2 ] assert 
 	"8 - 3 should be 5" [ 8 3 - ] [ 5 ] assert 
-	"8 - 3 should be 5" [ 8 3 - ] [ 5 ] assert 
-	"8 - 3 should be 5" [ 8 3 - ] [ 5 ] assert 
 ] test
 
 "Multiplication" [
