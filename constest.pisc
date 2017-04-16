@@ -4,8 +4,13 @@
 
 : build-loop ( counter list -- list )
 	:list :counter
-	[ $counter 0 = not ] [  { $counter $list } :list $counter 1 - :counter ] while
+	[ $counter 0 = not ] [ { $counter $list } :list $counter 1 - :counter ] while
+;
+
+: cons-test ( -- ) 
+    # "Code took" is prefixed by time atm.
+    ${ [ 100000 <vector> build-loop ] time " for loop version" } print
+    ${ [ 100000 <vector> build drop ] time " for recursive version" } print
 ;
 
 /* Run a test and see what this ends up doing */
-100000 { } build-loop drop

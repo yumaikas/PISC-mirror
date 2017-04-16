@@ -217,13 +217,17 @@ func wordIsWhitespace(w word) bool {
 func (m *machine) execute(p *codeQuotation) (retErr error) {
 	var err error
 	var wordVal *word
-	var old_idx = p.idx
+    // TODO: Examine how to clean this up
+	// var old_idx = p.idx
 	p.idx = 0
 	// This isn't efficient, but it's a way to keep from setting stuff to 0 everywhere else.
+    /*
 	defer func() {
 		p.idx = old_idx
 	}()
-	// TODO: Should this even be here?
+    */
+    // TODO: Figure out how to keep from needing this.
+    /*
 	defer func() {
 		pErr := recover()
 		if pErr != nil {
@@ -233,6 +237,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			// fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
 		}
 	}()
+    */
 	for err == nil {
 		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
