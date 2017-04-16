@@ -189,6 +189,7 @@ func (f floatPusher) pushFloat(m *machine) error {
 	m.pushValue(Double(f))
 	return nil
 }
+
 func tryParseFloat(w *word, floatVal *float64) bool {
 	if len(w.str) <= 0 {
 		return false
@@ -239,7 +240,6 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 	}()
     */
 	for err == nil {
-		// fmt.Println(intMatch.MatchString(string(wordVal)))
 		wordVal, err = p.nextWord()
 		if err == io.EOF {
 			return
