@@ -29,6 +29,24 @@ func f(m *machine) error {
 	return nil
 }
 
+func condOperator(m *machine) error {
+	return m.runConditionalOperator()
+}
+
+func call(m *machine) error {
+	return m.executeQuotation()
+}
+
+func isStackEmpty(m *machine) error {
+	m.pushValue(Boolean(len(m.values) == 0))
+	return nil
+}
+
+func typeof(m *machine) error {
+	m.pushValue(String(m.popValue().Type()))
+	return nil
+}
+
 func dip(m *machine) error {
 	quot := m.popValue().(*quotation).toCode()
 	a := m.popValue()
@@ -134,6 +152,10 @@ func loadPISCCore(m *machine) error {
 	m.addGoWord("t", "( -- t )", GoWord(t))
 	m.addGoWord("f", "( -- f )", GoWord(f))
 	m.addGoWord("dip", "( a quot -- ... a )", GoWord(dip))
+	m.addGoWord("stack-empty?", "( -- empty? )", GoWord(isStackEmpty))
+	m.addGoWord("typeof", "( a -- typeofa )", GoWord(typeof))
+	m.addGoWord("?", "( a b ? -- a/b )", GoWord(condOperator))
+	m.addGoWord("call", "( quot -- ... )", GoWord(call))
 	m.predefinedWords["pick-dup"] = GoWord(pickDup)
 	m.predefinedWords["pick-drop"] = GoWord(pickDrop)
 	m.predefinedWords["pick-del"] = GoWord(pickDel)

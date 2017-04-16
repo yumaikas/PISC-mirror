@@ -92,7 +92,7 @@ func (m *machine) logAndResetDispatchCount(w io.Writer) {
 	m.numDispatches = 0
 }
 
-//TODO: Optimize append pattern?
+// Append uses an allocation pattern via Go to amortize the number of allocations performed
 func (m *machine) pushValue(entry stackEntry) {
 	m.values = append(m.values, entry)
 }
@@ -218,27 +218,27 @@ func wordIsWhitespace(w word) bool {
 func (m *machine) execute(p *codeQuotation) (retErr error) {
 	var err error
 	var wordVal *word
-    // TODO: Examine how to clean this up
+	// TODO: Examine how to clean this up
 	// var old_idx = p.idx
 	p.idx = 0
 	// This isn't efficient, but it's a way to keep from setting stuff to 0 everywhere else.
-    /*
-	defer func() {
-		p.idx = old_idx
-	}()
-    */
-    // TODO: Figure out how to keep from needing this.
-    /*
-	defer func() {
-		pErr := recover()
-		if pErr != nil {
-			retErr = fmt.Errorf("%s", pErr)
-		}
-		if retErr != nil {
-			// fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
-		}
-	}()
-    */
+	/*
+		defer func() {
+			p.idx = old_idx
+		}()
+	*/
+	// TODO: Figure out how to keep from needing this.
+	/*
+		defer func() {
+			pErr := recover()
+			if pErr != nil {
+				retErr = fmt.Errorf("%s", pErr)
+			}
+			if retErr != nil {
+				// fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
+			}
+		}()
+	*/
 	for err == nil {
 		wordVal, err = p.nextWord()
 		if err == io.EOF {
@@ -255,7 +255,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			err = wordVal.impl(m)
 		case wordVal.str == "quit":
 			return ExitingProgram
-		// Comments are going to be exclusively of the /*  */ variety for now.
+
 		case wordVal.str == "/*":
 			commentWordLen := 0
 			for err == nil {
@@ -275,13 +275,17 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				}
 				return nil
 			}
+
 		case strings.HasPrefix(wordVal.str, "#"):
 			// Skip line comment, potentialy work with it later, but not now.
 			continue
+
+		// Both of these functions set the .impl values for the int word in question
 		case tryParseInt(wordVal, &intVal):
 			m.pushValue(Integer(intVal))
 		case tryParseFloat(wordVal, &floatVal):
 			m.pushValue(Double(floatVal))
+
 		// This word needs to be defined before we can allow other things to be defined
 		case wordVal.str == ":":
 			err = m.readWordDefinition(p)
@@ -290,14 +294,6 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			// err = m.readPatternDefinition
 		case wordVal.str == ":DOC":
 			err = m.readWordDocumentation(p)
-		case wordVal.str == "typeof":
-			m.pushValue(String(m.popValue().Type()))
-		case wordVal.str == "stack-empty?":
-			if len(m.values) == 0 {
-				m.pushValue(Boolean(true))
-			} else {
-				m.pushValue(Boolean(false))
-			}
 		case wordVal.str == "}":
 			panic("Unbalanced }!")
 		case wordVal.str == "{":
@@ -437,13 +433,6 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 			strVal := strings.TrimSuffix(strings.TrimPrefix(wordVal.str, `"`), `"`)
 
 			m.pushValue(String(strVal))
-		case wordVal.str == "?":
-			// If there is an error, this will stop the loop.
-			wordVal.impl = func(m *machine) error { return m.runConditionalOperator() }
-			err = m.runConditionalOperator()
-		case wordVal.str == "call":
-			wordVal.impl = func(m *machine) error { return m.executeQuotation() }
-			err = m.executeQuotation()
 		case wordVal.str == ")":
 			panic("Unexpected )")
 		case wordVal.str == ";":
