@@ -83,7 +83,7 @@ func loadIOCore(m *machine) error {
 
 	m.predefinedWords["priv_puts"] = NilWord(func(m *machine) {
 		data := m.popValue().(String)
-		fmt.Println(string(data))
+		fmt.Print(string(data))
 	})
 	return nil
 }

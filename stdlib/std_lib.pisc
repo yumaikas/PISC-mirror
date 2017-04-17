@@ -4,7 +4,10 @@ This is the growing standard library of PISC.
 
 */
 
-: print ( a --  ) >string priv_puts ;
+: println ( a --  ) >string priv_puts "\n" priv_puts ;
+
+: print ( a -- ) >string priv_puts ;
+
 
 /* The following calls are the current stack-shuffling primitives */
 
