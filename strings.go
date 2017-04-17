@@ -137,6 +137,13 @@ func loadStringCore(m *machine) error {
 		m.pushValue(Boolean(false))
 	})
 
+	m.addGoWord("str-ends", "( str endstr -- endswith?", func(m *machine) error {
+		endStr := m.popValue().String()
+		str := m.popValue().String()
+		m.pushValue(Boolean(strings.HasSuffix(str, endStr)))
+		return nil
+	})
+
 	// TODO: Add test
 	m.addGoWord("str-substr", "( str start end -- substr )", func(m *machine) error {
 		end := m.popValue().(Integer)

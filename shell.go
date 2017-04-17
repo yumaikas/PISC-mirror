@@ -15,6 +15,21 @@ var ModShellUtils = PISCModule{
 }
 
 func loadShellWords(m *machine) error {
+
+	m.addGoWord("list-files-at", "( path -- files )", GoWord(func(m *machine) error {
+		dirPath := m.popValue().String()
+		files, err := ioutil.ReadDir(dirPath)
+		if err != nil {
+			fmt.Println("Error: ", err)
+		}
+		arr := make(Array, len(files))
+		for i, f := range files {
+			arr[i] = fileInfoToDict(f)
+		}
+		m.pushValue(arr)
+		return nil
+	}))
+
 	m.addGoWord("list-files", "( -- files ) ", GoWord(func(m *machine) error {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {

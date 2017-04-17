@@ -16,7 +16,8 @@
 : assert ( message quot1 quot2 -- ) 
 	:q2 :q1 :msg 
  	{ q1 } dup :a1 { q2 } dup :a2 deep-slow-reflect-eq not [ 
-	 	${ "Testing that " $msg " failed: " $a1 " is not " $a2 } print
+	 	"" println 
+	 	${ "Testing that " $msg " failed: " $a1 " is not " $a2 } println
  	 ] [
 	 	"." print
  	 ] if 
@@ -26,7 +27,7 @@
 
 : run-single-test ( name quot -- test ) 
 	:quot :name
-	${ "Running: " $name } print
+	${ "Running: " $name " " } print
 	{ quot } dup :arr len 0 > [ ${ "Test" $name "corrupted the stack with" arr } error ] when
 ;
 
@@ -36,11 +37,16 @@
 	<dict> dup :self
 		swap <<-name
 		[ $tests ] <<-tests
-		/* ( name quot -- ) */
+		/* ( name quot -- ) Appends a name/quot pair to the tests vector */
 		[ 2vector $tests swap vec-append :tests ] <<-addTest
 
 		[ 
-			${ "Running the " $self ->name " tests" } print
-			$tests [ splat run-single-test ] vec-each
+			# The title of the tests
+			${ "Running the " $self ->name " tests" } println
+			$tests [ 
+				# Indent each sub-test
+				"   " print
+				splat run-single-test "" println 
+			] vec-each
 		] <<-runTests
 ;

@@ -22,4 +22,15 @@
 
 ] $string-suite .addTest
 
+"Contains and ending/starting" [
+	"str-ends" [ "abcde" "cde" str-ends ] [ t ] assert
+	"str-substr" [ "abcde" 0 2 str-substr ] [ "ab" ] assert
+	"str-substr" [ "abcde" 0 4 str-substr ] [ "abcd" ] assert
+	"str-substr" [ "abcde" 1 4 str-substr ] [ "bcd" ] assert
+	"str-idx-of" [ "abcde" "c" str-idx-of ] [ 2 ] assert
+	# TODO Figure out unicode tests? 
+
+
+] $string-suite .addTest
+
 $string-suite .runTests
