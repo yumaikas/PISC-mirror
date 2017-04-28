@@ -28,7 +28,7 @@ func loadHelpCore(m *machine) error {
 			}
 			return nil
 		} else {
-			fmt.Println("No help avaialble.")
+			fmt.Println("No help available.")
 			return nil
 		}
 	})

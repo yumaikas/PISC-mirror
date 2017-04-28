@@ -1,4 +1,4 @@
-// Posisition
+// Position
 // Independent
 // Source
 // Code
@@ -19,11 +19,11 @@ import (
 	cli "gopkg.in/urfave/cli.v1"
 )
 
-// This function starts an interpertor
+// This function starts an interpreter
 func main() {
 	app := cli.NewApp()
 	app.Author = "Andrew Owen, @yumaikas"
-	app.Name = "PISC, aka Posisition Independent Source Code"
+	app.Name = "PISC, aka Position Independent Source Code"
 	app.Usage = "A small stack based scripting langauge built for fun"
 	app.Action = handleFlags
 	app.Flags = []cli.Flag{
@@ -174,7 +174,7 @@ func loadInteractive(m *machine) {
 
 	fmt.Fprintln(
 		os.Stderr,
-		`Postion
+		`Position
 Independent
 Source
 Code`)
