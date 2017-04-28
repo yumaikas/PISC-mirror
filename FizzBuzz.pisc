@@ -8,7 +8,7 @@
 $n [
 	$i 3 divisor? [ "Fizz" ] [ "" ] if :f
 	$i 5 divisor? [ "Buzz" ] [ "" ] if :b
-	$f $b concat :fb /* Save the result of the FizzBuzz checks into the fb local var */
-    $fb len 0 > [ $fb print ] [ $i print ] if 
-    ++i
+	${ $f $b } :fb /* Save the result of the FizzBuzz checks into the fb local var */
+    $fb len 0 > [ $fb println ] [ $i println ] if 
+    $i 1 + :i
 ] times ;
