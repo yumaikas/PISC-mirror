@@ -125,10 +125,8 @@ func (c *codeList) nextWord() (*word, error) {
 				skipChar = false
 				continue
 			default:
-				return nil, fmt.Errorf(fmt.Sprint(
-					"Invalid escape sequence:", v,
-					"current word: ", currentWord,
-					"line:", c.lineNumber))
+				return nil, fmt.Errorf("Invalid escape sequence: %v current word: %v line: %v",
+					v, currentWord, c.lineNumber)
 			}
 		}
 

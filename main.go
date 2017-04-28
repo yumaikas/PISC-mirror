@@ -116,13 +116,13 @@ func handleFlags(ctx *cli.Context) {
 		if ctx.IsSet("database") {
 			err := m.loadForDB()
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Fprintln(os.Stderr, err.Error())
 				log.Fatal("Error while loading modules")
 			}
 		} else {
 			err := m.loadForCLI()
 			if err != nil {
-				fmt.Println(err.Error())
+				fmt.Fprintln(os.Stderr, err.Error())
 				log.Fatal("Error while loading modules")
 			}
 		}
@@ -172,8 +172,7 @@ func loadInteractive(m *machine) {
 		return
 	}
 
-	fmt.Fprintln(
-		os.Stderr,
+	fmt.Println(
 		`Position
 Independent
 Source
@@ -183,11 +182,11 @@ Code`)
 		// fmt.Print(">> ")
 		line, err := rl.Readline()
 		if strings.TrimSpace(line) == "exit" {
-			fmt.Fprintln(os.Stderr, "Exiting")
+			fmt.Println("Exiting")
 			return
 		}
 		if err == io.EOF {
-			fmt.Fprintln(os.Stderr, "Exiting program")
+			fmt.Println("Exiting program")
 			return
 		}
 		if err != nil {
@@ -198,16 +197,15 @@ Code`)
 
 		err = m.executeString(line, codePosition{source: fmt.Sprint("stdin:", numEntries)})
 		if err == ExitingProgram {
-			fmt.Fprintln(os.Stderr, "Exiting program")
+			fmt.Println("Exiting program")
 			return
 		}
 		if err != nil {
-			fmt.Println("Error:")
-			fmt.Println(err.Error())
+			fmt.Fprintln(os.Stderr, "Error:", err.Error())
 			return
 		}
 		m.logAndResetDispatchCount(os.Stderr)
-		fmt.Fprintln(os.Stderr, "Data Stack:")
+		fmt.Println("Data Stack:")
 		for _, val := range m.values {
 			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}

@@ -4,6 +4,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"os"
 	"regexp"
 	"strconv"
 	"strings"
@@ -235,7 +236,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				retErr = fmt.Errorf("%s", pErr)
 			}
 			if retErr != nil {
-				// fmt.Println("Error while executing", wordVal, ":", p.wrapError(retErr))
+				// fmt.Fprintln(os.Stderr, "Error while executing", wordVal, ":", p.wrapError(retErr))
 			}
 		}()
 	*/
@@ -490,7 +491,7 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 		}
 		if err != nil {
 			// TODO: add some ways to debug here....
-			fmt.Println("Execution stopped during word:  ", wordVal, " error: ", err)
+			fmt.Fprintln(os.Stderr, "Execution stopped during word:  ", wordVal, " error: ", err)
 			return err
 		}
 	}
@@ -540,7 +541,7 @@ func (m *machine) readWordBody(name word, c codeSequence) ([]*word, []codePositi
 	var err = error(nil)
 	openPar, err2 := c.nextWord()
 	if openPar.str != "(" {
-		fmt.Println("ERRR0!")
+		fmt.Fprintln(os.Stderr, "ERRR0!")
 		return nil, nil, WordDefParenExpectedError
 	}
 	// TODO: come back and clean this up.

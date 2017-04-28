@@ -20,7 +20,7 @@ func loadShellWords(m *machine) error {
 		dirPath := m.popValue().String()
 		files, err := ioutil.ReadDir(dirPath)
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Fprintln(os.Stderr, "Error: ", err)
 		}
 		arr := make(Array, len(files))
 		for i, f := range files {
@@ -33,7 +33,7 @@ func loadShellWords(m *machine) error {
 	m.addGoWord("list-files", "( -- files ) ", GoWord(func(m *machine) error {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
-			fmt.Println("Error: ", err)
+			fmt.Fprintln(os.Stderr, "Error: ", err)
 		}
 		arr := make(Array, len(files))
 		for i, f := range files {
