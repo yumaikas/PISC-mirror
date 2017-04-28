@@ -1,5 +1,5 @@
 /*
-Sums below 1000 of 3 and 5
+Sums below 1000 of multiples of 3 and 5
 */
 
 "std_lib.pisc" import
