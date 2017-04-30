@@ -82,7 +82,7 @@ func loadLocalCore(m *machine) error {
 			// TODO: Clean up this cast
 			v, canNumber := val.(Integer)
 			if canNumber {
-				m.pushValue(v + 1)
+				m.locals[len(m.locals)-1][varName.String()] = v + 1
 				return nil
 			} else {
 				return ErrAttemtToIncrementNonNumber
@@ -100,7 +100,7 @@ func loadLocalCore(m *machine) error {
 			// TODO: Clean up this cast
 			v, canNumber := val.(Integer)
 			if canNumber {
-				m.pushValue(v - 1)
+				m.locals[len(m.locals)-1][varName.String()] = v - 1
 				return nil
 			} else {
 				return ErrAttemtToIncrementNonNumber

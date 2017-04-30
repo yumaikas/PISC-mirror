@@ -33,5 +33,13 @@
 	"6 mod 4 should be 2 " [ 6 4 mod ] [ 2 ] assert
 ] test
 
+"Pre and postcrement" [
+    get-locals
+    0 :i
+    "Increment should work" [ ++i $i ] [ 1 ] assert
+    "Decrement should work" [ --i $i ] [ 0 ] assert
+    drop-locals
+] test
+
 $math-suite .runTests
 
