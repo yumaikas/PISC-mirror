@@ -86,11 +86,19 @@ type machine struct {
 	// Keep a default database around...
 	db            *storm.DB
 	numDispatches int64
+
+	// A place to
+	debugTrace string
 }
 
 func (m *machine) logAndResetDispatchCount(w io.Writer) {
 	fmt.Fprintln(w, m.numDispatches, "dispatches have occured")
 	m.numDispatches = 0
+}
+
+// Not the most efficient way, but should work for starting
+func (m *machine) trace(msg string) {
+	m.debugTrace += msg
 }
 
 // Append uses an allocation pattern via Go to amortize the number of allocations performed
@@ -215,31 +223,18 @@ func wordIsWhitespace(w word) bool {
 	return true
 }
 
+func (m *machine) execute(p *codeQuotation) error {
+	var old_idx = p.idx
+	p.idx = 0
+	var retErr = m.do_execute(p)
+	p.idx = old_idx
+	return retErr
+}
+
 // This executes a given code sequence against a given machine
-func (m *machine) execute(p *codeQuotation) (retErr error) {
+func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 	var err error
 	var wordVal *word
-	// TODO: Examine how to clean this up
-	// var old_idx = p.idx
-	p.idx = 0
-	// This isn't efficient, but it's a way to keep from setting stuff to 0 everywhere else.
-	/*
-		defer func() {
-			p.idx = old_idx
-		}()
-	*/
-	// TODO: Figure out how to keep from needing this.
-	/*
-		defer func() {
-			pErr := recover()
-			if pErr != nil {
-				retErr = fmt.Errorf("%s", pErr)
-			}
-			if retErr != nil {
-				// fmt.Fprintln(os.Stderr, "Error while executing", wordVal, ":", p.wrapError(retErr))
-			}
-		}()
-	*/
 	for err == nil {
 		wordVal, err = p.nextWord()
 		if err == io.EOF {
@@ -475,6 +470,9 @@ func (m *machine) execute(p *codeQuotation) (retErr error) {
 				// be used.
 				m.pushValue(String(nonPrefix))
 				err = m.execute(prefixFunc)
+				if err != nil {
+					return err
+				}
 				// Captures prefix/nonprefix
 				wordVal.impl = func(m *machine) error {
 					m.pushValue(String(nonPrefix))
@@ -503,7 +501,16 @@ var LocalFuncRun = fmt.Errorf("Nothing was wrong")
 var WordNotFound = fmt.Errorf("word was undefined")
 
 func (c *quotation) execute(m *machine) error {
-	return m.execute(c.inner)
+
+	var old_idx = c.inner.idx
+	c.inner.idx = 0
+	m.locals = append(m.locals, c.locals)
+
+	var err = m.execute(c.inner)
+
+	m.locals = m.locals[:len(m.locals)-1]
+	c.inner.idx = old_idx
+	return err
 }
 
 func (m *machine) tryLocalWord(w *word) error {
@@ -630,7 +637,6 @@ func getPrefixOf(w word) string {
 	return prefixMatchRegex.FindString(strings.TrimSpace(w.str))
 }
 
-//
 // NB. We're going to allocate a lot for now.
 func stringFromWordDef(definition []*word) string {
 	// Copied from std lib's strings.Join
