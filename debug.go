@@ -37,6 +37,17 @@ func loadDebugCore(m *machine) error {
 		m.pushValue(String(fmt.Sprint("Code took ", elapsed)))
 		return nil
 	})
+
+	m.addGoWord("print-debug-trace", "( -- )", func(m *machine) error {
+		fmt.Println(m.debugTrace)
+		return nil
+	})
+
+	m.addGoWord("clear-debug-trace", "( -- )", func(m *machine) error {
+		m.debugTrace = ""
+		return nil
+	})
+
 	// ( filepath quotation -- )
 	m.predefinedWords["cpu-pprof"] = GoWord(func(m *machine) error {
 		m.executeString("swap", codePosition{source: "cpu-pprof GoWord"})
