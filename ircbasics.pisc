@@ -1,0 +1,53 @@
+
+: handle-ping ( conn message -- was-ping ) 
+	:msg :conn
+	$msg "PING" str-contains :was-ping
+	$was-ping [
+		$msg " " str-split 1 vec-at :resp-key
+		${ "PONG :" $resp-key } :resp 
+		$resp $conn .send-message
+	] when
+	$was-ping
+;
+
+: irc-pong-server! ( addr -- )
+	:addr
+	"Before trying to connect" println
+	$addr irc-dial :conn
+
+	/* Get the server MOTD and the like */
+	"PASS 0" $conn .send-message
+	"NICK piscbot" $conn .send-message
+	$conn dup .recieve-message handle-ping
+	"USER piscbot piscbot i :piscbot" $conn .send-message
+	$conn dup .recieve-message handle-ping
+
+	t :reading-motd
+	[ $reading-motd ] [
+		$conn .recieve-message :msg
+		$msg println
+		/* Waiting for a MODE command so we know that MOTD has been finished */
+		$msg "MODE" str-contains not :reading-motd
+	] while
+
+	"JOIN #botwars" $conn .send-message
+
+	[ t ] [
+		"Awaiting a message" println
+			$conn .recieve-message :msg
+			$msg println
+		[
+
+			$conn $msg handle-ping not [
+				$msg println
+				$msg "!ping" str-contains [
+					"PRIVMSG #botwars :pong!" $conn .send-message
+				] when
+			] when
+		] time println
+	] while
+	$conn .close
+;
+
+: freenode-pong-server ( -- ) "irc.freenode.com:6667" irc-pong-server! ;
+: afternet-pong-server ( -- ) "irc.afternet.org:6667" irc-pong-server! ;
