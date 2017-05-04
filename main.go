@@ -44,12 +44,18 @@ func main() {
 			Usage: "Execute a file as a bit of pisc, runs before -i or -c",
 		},
 		cli.BoolFlag{
+			Name:  "chatbot",
+			Usage: "Load the chatbot modules before -c and -i",
+		},
+		cli.BoolFlag{
 			Name:   "benchmark",
 			Hidden: true,
 			Usage:  "Run various benchmarks, using pprof, and print out pertinent information",
 		},
 	}
+	fmt.Println("???")
 	app.Run(os.Args)
+	fmt.Println("???")
 }
 
 func initMachine() *machine {
@@ -64,55 +70,67 @@ func initMachine() *machine {
 	return m
 }
 
-func handleFlags(ctx *cli.Context) {
-	m := initMachine()
-	// Execute this before benchmarking since we aren't yet benchmarking file loads
-	if ctx.IsSet("benchmark") {
-		err := m.loadForCLI()
-		if err != nil {
-			log.Fatalf("Unable to start benchmark due to error %v", err.Error())
-			return
-		}
-		err = m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
-		if err != nil {
-			log.Fatalf("Unable to start benchmark due to error %v", err.Error())
-			return
-		}
-		f, err := os.Create("bench-cpu-recursion.prof")
-		if err != nil {
-			log.Fatal("Unable to create profiling file")
-			return
-		}
-		pos := codePosition{source: "Benchmark recursive"}
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("Unable to start CPU profile")
-		}
-		err = m.executeString("100000 [ 12 factorial drop ] times", pos)
-		if err != nil {
-			log.Fatal("Recursive benchmark failed:", err)
-		}
-		pprof.StopCPUProfile()
-		f, err = os.Create("bench-cpu-iteration.prof")
-		if err != nil {
-			log.Fatal("Unable to create profiling file")
-			return
-		}
-		pos = codePosition{source: "Benchmark loop"}
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("Unable to start CPU profile")
-			return
-		}
-		err = m.executeString("100000 [ 12 factorial-loop drop ] times", pos)
-		if err != nil {
-			log.Fatal("Recursive benchmark failed:", err)
-			pprof.StopCPUProfile()
-			return
-		}
+func benchmark(m *machine) {
+	err := m.loadForCLI()
+	if err != nil {
+		log.Fatalf("Unable to start benchmark due to error %v", err.Error())
+		return
+	}
+	err = m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
+	if err != nil {
+		log.Fatalf("Unable to start benchmark due to error %v", err.Error())
+		return
+	}
+	f, err := os.Create("bench-cpu-recursion.prof")
+	if err != nil {
+		log.Fatal("Unable to create profiling file")
+		return
+	}
+	pos := codePosition{source: "Benchmark recursive"}
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal("Unable to start CPU profile")
+	}
+	err = m.executeString("100000 [ 12 factorial drop ] times", pos)
+	if err != nil {
+		log.Fatal("Recursive benchmark failed:", err)
+	}
+	pprof.StopCPUProfile()
+	f, err = os.Create("bench-cpu-iteration.prof")
+	if err != nil {
+		log.Fatal("Unable to create profiling file")
+		return
+	}
+	pos = codePosition{source: "Benchmark loop"}
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal("Unable to start CPU profile")
+		return
+	}
+	err = m.executeString("100000 [ 12 factorial-loop drop ] times", pos)
+	if err != nil {
+		log.Fatal("Recursive benchmark failed:", err)
 		pprof.StopCPUProfile()
 		return
 	}
+	pprof.StopCPUProfile()
+	return
+}
+
+func handleFlags(ctx *cli.Context) {
+	m := initMachine()
+	fmt.Println("???")
+	// Execute this before benchmarking since we aren't yet benchmarking file loads
+	if ctx.IsSet("benchmark") {
+		benchmark(m)
+	}
 	// Load PISC with libraries, according to the context
 	if ctx.IsSet("file") || ctx.IsSet("command") || ctx.IsSet("interactive") {
+		if ctx.IsSet("chatbot") {
+			err := m.loadForChatbot()
+			if err != nil {
+				fmt.Fprintln(os.Stderr, err.Error())
+				log.Fatal("Error while loading modules")
+			}
+		}
 		if ctx.IsSet("database") {
 			err := m.loadForDB()
 			if err != nil {
