@@ -9,8 +9,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-
-	"github.com/asdine/storm"
 )
 
 var (
@@ -84,7 +82,6 @@ type machine struct {
 	// Each time we are asked for a symbol, supply the value here, then increment
 	symbolIncr int64
 	// Keep a default database around...
-	db            *storm.DB
 	numDispatches int64
 
 	// A place to
