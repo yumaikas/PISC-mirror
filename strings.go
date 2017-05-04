@@ -137,10 +137,17 @@ func loadStringCore(m *machine) error {
 		m.pushValue(Boolean(false))
 	})
 
-	m.addGoWord("str-ends", "( str endstr -- endswith?", func(m *machine) error {
+	m.addGoWord("str-ends", "( str endstr -- endswith? )", func(m *machine) error {
 		endStr := m.popValue().String()
 		str := m.popValue().String()
 		m.pushValue(Boolean(strings.HasSuffix(str, endStr)))
+		return nil
+	})
+
+	m.addGoWord("str-starts", "( str prefix -- startswith? )", func(m *machine) error {
+		prefix := m.popValue().String()
+		str := m.popValue().String()
+		m.pushValue(Boolean(strings.HasPrefix(str, prefix)))
 		return nil
 	})
 
