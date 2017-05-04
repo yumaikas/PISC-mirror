@@ -1,11 +1,6 @@
 package main
 
-import (
-	"fmt"
-
-	"github.com/asdine/storm"
-	"github.com/asdine/storm/codec/gob"
-)
+import "fmt"
 
 var ModBoltDB = PISCModule{
 	Author:    "Andrew Owen",
@@ -24,126 +19,127 @@ type counter int
 
 func loadBoltDB(m *machine) error {
 
-	var err error
-	m.db, err = storm.Open(".piscdb", storm.Codec(gob.Codec))
-	if err != nil {
-		return err
-	}
+	//var err error
+	return nil
+	//m.db, err = storm.Open(".piscdb", storm.Codec(gob.Codec))
+	// if err != nil {
+	// 	return err
+	// }
 
-	m.addGoWord("incr-counter", "( key -- newval )", GoWord(func(m *machine) error {
-		key := m.popValue().String()
-		tx, err := m.db.Begin(true)
-		defer tx.Rollback()
-		var c counter
-		err = tx.Get("counter", key, &c)
-		if err == storm.ErrNotFound {
-			tx.Set("counter", key, 0)
-			c = 0
-			err = nil
-		}
-		if err != nil {
-			return err
-		}
-		c++
-		err = tx.Set("counter", key, c)
-		if err != nil {
-			return err
-		}
-		err = tx.Commit()
-		if err != nil {
-			return err
-		}
-		m.pushValue(Integer(c))
-		return nil
-	}))
+	// m.addGoWord("incr-counter", "( key -- newval )", GoWord(func(m *machine) error {
+	// 	key := m.popValue().String()
+	// 	tx, err := m.db.Begin(true)
+	// 	defer tx.Rollback()
+	// 	var c counter
+	// 	err = tx.Get("counter", key, &c)
+	// 	if err == storm.ErrNotFound {
+	// 		tx.Set("counter", key, 0)
+	// 		c = 0
+	// 		err = nil
+	// 	}
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	c++
+	// 	err = tx.Set("counter", key, c)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	err = tx.Commit()
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	m.pushValue(Integer(c))
+	// 	return nil
+	// }))
 
-	m.addGoWord("save-str", " ( key val -- ) ",
-		GoWord(func(m *machine) error {
-			val := m.popValue().String()
-			key := m.popValue().String()
-			return m.db.Set("strings", key, val)
-		}))
+	// m.addGoWord("save-str", " ( key val -- ) ",
+	// 	GoWord(func(m *machine) error {
+	// 		val := m.popValue().String()
+	// 		key := m.popValue().String()
+	// 		return m.db.Set("strings", key, val)
+	// 	}))
 
-	m.addGoWord("load-str", " ( key -- val ) ",
-		GoWord(func(m *machine) error {
-			key := m.popValue().String()
-			var val string
-			err := m.db.Get("strings", key, &val)
-			if err != nil {
-				return err
-			}
-			m.pushValue(String(val))
-			return nil
-		}))
+	// m.addGoWord("load-str", " ( key -- val ) ",
+	// 	GoWord(func(m *machine) error {
+	// 		key := m.popValue().String()
+	// 		var val string
+	// 		err := m.db.Get("strings", key, &val)
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		m.pushValue(String(val))
+	// 		return nil
+	// 	}))
 
-	m.addGoWord("with-bucket", " ( str quot -- .. ) ", GoWord(func(m *machine) error {
-		quot := m.popValue().(*quotation)
-		bucketName := m.popValue().String()
-		tx, err := m.db.Begin(true)
-		if err != nil {
-			return err
-		}
-		defer tx.Rollback()
-		dict := make(Dict)
+	// m.addGoWord("with-bucket", " ( str quot -- .. ) ", GoWord(func(m *machine) error {
+	// 	quot := m.popValue().(*quotation)
+	// 	bucketName := m.popValue().String()
+	// 	tx, err := m.db.Begin(true)
+	// 	if err != nil {
+	// 		return err
+	// 	}
+	// 	defer tx.Rollback()
+	// 	dict := make(Dict)
 
-		// ( key val -- )
-		dict["put-int"] = GoFunc(func(m *machine) error {
-			val := m.popValue().(Integer)
-			fmt.Println("value?", val)
-			key := m.popValue().String()
-			tx.Set(bucketName, key, int(val))
-			return nil
-		})
+	// 	// ( key val -- )
+	// 	dict["put-int"] = GoFunc(func(m *machine) error {
+	// 		val := m.popValue().(Integer)
+	// 		fmt.Println("value?", val)
+	// 		key := m.popValue().String()
+	// 		tx.Set(bucketName, key, int(val))
+	// 		return nil
+	// 	})
 
-		// ( key -- val )
-		dict["get-int"] = GoFunc(func(m *machine) error {
-			var val int
-			key := m.popValue().String()
-			err := tx.Get(bucketName, key, &val)
-			if err == storm.ErrNotFound {
-				err = nil
-				val = 0
-			}
-			if err != nil {
-				return err
-			}
-			m.pushValue(Integer(val))
-			return nil
-		})
+	// 	// ( key -- val )
+	// 	dict["get-int"] = GoFunc(func(m *machine) error {
+	// 		var val int
+	// 		key := m.popValue().String()
+	// 		err := tx.Get(bucketName, key, &val)
+	// 		if err == storm.ErrNotFound {
+	// 			err = nil
+	// 			val = 0
+	// 		}
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		m.pushValue(Integer(val))
+	// 		return nil
+	// 	})
 
-		// ( key val -- )
-		dict["put-str"] = GoFunc(func(m *machine) error {
-			val := m.popValue().String()
-			key := m.popValue().String()
-			return tx.Set(bucketName, key, val)
-		})
+	// 	// ( key val -- )
+	// 	dict["put-str"] = GoFunc(func(m *machine) error {
+	// 		val := m.popValue().String()
+	// 		key := m.popValue().String()
+	// 		return tx.Set(bucketName, key, val)
+	// 	})
 
-		// ( key -- val )
-		dict["get-str"] = GoFunc(func(m *machine) error {
-			var val string
-			key := m.popValue().String()
-			err := tx.Get(bucketName, key, &val)
-			if err == storm.ErrNotFound {
-				err = nil
-				val = ""
-			}
-			if err != nil {
-				return err
-			}
-			m.pushValue(String(val))
-			return nil
-		})
+	// 	// ( key -- val )
+	// 	dict["get-str"] = GoFunc(func(m *machine) error {
+	// 		var val string
+	// 		key := m.popValue().String()
+	// 		err := tx.Get(bucketName, key, &val)
+	// 		if err == storm.ErrNotFound {
+	// 			err = nil
+	// 			val = ""
+	// 		}
+	// 		if err != nil {
+	// 			return err
+	// 		}
+	// 		m.pushValue(String(val))
+	// 		return nil
+	// 	})
 
-		m.pushValue(dict)
-		m.pushValue(quot)
-		err = m.executeString("with", quot.toCode().codePositions[0])
-		if err != nil {
-			return err
-		} else {
-			tx.Commit()
-			return nil
-		}
-	}))
+	// 	m.pushValue(dict)
+	// 	m.pushValue(quot)
+	// 	err = m.executeString("with", quot.toCode().codePositions[0])
+	// 	if err != nil {
+	// 		return err
+	// 	} else {
+	// 		tx.Commit()
+	// 		return nil
+	// 	}
+	// }))
 
 	// TODO: Implement individual DBs..
 	/*

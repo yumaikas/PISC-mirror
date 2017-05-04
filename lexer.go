@@ -137,7 +137,9 @@ func (c *codeList) nextWord() (*word, error) {
 			}
 			continue
 		case '#':
-			inLineComment = true
+			if !inString {
+				inLineComment = true
+			}
 			currentWord += string(v)
 			continue
 		case '"':
