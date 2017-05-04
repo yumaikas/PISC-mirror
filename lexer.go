@@ -102,6 +102,7 @@ func (c *codeList) nextWord() (*word, error) {
 				continue
 			}
 		}
+
 		if skipChar {
 			switch v {
 			case 'n':
