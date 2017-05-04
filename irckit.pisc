@@ -88,7 +88,7 @@
 				$handlers [ :pair
 					/* check the filter */
 					$msg $pair vec-at 0 call [
-					/* TODO: Parse out channel, verb, user nick, more, call handler */
+					/* TODO: Parse out channel, verb, user nick, more, call handler so they can be passed to the handler */
 					] when
 				] vec-each
 
