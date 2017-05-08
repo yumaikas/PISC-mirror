@@ -11,7 +11,6 @@
 
 : irc-conf-defaults ( conf -- filledConf ) 
 	:conf
-
 	/* ( key fallbackVal --  ) */
 	[ :v :k 
 		$conf $k dict-has-key?
@@ -22,7 +21,10 @@
 	"nick" "piscbot" fallback
 	"chanlist" { "#botwars" } fallback
 	"handlers" {
-	 	{ [ "!ping" str-contains ] [ "pong!" @reply ] }
+		<dict> 
+			[ "!ping" str-contains ] <<-is-match
+			[ :bot "pong!" $bot .reply ] <<-callback
+			/* Leave the dict on the stack for it to be added to the array */
 	} fallback 
 
 	$conf
@@ -81,18 +83,14 @@
 	[ t ] [
 		"Awaiting a message" println
 		get-message dup :msg println
-		[
-			$conn $msg handle-ping not [
 
-				/* Handlers are filter/action pairs */
-				$handlers [ :pair
-					/* check the filter */
-					$msg $pair vec-at 0 call [
+		[ $conn $msg handle-ping not [
+
+				$handlers [ :handler /*  */
+					$msg $handler .is-match [
 					/* TODO: Parse out channel, verb, user nick, more, call handler so they can be passed to the handler */
 					] when
 				] vec-each
-
-
 			] when
 		] time println
 	] while
