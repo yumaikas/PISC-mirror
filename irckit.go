@@ -48,9 +48,25 @@ func (_msg ircMessage) getMessagePrefixIsUserLike(m *machine) error {
 	return nil
 }
 
-func (_msg ircMessage) getMessagePrefixIsUserLike(m *machine) error {
+func (_msg ircMessage) getMessagePrefixIsServerLike(m *machine) error {
 	msg := irc.Message(_msg)
 	m.pushValue(Boolean(msg.IsServer()))
+	return nil
+}
+
+func (_msg ircMessage) getName(m *machine) error {
+	msg := irc.Message(_msg)
+	m.pushValue(String(msg.Name))
+	return nil
+}
+
+func (_msg ircMessage) getParams(m *machine) error {
+	msg := irc.Message(_msg)
+	params := make(Array, len(msg.Params))
+	for i := 0; i < len(msg.Params); i++ {
+		params[i] = String(msg.Params[i])
+	}
+	m.pushValue(Array(params))
 	return nil
 }
 
@@ -60,12 +76,13 @@ func (conn *ircConn) readMessage(m *machine) error {
 		return err
 	}
 
-	msg := ircMessage(_msg)
-
+	msg := (*ircMessage)(_msg)
 	msgDict := Dict{
-		"command": GoFunc(msg.getMessageCommand),
-		"is-userlike": GoFunc(msg.getMessagePrefixIsUserLike),
-		"is-serverlike": GoFunc(msg.g)
+		"command":       GoFunc(msg.getMessageCommand),
+		"name":          GoFunc(msg.getName),
+		"is-userlike":   GoFunc(msg.getMessagePrefixIsUserLike),
+		"is-serverlike": GoFunc(msg.getMessagePrefixIsServerLike),
+		"params":        GoFunc(msg.getParams),
 	}
 
 	m.pushValue(msgDict)
@@ -97,6 +114,7 @@ func loadIRCKit(m *machine) error {
 			"close":               GoFunc(stackConn.close),
 			"send-message":        GoFunc(stackConn.write),
 			"recieve-message-str": GoFunc(stackConn.readMessageString),
+			"recieve-message":     GoFunc(stackConn.readMessage),
 		}
 
 		m.pushValue(connDict)
