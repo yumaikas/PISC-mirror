@@ -53,9 +53,7 @@ func main() {
 			Usage:  "Run various benchmarks, using pprof, and print out pertinent information",
 		},
 	}
-	fmt.Println("???")
 	app.Run(os.Args)
-	fmt.Println("???")
 }
 
 func initMachine() *machine {
