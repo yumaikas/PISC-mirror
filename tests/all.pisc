@@ -1,8 +1,9 @@
 # Run at toplevel of PISC development directory
 "./tests/" list-files-at [ :f 
+	[ $f ->name swap str-neq ] :is-not
 	
-	$f ->name "test_root.pisc" str-neq 
-	$f ->name "all.pisc" str-neq and
+	"test_root.pisc" is-not
+	"all.pisc" is-not and
 	$f ->name ".pisc" str-ends and [ 
 	       ${ "./tests/" $f ->name } import
 		2 [ "" print ] times

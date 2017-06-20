@@ -137,7 +137,7 @@ func (m *machine) loadForCLI() error {
 }
 func (m *machine) loadForDB() error {
 	return m.LoadModules(append(StandardModules,
-		ModBoltDB, ModIOCore, ModIOCore, ModShellUtils)...)
+		ModBoltDB, ModIOCore, ModShellUtils)...)
 }
 
 func (m *machine) loadForChatbot() error {

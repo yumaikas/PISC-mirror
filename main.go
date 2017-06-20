@@ -36,8 +36,8 @@ func main() {
 			Usage: "Expressions to run from the command line, before -i, if it exists",
 		},
 		cli.BoolFlag{
-			Name:  "database, d",
-			Usage: "Tells PISC to attach to the boltDB file at .piscdb",
+			Name:  "boltdb, d",
+			Usage: "Tells PISC to enable boltdb integration",
 		},
 		cli.StringFlag{
 			Name:  "file, f",
@@ -129,7 +129,7 @@ func handleFlags(ctx *cli.Context) {
 				log.Fatal("Error while loading modules")
 			}
 		}
-		if ctx.IsSet("database") {
+		if ctx.IsSet("boltdb") {
 			err := m.loadForDB()
 			if err != nil {
 				fmt.Fprintln(os.Stderr, err.Error())
