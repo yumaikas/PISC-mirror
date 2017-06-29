@@ -26,17 +26,17 @@ func loadDebugCore(m *machine) error {
 		}
 	})
 	// ( quot -- .. time )
-	m.predefinedWords["time"] = GoWord(func(m *machine) error {
+	m.addGoWord("time", "( quot -- .. time )", GoWord(func(m *machine) error {
 		words := &codeQuotation{
 			idx:   0,
 			words: []*word{&word{str: "call"}},
 		}
 		start := time.Now()
-		m.execute(words)
+		err := m.execute(words)
 		elapsed := time.Since(start)
 		m.pushValue(String(fmt.Sprint("Code took ", elapsed)))
-		return nil
-	})
+		return err
+	}))
 
 	m.addGoWord("print-debug-trace", "( -- )", func(m *machine) error {
 		fmt.Println(m.debugTrace)
