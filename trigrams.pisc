@@ -24,7 +24,7 @@ seed-rand-time
 	 		"" :currWord
 	 	] [ 
 	 		/* Add the char to the current word */
-			$isSpace not [ $currWord $c concat :currWord ] when
+			$isSpace not [ $currWord $c str-concat :currWord ] when
  		] if
 	] each-char
 	/* finally, add any leftover word, leaving $words on the stack */

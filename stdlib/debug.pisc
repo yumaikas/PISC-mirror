@@ -2,4 +2,4 @@
 :DOC show-prefix-words ( -- ) Shows which prefix words are currently loaded ;
 
 :DOC show-locals ( -- ) Shows which locals are in current scope ;
-: show-locals ( -- ) [  over >string " = " swap concat concat nip print ] each-local ; 
+: show-locals ( -- ) [  over >string " = " swap str-concat str-concat nip print ] each-local ; 

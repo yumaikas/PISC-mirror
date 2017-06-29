@@ -4,7 +4,7 @@ Strings.pisc
 String handling words and such
 */
 
-:DOC concat ( a b -- c ) Concatenate the top two strings on the stack ;
+:DOC str-concat ( a b -- c ) Concatenate the top two strings on the stack ;
 :DOC >string ( a -- str ) Convert any stack value into a string ;
 :DOC string>int ( str -- int! ) Attempt to convert a string to an integer ;
 :DOC str-join ( vec sep -- str ) Turn a vector into a string by `>string` and using sep in between all the elements of `vec` ;

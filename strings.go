@@ -46,7 +46,7 @@ func (m *machine) loadStringWords() error {
 }
 
 func loadStringCore(m *machine) error {
-	m.predefinedWords["concat"] = _concat
+	m.predefinedWords["str-concat"] = _concat
 	m.predefinedWords[">string"] = _toString
 
 	m.predefinedWords["string>int"] = GoWord(func(m *machine) error {

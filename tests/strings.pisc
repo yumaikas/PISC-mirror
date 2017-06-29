@@ -4,9 +4,9 @@
 
 "Concatenation and joins" [
 	"\"a\" and \"b\" concat to \"ab\""
-		[ "a" "b" concat ] [ "ab" ] assert
+		[ "a" "b" str-concat ] [ "ab" ] assert
 	"\"Longer\" \"strings\" concat to \"Longerstrings\""
-		[ "Longer" "strings" concat ] [ "Longerstrings" ] assert
+		[ "Longer" "strings" str-concat ] [ "Longerstrings" ] assert
 	"Arrays of strings concat as expected" 
 		[ { "one" "two" "three" } "-" str-join ] [ "one-two-three" ] assert
 ] $string-suite .addTest
@@ -29,8 +29,6 @@
 	"str-substr" [ "abcde" 1 4 str-substr ] [ "bcd" ] assert
 	"str-idx-of" [ "abcde" "c" str-idx-of ] [ 2 ] assert
 	# TODO Figure out unicode tests? 
-
-
 ] $string-suite .addTest
 
 $string-suite .runTests
