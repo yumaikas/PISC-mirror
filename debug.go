@@ -12,7 +12,7 @@ import (
 
 var ModDebugCore = PISCModule{
 	Author:    "Andrew Owen",
-	Name:      "IOCore",
+	Name:      "DebugCore",
 	License:   "MIT",
 	DocString: "The debug words used in PISC",
 	Load:      loadDebugCore,
