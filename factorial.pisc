@@ -1,4 +1,3 @@
-/* TODO: Fix what's broken this thing... */
 : factorial ( x -- y ) :x 
 	$x 0 > [ $x $x 1 - factorial * ] [ 1 ] if ;
 
