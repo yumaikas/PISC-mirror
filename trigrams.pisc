@@ -7,7 +7,7 @@ seed-rand-time
 : char-any ( c chars -- ? )
 	:chars :c
  	f :isAny 
-	$chars [ $c str-eq $isAny or :isAny ] each-char
+	$chars [ $c str-eq? $isAny or :isAny ] each-char
 	$isAny
 ; 
 

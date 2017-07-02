@@ -12,7 +12,7 @@
 : <ping-responder> ( conn -- resp ) 
 	:conn
 	[ :msg
-		$msg .command "PRIVMSG" str-eq [
+		$msg .command "PRIVMSG" str-eq? [
 			$msg .params 0 vec-at :replyId
 			${ "PRIVMSG " $replyId " ping!" } $conn .send-message
 		] when
@@ -42,7 +42,7 @@
 	:list
 	{
 		$list [ :c
-			$c "#" str-starts [ $c ] [ ${ "#" $c } ] if
+			$c "#" str-starts? [ $c ] [ ${ "#" $c } ] if
 		] vec-each 
 	} "," str-join
 ;

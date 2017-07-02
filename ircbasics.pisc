@@ -1,7 +1,7 @@
 
 : handle-ping ( conn message -- was-ping ) 
 	:msg :conn
-	$msg .params " " str-join "PING" str-contains :was-ping
+	$msg .params " " str-join "PING" str-contains? :was-ping
 	$was-ping [
 		$msg " " str-split 1 vec-at :resp-key
 		${ "PONG :" $resp-key } :resp 
@@ -27,7 +27,7 @@
 		$conn .recieve-message-str :msg
 		$msg println
 		/* Waiting for a MODE command so we know that MOTD has been finished */
-		$msg "MODE" str-contains not :reading-motd
+		$msg "MODE" str-contains? not :reading-motd
 	] while
 
 	"JOIN #botwars" $conn .send-message
@@ -38,7 +38,7 @@
 		${ $msg .command " " } print
 		$conn $msg handle-ping not [
 			${ "<" $msg .params "><" str-join ">" } println
-			$msg .params " " str-join "!ping" str-contains [
+			$msg .params " " str-join "!ping" str-contains? [
 				"PRIVMSG #botwars :pong!" $conn .send-message
 			] when
 		] when

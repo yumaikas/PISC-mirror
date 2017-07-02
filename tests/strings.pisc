@@ -18,15 +18,21 @@
 	# TODO: consider finding a more self-representative 
 	# way of converting collections to strings
 	"{ 1 2 3 }" [ { 1 2 3 } >string ] [ "[1 2 3]" ] assert
-	"-%abc" [ -%abc >string ] [ "map[a:t b:t c:t]" ] assert
+	"str>int" [ "123" str>int ] [ 123 ] assert
+] $string-suite .addTest
 
+"Iteration and readers" [
+	"each-char" [ { "abc" [ ] each-char } ] [ { "a" "b" "c" } ] assert
 ] $string-suite .addTest
 
 "Contains and ending/starting" [
-	"str-ends" [ "abcde" "cde" str-ends ] [ t ] assert
-	"str-substr" [ "abcde" 0 2 str-substr ] [ "ab" ] assert
-	"str-substr" [ "abcde" 0 4 str-substr ] [ "abcd" ] assert
-	"str-substr" [ "abcde" 1 4 str-substr ] [ "bcd" ] assert
+	"str-ends?" [ 
+		"abcde" "cde" str-ends? 
+		"abcde" "cd" str-ends? 
+	] [ t f ] assert
+	"str-substr 0:2" [ "abcde" 0 2 str-substr ] [ "ab" ] assert
+	"str-substr 0:4" [ "abcde" 0 4 str-substr ] [ "abcd" ] assert
+	"str-substr 1:4" [ "abcde" 1 4 str-substr ] [ "bcd" ] assert
 	"str-idx-of" [ "abcde" "c" str-idx-of ] [ 2 ] assert
 	# TODO Figure out unicode tests? 
 ] $string-suite .addTest

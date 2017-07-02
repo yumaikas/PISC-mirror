@@ -11,8 +11,8 @@ Solving this code golf problem http://codegolf.stackexchange.com/questions/89241
 	0 :i 
 	>string 
 	[ 
-		dup "1" str-eq [ [ $i vec-append ] $:full ] when 
-		"0" str-eq [ [ $i vec-append ] $:empty ] when
+		dup "1" str-eq? [ [ $i vec-append ] $:full ] when 
+		"0" str-eq? [ [ $i vec-append ] $:empty ] when
 		[ 1 + ] $:i
 	] each-char 
 	0 :i

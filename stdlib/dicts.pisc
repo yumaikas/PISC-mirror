@@ -11,7 +11,7 @@
 :DOC dict-get ( dict key -- value )  Get the value from the dictionary  ;
 
 : dict-if-empty-stack ( .. -- dict? ) stack-empty? [ <dict> ] when ;
-: dict-if-not-dict ( .. -- dict ) dup typeof "Dictionary" str-neq [ <dict> ] when ;
+: dict-if-not-dict ( .. -- dict ) dup typeof "Dictionary" str-neq? [ <dict> ] when ;
 : ensure-dictionary ( .. -- dict ) dict-if-empty-stack dict-if-not-dict ;
 
 /* Fetch from dictionary */

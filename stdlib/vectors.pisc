@@ -2,8 +2,8 @@
 
 :DOC vec-set-at ( vec val idx -- elem ) Set vector at idx to value ;
 :DOC vec-at ( vec idx -- elem ) Get element at index ;
-:DOC <vector> ( -- vector ) "<vector>" extern-call ;
-:DOC vec-each ( vec quot -- .. ) "vec-each" extern-call ;
+:DOC <vector> ( -- vector ) Init a new vector ;
+:DOC vec-each ( vec quot -- .. ) Run `quot` for each element in the vector ;
 
 
 :DOC <vector> ( -- vec ) "<vector>" extern-call ;
@@ -13,7 +13,7 @@
 :DOC vec-popback ( vec -- vec elem  ) "vec-popback" extern-call ;
 :DOC vec-popfront ( vec -- vec elem ) "vec-popfront" extern-call ;
 
-:PRE [] ( vec idx -- ) string>int vec-at ;
+:PRE [] ( vec idx -- ) str>int vec-at ;
 
 : 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;
 

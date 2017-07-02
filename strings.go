@@ -41,133 +41,153 @@ func _toString(m *machine) error {
 	return nil
 }
 
-func (m *machine) loadStringWords() error {
-	return loadStringCore(m)
+func _strToInt(m *machine) error {
+	a := m.popValue().(String).String()
+	if i, err := strconv.Atoi(a); err != nil {
+		return err
+	} else {
+		m.pushValue(Integer(i))
+		return nil
+	}
+}
+
+// Potential TODO: Review for performance?
+func _strJoin(m *machine) error {
+	sep := m.popValue().(String).String()
+	elems := m.popValue().(Array)
+	str := ""
+	for _, val := range elems[:len(elems)-1] {
+		str += val.String() + sep
+	}
+	str += elems[len(elems)-1].String()
+	m.pushValue(String(str))
+	return nil
+}
+
+func _strSplit(m *machine) error {
+	sep := m.popValue().(String).String()
+	str := m.popValue().(String).String()
+	strs := strings.Split(str, sep)
+	toPush := make(Array, len(strs))
+	for idx, val := range strs {
+		toPush[idx] = String(val)
+	}
+	m.pushValue(toPush)
+	return nil
+}
+
+func _strEmpty(m *machine) error {
+	a := m.popValue().String()
+	m.pushValue(Boolean(len(a) > 0))
+	return nil
+}
+
+func _strEq(m *machine) error {
+	b := m.popValue().String()
+	a := m.popValue().String()
+	m.pushValue(Boolean(a == b))
+	return nil
+}
+
+func _strToRuneReader(m *machine) error {
+	a := m.popValue().(String)
+	reader := strings.NewReader(string(a))
+	bufReader := bufio.NewReader(reader)
+
+	readerObj := makeReader(bufReader)
+	m.pushValue(Dict(readerObj))
+	return nil
+}
+
+func _eachChar(m *machine) error {
+	quot := m.popValue().(*quotation).toCode()
+	str := m.popValue().(String).String()
+	var err error
+	for _, r := range str {
+		m.pushValue(String(string(r)))
+		quot.idx = 0
+		err = m.execute(quot)
+		if err != nil {
+			break
+		}
+	}
+	return err
+}
+
+func _strReplace(m *machine) error {
+	replace := m.popValue().String()
+	pat := m.popValue().String()
+	str := m.popValue().String()
+	newstr := strings.Replace(str, pat, replace, -1)
+	m.pushValue(String(newstr))
+	return nil
+}
+
+func _strContains(m *machine) error {
+	substr := m.popValue().String()
+	str := m.popValue().String()
+	m.pushValue(Boolean(strings.Contains(str, substr)))
+	return nil
+}
+
+func _strEndsWith(m *machine) error {
+	endStr := m.popValue().String()
+	str := m.popValue().String()
+	m.pushValue(Boolean(strings.HasSuffix(str, endStr)))
+	return nil
+}
+
+func _strStartsWith(m *machine) error {
+	prefix := m.popValue().String()
+	str := m.popValue().String()
+	m.pushValue(Boolean(strings.HasPrefix(str, prefix)))
+	return nil
+}
+
+func _strSubstr(m *machine) error {
+	end := m.popValue().(Integer)
+	start := m.popValue().(Integer)
+	str := m.popValue().String()
+
+	m.pushValue(String(str[start:end]))
+	return nil
+}
+
+func _strIdxOf(m *machine) error {
+	substr := m.popValue().String()
+	str := m.popValue().String()
+	idx := strings.Index(str, substr)
+	m.pushValue(Integer(idx))
+	return nil
+}
+
+func _strRepeat(m *machine) error {
+	numRepeats := int(m.popValue().(Integer))
+	str := m.popValue().String()
+	m.pushValue(String(strings.Repeat(str, numRepeats)))
+	return nil
 }
 
 func loadStringCore(m *machine) error {
-	m.predefinedWords["str-concat"] = _concat
-	m.predefinedWords[">string"] = _toString
+	m.addGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
+	m.addGoWord(">string", "( anyVal -- str )", _toString)
 
-	m.predefinedWords["string>int"] = GoWord(func(m *machine) error {
-		a := m.popValue().(String).String()
-		if i, err := strconv.Atoi(a); err != nil {
-			return err
-		} else {
-			m.pushValue(Integer(i))
-			return nil
-		}
+	m.addGoWord("str>int", "( str -- int! )", _strToInt)
+	m.addGoWord("str-join", "( vec sep -- str )", _strJoin)
+	m.addGoWord("str-split", "( str sep -- vec )", _strSplit)
+	m.addGoWord("str-empty?", "( str -- empty? )", _strEmpty)
+	m.addGoWord("str-eq?", "( a b -- eq? )", _strEq)
+	m.addGoWord("str>rune-reader", "( str -- reader )", _strToRuneReader)
 
-	})
+	m.addGoWord("each-char", "( str quot -- .. )", _eachChar)
+	m.addGoWord("str-replace", "( str pat replace -- .. )", _strReplace)
+	m.addGoWord("str-contains?", "( str cont -- contained? )", _strContains)
+	m.addGoWord("str-ends?", "( str endstr -- endswith? )", _strEndsWith)
+	m.addGoWord("str-starts?", "( str prefix -- startswith? )", _strStartsWith)
 
-	// ( vec sep -- str )
-	m.predefinedWords["str-join"] = NilWord(func(m *machine) {
-		sep := m.popValue().(String).String()
-		elems := m.popValue().(Array)
-		str := ""
-		for _, val := range elems[:len(elems)-1] {
-			str += val.String() + sep
-		}
-		str += elems[len(elems)-1].String()
-		m.pushValue(String(str))
-	})
-
-	// ( str sep -- vec )
-	m.predefinedWords["str-split"] = NilWord(func(m *machine) {
-		sep := m.popValue().(String).String()
-		str := m.popValue().(String).String()
-		strs := strings.Split(str, sep)
-		toPush := make(Array, len(strs))
-		for idx, val := range strs {
-			toPush[idx] = String(val)
-		}
-		m.pushValue(toPush)
-	})
-
-	m.predefinedWords["str-empty?"] = NilWord(func(m *machine) {
-		a := m.popValue().(String)
-		if len(a) > 0 {
-			m.pushValue(Boolean(len(a) > 0))
-		}
-	})
-
-	m.predefinedWords["str-eq"] = NilWord(func(m *machine) {
-		b := m.popValue().String()
-		a := m.popValue().String()
-		m.pushValue(Boolean(a == b))
-
-	})
-	// ( str -- obj )
-	m.predefinedWords["str>rune-reader"] = NilWord(func(m *machine) {
-		a := m.popValue().(String)
-		reader := strings.NewReader(string(a))
-		bufReader := bufio.NewReader(reader)
-
-		readerObj := makeReader(bufReader)
-		m.pushValue(Dict(readerObj))
-	})
-	// ( str quot -- .. )
-	m.predefinedWords["each-char"] = NilWord(func(m *machine) {
-		quot := m.popValue().(*quotation).toCode()
-		str := m.popValue().(String).String()
-		for _, r := range str {
-			m.pushValue(String(string(r)))
-			quot.idx = 0
-			m.execute(quot)
-		}
-	})
-
-	// ( str pat replace -- replaced )
-	m.predefinedWords["str-replace"] = NilWord(func(m *machine) {
-		replace := m.popValue().String()
-		pat := m.popValue().String()
-		str := m.popValue().String()
-		newstr := strings.Replace(str, pat, replace, -1)
-		m.pushValue(String(newstr))
-	})
-
-	// ( str cont -- ? )
-	m.predefinedWords["str-contains"] = NilWord(func(m *machine) {
-		substr := m.popValue().String()
-		str := m.popValue().String()
-		if strings.Contains(str, substr) {
-			m.pushValue(Boolean(true))
-			return
-		}
-		m.pushValue(Boolean(false))
-	})
-
-	m.addGoWord("str-ends", "( str endstr -- endswith? )", func(m *machine) error {
-		endStr := m.popValue().String()
-		str := m.popValue().String()
-		m.pushValue(Boolean(strings.HasSuffix(str, endStr)))
-		return nil
-	})
-
-	m.addGoWord("str-starts", "( str prefix -- startswith? )", func(m *machine) error {
-		prefix := m.popValue().String()
-		str := m.popValue().String()
-		m.pushValue(Boolean(strings.HasPrefix(str, prefix)))
-		return nil
-	})
-
-	// TODO: Add test
-	m.addGoWord("str-substr", "( str start end -- substr )", func(m *machine) error {
-		end := m.popValue().(Integer)
-		start := m.popValue().(Integer)
-		str := m.popValue().String()
-
-		m.pushValue(String(str[start:end]))
-		return nil
-	})
-	// TODO: Add tests
-	m.addGoWord("str-idx-of", "( str sub -- idx )", func(m *machine) error {
-		substr := m.popValue().String()
-		str := m.popValue().String()
-		idx := strings.Index(str, substr)
-		m.pushValue(Integer(idx))
-		return nil
-	})
+	m.addGoWord("str-substr", "( str start end -- substr )", _strSubstr)
+	m.addGoWord("str-idx-of", "( str sub -- idx )", _strIdxOf)
+	m.addGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
 
 	return m.importPISCAsset("stdlib/strings.pisc")
 }

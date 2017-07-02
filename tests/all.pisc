@@ -1,11 +1,12 @@
 # Run at toplevel of PISC development directory
-"./tests/" list-files-at [ :f 
-	[ $f ->name swap str-neq ] :is-not
+"./tests/" list-files-at [ ->name :fname
+	[ $fname str-neq? ] :is-not
 	
 	"test_root.pisc" is-not
 	"all.pisc" is-not and
-	$f ->name ".pisc" str-ends and [ 
-	       ${ "./tests/" $f ->name } import
+	"boltdb.pisc" is-not and
+	$fname ".pisc" str-ends? and [ 
+	       ${ "./tests/" $fname } import
 		2 [ "" print ] times
 	]  when
 ] vec-each

@@ -6,11 +6,11 @@ String handling words and such
 
 :DOC str-concat ( a b -- c ) Concatenate the top two strings on the stack ;
 :DOC >string ( a -- str ) Convert any stack value into a string ;
-:DOC string>int ( str -- int! ) Attempt to convert a string to an integer ;
+:DOC str>int ( str -- int! ) Attempt to convert a string to an integer ;
 :DOC str-join ( vec sep -- str ) Turn a vector into a string by `>string` and using sep in between all the elements of `vec` ;
 :DOC str-split ( str sep -- vec ) Split a string into a vector using `sep` as a deilimeter ;
 :DOC str-empty? ( str -- ? ) Is this string empty? ;
-:DOC str-eq ( a b -- ? ) Are the top two strings on the stack equal? ;
+:DOC str-eq? ( a b -- ? ) Are the top two strings on the stack equal? ;
 :DOC str>rune-reader ( str -- obj ) Create a rune-reader from a string, see the `[IO]` docs for more info ;
 :DOC each-char ( str quot -- .. ) Execute `quot` for each character(rune) in `str` ;
 
@@ -20,4 +20,6 @@ String handling words and such
 	$i
 ;
 
-: str-neq ( str-a str-b -- eq? ) str-eq not ; 
+: str? ( obj -- isStr? ) typeof "String" str-eq? ;
+
+: str-neq? ( str-a str-b -- eq? ) str-eq? not ; 

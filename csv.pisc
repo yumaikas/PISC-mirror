@@ -23,9 +23,9 @@
 		[ f :default ] :break
 
 		readRune
-		dup "," str-eq outOfString and [ addCell break ] when
-		dup "\n" str-eq outOfString and [ addCell addLine break ] when
-		dup "\"" str-eq [
+		dup "," str-eq? outOfString and [ addCell break ] when
+		dup "\n" str-eq? outOfString and [ addCell addLine break ] when
+		dup "\"" str-eq? [
 			$lastCharWasQuote 
 				[ f :lastCharWasQuote [ "\"" str-concat ] $:tempStr break ]
 				[ t :lastCharWasQuote outOfString :inString break ] 
