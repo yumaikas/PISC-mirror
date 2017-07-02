@@ -23,6 +23,25 @@
 
 "Iteration and readers" [
 	"each-char" [ { "abc" [ ] each-char } ] [ { "a" "b" "c" } ] assert
+
+	"str>rune-reader per-char and byte"
+		[ 
+		    "abcd" str>rune-reader :r 
+		    [ $r .read-rune ] :read
+		    read read $r .read-byte
+		] 
+		[ "a" "b" 99 ]
+	assert
+
+	"Multiline reader" [
+		"abc
+def
+ghi"
+		str>rune-reader :r
+		$r .read-line
+		$r .read-line
+		] [ "abc" "def" ] 
+	assert
 ] $string-suite .addTest
 
 "Contains and ending/starting" [
@@ -30,11 +49,39 @@
 		"abcde" "cde" str-ends? 
 		"abcde" "cd" str-ends? 
 	] [ t f ] assert
+
+	"str-starts?" [
+		"Lorem Ipsum" "Lor" str-starts?
+		"Flashy stuffs" "Lor" str-starts?
+	] [ t f ] assert
+
+	"str-ends?" [
+		"" str-empty?
+		" " str-empty?
+		"Foo" str-empty?
+	] [ t f f ] assert
+
+	"str-idx-of" [ "abcde" "c" str-idx-of ] [ 2 ] assert
+	"str-contains?" [
+		"abc" "c" str-contains?
+		"abc" "b" str-contains?
+		"abc" "q" str-contains?
+	 ] [ t t f ] assert
+] $string-suite .addTest
+
+"Splitting, slicing" [
+	"str-split" [ "a,b,c,foo,int,knew" "," str-split ] [ { "a" "b" "c" "foo" "int" "knew" } ] assert
 	"str-substr 0:2" [ "abcde" 0 2 str-substr ] [ "ab" ] assert
 	"str-substr 0:4" [ "abcde" 0 4 str-substr ] [ "abcd" ] assert
 	"str-substr 1:4" [ "abcde" 1 4 str-substr ] [ "bcd" ] assert
-	"str-idx-of" [ "abcde" "c" str-idx-of ] [ 2 ] assert
-	# TODO Figure out unicode tests? 
+] $string-suite .addTest
+
+"Replacement and repetition" [
+	"str-replace" [
+		"axbxcookie" "x" "," str-replace
+	] [ "a,b,cookie" ] assert
+
+	"str-repeat" [ "*" 8 str-repeat ] [ "********" ] assert
 ] $string-suite .addTest
 
 $string-suite .runTests

@@ -78,7 +78,7 @@ func _strSplit(m *machine) error {
 
 func _strEmpty(m *machine) error {
 	a := m.popValue().String()
-	m.pushValue(Boolean(len(a) > 0))
+	m.pushValue(Boolean(len(a) <= 0))
 	return nil
 }
 
@@ -169,24 +169,26 @@ func _strRepeat(m *machine) error {
 }
 
 func loadStringCore(m *machine) error {
+
 	m.addGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
 	m.addGoWord(">string", "( anyVal -- str )", _toString)
-
 	m.addGoWord("str>int", "( str -- int! )", _strToInt)
 	m.addGoWord("str-join", "( vec sep -- str )", _strJoin)
-	m.addGoWord("str-split", "( str sep -- vec )", _strSplit)
-	m.addGoWord("str-empty?", "( str -- empty? )", _strEmpty)
-	m.addGoWord("str-eq?", "( a b -- eq? )", _strEq)
-	m.addGoWord("str>rune-reader", "( str -- reader )", _strToRuneReader)
 
-	m.addGoWord("each-char", "( str quot -- .. )", _eachChar)
-	m.addGoWord("str-replace", "( str pat replace -- .. )", _strReplace)
-	m.addGoWord("str-contains?", "( str cont -- contained? )", _strContains)
 	m.addGoWord("str-ends?", "( str endstr -- endswith? )", _strEndsWith)
-	m.addGoWord("str-starts?", "( str prefix -- startswith? )", _strStartsWith)
-
+	m.addGoWord("str-eq?", "( a b -- eq? )", _strEq)
 	m.addGoWord("str-substr", "( str start end -- substr )", _strSubstr)
 	m.addGoWord("str-idx-of", "( str sub -- idx )", _strIdxOf)
+	m.addGoWord("str-split", "( str sep -- vec )", _strSplit)
+	m.addGoWord("str-starts?", "( str prefix -- startswith? )", _strStartsWith)
+
+	m.addGoWord("str-empty?", "( str -- empty? )", _strEmpty)
+	m.addGoWord("str>rune-reader", "( str -- reader )", _strToRuneReader)
+	m.addGoWord("each-char", "( str quot -- .. )", _eachChar)
+
+	m.addGoWord("str-replace", "( str pat replace -- .. )", _strReplace)
+	m.addGoWord("str-contains?", "( str cont -- contained? )", _strContains)
+
 	m.addGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
 
 	return m.importPISCAsset("stdlib/strings.pisc")

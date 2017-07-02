@@ -16,7 +16,7 @@ String handling words and such
 
 : str-count ( str char -- numOccurs ) :inner
 	0 :i
-	[ $inner str-eq [ ++i ] when ] each-char 
+	[ $inner str-eq? [ ++i ] when ] each-char 
 	$i
 ;
 
