@@ -100,7 +100,7 @@ func _strToRuneReader(m *Machine) error {
 }
 
 func _eachChar(m *Machine) error {
-	quot := m.PopValue().(*quotation).toCode()
+	quot := m.PopValue().(*Quotation).toCode()
 	str := m.PopValue().(String).String()
 	var err error
 	for _, r := range str {

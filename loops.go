@@ -10,7 +10,7 @@ var ModLoopCore = Module{
 
 func loadLoopCore(m *Machine) error {
 	m.PredefinedWords["times"] = GoWord(func(m *Machine) error {
-		toExec := m.PopValue().(*quotation)
+		toExec := m.PopValue().(*Quotation)
 		nOfTimes := m.PopValue().(Integer)
 		for i := int(0); i < int(nOfTimes); i++ {
 			m.PushValue(toExec)
@@ -23,8 +23,8 @@ func loadLoopCore(m *Machine) error {
 	})
 	// ( pred body -- .. )
 	m.PredefinedWords["while"] = GoWord(func(m *Machine) error {
-		body := m.PopValue().(*quotation).toCode()
-		pred := m.PopValue().(*quotation).toCode()
+		body := m.PopValue().(*Quotation).toCode()
+		pred := m.PopValue().(*Quotation).toCode()
 
 		for {
 			pred.Idx = 0

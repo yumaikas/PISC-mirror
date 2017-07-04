@@ -52,7 +52,7 @@ func makeVec(m *Machine) error {
 }
 
 func vecEach(m *Machine) error {
-	quot := m.PopValue().(*quotation)
+	quot := m.PopValue().(*Quotation)
 	vect := m.PopValue().(Array)
 	for _, elem := range vect {
 		m.PushValue(elem)

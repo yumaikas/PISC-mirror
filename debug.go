@@ -48,7 +48,7 @@ func loadDebugCore(m *Machine) error {
 		return nil
 	})
 
-	// ( filepath quotation -- )
+	// ( filepath Quotation -- )
 	m.PredefinedWords["cpu-pprof"] = GoWord(func(m *Machine) error {
 		m.ExecuteString("swap", CodePosition{Source: "cpu-pprof GoWord"})
 		path := m.PopValue().String()

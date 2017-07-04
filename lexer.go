@@ -194,7 +194,7 @@ func (c *CodeQuotation) nextWord() (*word, error) {
 func (c *CodeQuotation) wrapError(e error) error {
 	fmt.Println(c.Words)
 	// return e
-	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v",
+	return fmt.Errorf("%v\n in %v in Quotation starting on Line: %v column %v",
 		e.Error(),
 		c.CodePositions[c.Idx-1].Source,
 		c.CodePositions[c.Idx-1].LineNumber,

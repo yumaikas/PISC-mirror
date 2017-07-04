@@ -48,7 +48,7 @@ func typeof(m *Machine) error {
 }
 
 func dip(m *Machine) error {
-	quot := m.PopValue().(*quotation).toCode()
+	quot := m.PopValue().(*Quotation).toCode()
 	a := m.PopValue()
 	err := m.execute(quot)
 	if err != nil {

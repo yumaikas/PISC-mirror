@@ -16,7 +16,7 @@ var (
 	EncodingFault             = fmt.Errorf("Encoding error!")
 	ConditionalTypeError      = fmt.Errorf("Expected a boolean value, but didn't find it.")
 	WordDefParenExpectedError = fmt.Errorf("Word definitions require a stack effect comment!")
-	QuotationTypeError        = fmt.Errorf("Expected quotation value, but didn't find it.")
+	QuotationTypeError        = fmt.Errorf("Expected Quotation value, but didn't find it.")
 	InvalidAddTypeError       = fmt.Errorf("Expected two integer values, but didn't find them.")
 	UnexpectedStackDashError  = fmt.Errorf("Found unexpected -- in stack annotation")
 	ParenBeforeStackDashError = fmt.Errorf("Found ) before -- in stack annotation")
@@ -294,7 +294,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 				Words:         make([]*word, 0),
 				CodePositions: make([]CodePosition, 0),
 			}
-			// This is the word that will be patched in holding the quotation words we're about to patch out.
+			// This is the word that will be patched in holding the Quotation words we're about to patch out.
 			// quote := make([]*word, 0)
 			depth := 0
 			for err == nil {
@@ -315,10 +315,10 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 				__quot.CodePositions = append(__quot.CodePositions, p.getCodePosition())
 				__quot.Words = append(__quot.Words, wordVal)
 			}
-			_quot := &quotation{
+			_quot := &Quotation{
 				inner:  __quot,
 				locals: m.Locals[len(m.Locals)-1]}
-			// Run the { } as a quotation
+			// Run the { } as a Quotation
 			_quot.locals = m.Locals[len(m.Locals)-1]
 			currIdx := len(m.Values)
 			m.PushValue(_quot)
@@ -333,7 +333,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			m.PushValue(Array(vals))
 
 		case wordVal.str == "${":
-			// Begin quotation
+			// Begin Quotation
 			pos := p.getCodePosition()
 			//quote := make([]*word, 0)
 			quot := &CodeQuotation{
@@ -360,8 +360,8 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 				quot.Words = append(quot.Words, wordVal)
 			}
 			// anchorWord.str = fmt.Sprint("herp", len(__quot.words))
-			// Run the { } as a quotation
-			_quot := &quotation{
+			// Run the { } as a Quotation
+			_quot := &Quotation{
 				inner:  quot,
 				locals: m.Locals[len(m.Locals)-1],
 			}
@@ -369,7 +369,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			if err != nil {
 				panic(err)
 			}
-			_join := &quotation{
+			_join := &Quotation{
 				inner:  join,
 				locals: m.Locals[len(m.Locals)-1],
 			}
@@ -387,7 +387,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			err = m.execute(_join.inner)
 
 		case wordVal.str == "[":
-			// Begin quotation
+			// Begin Quotation
 			__quot := &CodeQuotation{
 				Words:         make([]*word, 0),
 				CodePositions: make([]CodePosition, 0),
@@ -408,12 +408,12 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 				__quot.CodePositions = append(__quot.CodePositions, p.getCodePosition())
 				__quot.Words = append(__quot.Words, wordVal)
 			}
-			_quotation := &quotation{
+			_Quotation := &Quotation{
 				inner:  __quot,
 				locals: m.Locals[len(m.Locals)-1],
 			}
-			// _quotation.locals = m.Locals[len(m.Locals)-1]
-			m.PushValue(_quotation)
+			// _Quotation.locals = m.Locals[len(m.Locals)-1]
+			m.PushValue(_Quotation)
 
 		case wordVal.str == "]":
 			// panic here.
@@ -495,7 +495,7 @@ var ErrNoLocals = fmt.Errorf("No locals to try !")
 var LocalFuncRun = fmt.Errorf("Nothing was wrong")
 var WordNotFound = fmt.Errorf("word was undefined")
 
-func (c *quotation) execute(m *Machine) error {
+func (c *Quotation) execute(m *Machine) error {
 
 	var old_idx = c.inner.Idx
 	c.inner.Idx = 0
@@ -512,7 +512,7 @@ func (m *Machine) tryLocalWord(w *word) error {
 	// TODO: In progress
 	if len(m.Locals) > 0 {
 		if localFunc, found := m.Locals[len(m.Locals)-1][w.str]; found {
-			if fn, ok := localFunc.(*quotation); ok {
+			if fn, ok := localFunc.(*Quotation); ok {
 				// Push the locals on
 				m.Locals = append(m.Locals, fn.locals)
 				err := fn.execute(m)
@@ -713,7 +713,7 @@ func (m *Machine) readWordDefinition(c codeSequence) error {
 // Used for call word.
 func (m *Machine) ExecuteQuotation() error {
 	quoteVal := m.PopValue()
-	if q, ok := quoteVal.(*quotation); ok {
+	if q, ok := quoteVal.(*Quotation); ok {
 		// q.inner = q.inner.cloneCode()
 		m.Locals = append(m.Locals, q.locals)
 		err := m.execute(q.toCode())

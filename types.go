@@ -100,12 +100,12 @@ type String string
 type Symbol int64
 
 // This is a separate sematic from arrays.
-type quotation struct {
+type Quotation struct {
 	inner  *CodeQuotation
 	locals Dict
 }
 
-func (q quotation) toCode() *CodeQuotation {
+func (q Quotation) toCode() *CodeQuotation {
 	q.inner.Idx = 0
 	return q.inner
 }
@@ -139,7 +139,7 @@ func (d Double) String() string {
 	return fmt.Sprint(float64(d))
 }
 
-func (q quotation) String() string {
+func (q *Quotation) String() string {
 	return fmt.Sprint([]*word(q.inner.Words))
 }
 
@@ -178,7 +178,7 @@ func (d Double) Type() string {
 	return "Double"
 }
 
-func (q quotation) Type() string {
+func (q *Quotation) Type() string {
 	return "Quotation"
 }
 

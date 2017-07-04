@@ -55,9 +55,9 @@ func loadLocalCore(m *Machine) error {
 		m.Locals = m.Locals[:len(m.Locals)-1]
 	})
 	// ( -- locals.. )
-	// Run a quotation for each local
+	// Run a Quotation for each local
 	m.PredefinedWords["each-local"] = GoWord(func(m *Machine) error {
-		quot := m.PopValue().(*quotation)
+		quot := m.PopValue().(*Quotation)
 		code := quot.toCode()
 		for key, val := range m.Locals[len(m.Locals)-1] {
 			m.PushValue(val)

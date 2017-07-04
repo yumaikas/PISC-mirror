@@ -9,7 +9,7 @@ var ModMetaQuoation = Module{
 	Author:    "Andrew Owen",
 	Name:      "MetaQuotation",
 	License:   "MIT",
-	DocString: "Words that manipulate quotations. Use with care",
+	DocString: "Words that manipulate Quotations. Use with care",
 	Load:      loadQuotWords,
 }
 
@@ -18,7 +18,7 @@ func loadQuotWords(m *Machine) error {
 	m.AddGoWord("quot-set-var", " ( quot key val -- ) ", GoWord(func(m *Machine) error {
 		val := m.PopValue()
 		key := m.PopValue().String()
-		quot := m.PopValue().(*quotation)
+		quot := m.PopValue().(*Quotation)
 		if !strings.HasPrefix(key, "_") {
 			return fmt.Errorf("attempted to set a private local (%v)", key)
 		}
@@ -30,7 +30,7 @@ func loadQuotWords(m *Machine) error {
 	}))
 	m.AddGoWord("quot-has-var", " ( quot key -- ? ) ", GoWord(func(m *Machine) error {
 		key := m.PopValue().String()
-		quot := m.PopValue().(*quotation)
+		quot := m.PopValue().(*Quotation)
 		if !strings.HasPrefix(key, "_") {
 			return fmt.Errorf("attempted to get a private local (%v)", key)
 		}
@@ -44,7 +44,7 @@ func loadQuotWords(m *Machine) error {
 	}))
 	m.AddGoWord("quot-get-var", " ( quot key -- val ) ", GoWord(func(m *Machine) error {
 		key := m.PopValue().String()
-		quot := m.PopValue().(*quotation)
+		quot := m.PopValue().(*Quotation)
 		if !strings.HasPrefix(key, "_") {
 			return fmt.Errorf("attempted to get a private local (%v)", key)
 		}
