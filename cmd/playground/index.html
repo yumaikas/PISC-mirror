@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8" />
+	<style type="text/css">
+		#current-code {
+			display: block;
+		}
+		#repl {
+			display: block;
+		}
+
+		#body {
+			min-width: 200;
+		}
+
+	</style>
+	</head>
+	<body>
+
+	<div id="body">
+		<textarea id="current-code">
+			
+		</textarea>
+
+		<input type="submit" id="run-code" value="Run Code"  />
+
+		<input type="text" id="repl" placeholder="repl, Enter submits code"/>
+
+		<div id="stack-output"></div>
+	</div>
+	<script type="text/javascript" src="playground.js"></script>
+	<script type="text/javascript">
+	var app = (function(){
+		var exported = {};
+		var codeElem, inputElem, runCode, stackOutput;
+
+		function displayStack() {
+			var stack = pisc_get_stack(),
+				buildhHTML = ""
+			;
+
+
+			for (var i = 0; i < stack.length; i++) {
+
+			}
+
+		}
+
+		exported.load = function() {
+			codeElem = elmID("current-code");
+			inputElem = elmID("repl");
+			runCode = elmID("run-code");
+			stackOutput = elmID("stack-output");
+
+			runCode.onclick = function() {
+
+				var code = codeElem.value;
+
+				pisc_eval(code);
+				console.log(pisc_get_stack());
+
+				return false;
+			};
+			codeElem.onsubmit = function() {
+				return false;
+			};
+		}
+
+		function elmID(id) {
+			return document.getElementById(id);
+		}
+		return exported;
+	})();
+	window.onload = app.load;
+	</script>
+	</body>
+</html>
