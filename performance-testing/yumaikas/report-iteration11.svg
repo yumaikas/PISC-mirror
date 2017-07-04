@@ -638,9 +638,9 @@ function handleMouseUp(evt) {
 <!-- N31 -->
 <g id="node32" class="node">
 <title>N31</title>
-<g id="a_node32"><a xlink:title="main.(*codeQuotation).nextWord (0.09s)">
+<g id="a_node32"><a xlink:title="main.(*CodeQuotation).nextWord (0.09s)">
 <polygon fill="#f8f8f8" stroke="#000000" points="2803.0752,-1424.5 2584.9248,-1424.5 2584.9248,-1386.5 2803.0752,-1386.5 2803.0752,-1424.5"/>
-<text text-anchor="middle" x="2694" y="-1408.5" font-family="Times,serif" font-size="15.00" fill="#000000">main.(*codeQuotation).nextWord</text>
+<text text-anchor="middle" x="2694" y="-1408.5" font-family="Times,serif" font-size="15.00" fill="#000000">main.(*CodeQuotation).nextWord</text>
 <text text-anchor="middle" x="2694" y="-1393.5" font-family="Times,serif" font-size="15.00" fill="#000000">0.09s(2.47%)</text>
 </a>
 </g>
@@ -648,12 +648,12 @@ function handleMouseUp(evt) {
 <!-- N2&#45;&gt;N31 -->
 <g id="edge46" class="edge">
 <title>N2&#45;&gt;N31</title>
-<g id="a_edge46"><a xlink:title="main.(*machine).execute &#45;&gt; main.(*codeQuotation).nextWord (0.09s)">
+<g id="a_edge46"><a xlink:title="main.(*machine).execute &#45;&gt; main.(*CodeQuotation).nextWord (0.09s)">
 <path fill="none" stroke="#000000" d="M822.3006,-1520.5738C1156.9441,-1516.1873 2100.1144,-1501.0777 2408,-1467 2478.7162,-1459.1729 2557.6807,-1441.4958 2614.6902,-1427.0929"/>
 <polygon fill="#000000" stroke="#000000" points="2615.8898,-1430.3991 2624.715,-1424.5368 2614.1602,-1423.6161 2615.8898,-1430.3991"/>
 </a>
 </g>
-<g id="a_edge46&#45;label"><a xlink:title="main.(*machine).execute &#45;&gt; main.(*codeQuotation).nextWord (0.09s)">
+<g id="a_edge46&#45;label"><a xlink:title="main.(*machine).execute &#45;&gt; main.(*CodeQuotation).nextWord (0.09s)">
 <text text-anchor="middle" x="2511.7241" y="-1455.8" font-family="Times,serif" font-size="14.00" fill="#000000"> 0.09s</text>
 </a>
 </g>
@@ -817,9 +817,9 @@ function handleMouseUp(evt) {
 <!-- N10 -->
 <g id="node11" class="node">
 <title>N10</title>
-<g id="a_node11"><a xlink:title="main.(*codeQuotation).cloneCode (0.40s)">
+<g id="a_node11"><a xlink:title="main.(*CodeQuotation).cloneCode (0.40s)">
 <polygon fill="#f8f8f8" stroke="#000000" points="646.7784,-1324.5 451.2216,-1324.5 451.2216,-1277.5 646.7784,-1277.5 646.7784,-1324.5"/>
-<text text-anchor="middle" x="549" y="-1310.1" font-family="Times,serif" font-size="13.00" fill="#000000">main.(*codeQuotation).cloneCode</text>
+<text text-anchor="middle" x="549" y="-1310.1" font-family="Times,serif" font-size="13.00" fill="#000000">main.(*CodeQuotation).cloneCode</text>
 <text text-anchor="middle" x="549" y="-1297.1" font-family="Times,serif" font-size="13.00" fill="#000000">0.04s(1.10%)</text>
 <text text-anchor="middle" x="549" y="-1284.1" font-family="Times,serif" font-size="13.00" fill="#000000">of 0.40s(10.96%)</text>
 </a>
@@ -828,12 +828,12 @@ function handleMouseUp(evt) {
 <!-- N4&#45;&gt;N10 -->
 <g id="edge103" class="edge">
 <title>N4&#45;&gt;N10</title>
-<g id="a_edge103"><a xlink:title="main.(*machine).execute.func11 &#45;&gt; main.(*codeQuotation).cloneCode (0.01s)">
+<g id="a_edge103"><a xlink:title="main.(*machine).execute.func11 &#45;&gt; main.(*CodeQuotation).cloneCode (0.01s)">
 <path fill="none" stroke="#000000" d="M422.2157,-1384.8542C445.8092,-1369.2496 478.511,-1347.6209 504.7927,-1330.2384"/>
 <polygon fill="#000000" stroke="#000000" points="507.0271,-1332.9569 513.4371,-1324.521 503.1655,-1327.1183 507.0271,-1332.9569"/>
 </a>
 </g>
-<g id="a_edge103&#45;label"><a xlink:title="main.(*machine).execute.func11 &#45;&gt; main.(*codeQuotation).cloneCode (0.01s)">
+<g id="a_edge103&#45;label"><a xlink:title="main.(*machine).execute.func11 &#45;&gt; main.(*CodeQuotation).cloneCode (0.01s)">
 <text text-anchor="middle" x="496.7241" y="-1346.8" font-family="Times,serif" font-size="14.00" fill="#000000"> 0.01s</text>
 </a>
 </g>
@@ -878,12 +878,12 @@ function handleMouseUp(evt) {
 <!-- N5&#45;&gt;N10 -->
 <g id="edge15" class="edge">
 <title>N5&#45;&gt;N10</title>
-<g id="a_edge15"><a xlink:title="main.(*machine).execute.func12 &#45;&gt; main.(*codeQuotation).cloneCode (0.39s)">
+<g id="a_edge15"><a xlink:title="main.(*machine).execute.func12 &#45;&gt; main.(*CodeQuotation).cloneCode (0.39s)">
 <path fill="none" stroke="#000000" d="M619.1793,-1375.834C606.3833,-1362.1893 591.2012,-1346.0002 578.2365,-1332.1757"/>
 <polygon fill="#000000" stroke="#000000" points="580.685,-1329.6699 571.2913,-1324.7698 575.5789,-1334.4584 580.685,-1329.6699"/>
 </a>
 </g>
-<g id="a_edge15&#45;label"><a xlink:title="main.(*machine).execute.func12 &#45;&gt; main.(*codeQuotation).cloneCode (0.39s)">
+<g id="a_edge15&#45;label"><a xlink:title="main.(*machine).execute.func12 &#45;&gt; main.(*CodeQuotation).cloneCode (0.39s)">
 <text text-anchor="middle" x="617.7241" y="-1346.8" font-family="Times,serif" font-size="14.00" fill="#000000"> 0.39s</text>
 </a>
 </g>
@@ -1149,12 +1149,12 @@ function handleMouseUp(evt) {
 <!-- N10&#45;&gt;N6 -->
 <g id="edge16" class="edge">
 <title>N10&#45;&gt;N6</title>
-<g id="a_edge16"><a xlink:title="main.(*codeQuotation).cloneCode &#45;&gt; runtime.newobject (0.36s)">
+<g id="a_edge16"><a xlink:title="main.(*CodeQuotation).cloneCode &#45;&gt; runtime.newobject (0.36s)">
 <path fill="none" stroke="#000000" d="M542.6884,-1277.2241C530.67,-1226.0077 510.8911,-1104.5245 573,-1038 587.4784,-1022.4923 635.7348,-1011.347 677.9147,-1004.2946"/>
 <polygon fill="#000000" stroke="#000000" points="678.6081,-1007.728 687.9215,-1002.6772 677.4911,-1000.8177 678.6081,-1007.728"/>
 </a>
 </g>
-<g id="a_edge16&#45;label"><a xlink:title="main.(*codeQuotation).cloneCode &#45;&gt; runtime.newobject (0.36s)">
+<g id="a_edge16&#45;label"><a xlink:title="main.(*CodeQuotation).cloneCode &#45;&gt; runtime.newobject (0.36s)">
 <text text-anchor="middle" x="548.7241" y="-1146.8" font-family="Times,serif" font-size="14.00" fill="#000000"> 0.36s</text>
 </a>
 </g>

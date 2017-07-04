@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 )
 
 // TODO: Indicate deps modules?
-var ModHelpCore = PISCModule{
+var ModHelpCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "HelpCore",
 	License:   "MIT",
@@ -14,14 +14,14 @@ var ModHelpCore = PISCModule{
 	Load:      loadHelpCore,
 }
 
-// TODO: Pull from more sources of docs, like word defs, not just
+// TODO: Pull from more Sources of docs, like word defs, not just
 // :DOC directives
-func loadHelpCore(m *machine) error {
+func loadHelpCore(m *Machine) error {
 	// ( val name -- )
-	m.predefinedWords["help"] = GoWord(func(m *machine) error {
-		searchTerm := m.popValue().(String).String()
-		if len(m.helpDocs) > 0 {
-			for k, v := range m.helpDocs {
+	m.PredefinedWords["help"] = GoWord(func(m *Machine) error {
+		searchTerm := m.PopValue().(String).String()
+		if len(m.HelpDocs) > 0 {
+			for k, v := range m.HelpDocs {
 				if strings.Contains(string(k), searchTerm) || strings.Contains(string(v), searchTerm) {
 					fmt.Println("Word: ", k, "\n\tDescription: ", v)
 				}

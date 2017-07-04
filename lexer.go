@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"fmt"
@@ -7,52 +7,52 @@ import (
 )
 
 /*
-The plan is to hav the source field indicate
+The plan is to hav the Source field indicate
 where this code came from. Potential values are currently
 stdin:
 file:
 db:
 */
-type codePosition struct {
-	lineNumber int
-	offset     int
-	source     string
+type CodePosition struct {
+	LineNumber int
+	Offset     int
+	Source     string
 }
 
-type codeList struct {
-	codePosition
-	idx  int
-	code string
+type CodeList struct {
+	CodePosition
+	Idx  int
+	Code string
 	// This is for error handling purposes only, indicating where a given word defintion starts
-	fileName string
+	FileName string
 }
 
-func (c codeList) getcodePosition() codePosition {
-	return c.codePosition
+func (c CodeList) getCodePosition() CodePosition {
+	return c.CodePosition
 }
 
-func (c codeList) wrapError(e error) error {
-	return fmt.Errorf("%v\n in File: %v Line: %v column %v", e.Error(), c.source, c.lineNumber, c.offset)
+func (c CodeList) wrapError(e error) error {
+	return fmt.Errorf("%v\n in File: %v Line: %v column %v", e.Error(), c.Source, c.LineNumber, c.Offset)
 }
 
-func (c codeList) cloneCode() codeSequence {
-	return &codeList{
-		idx:          0,
-		code:         c.code,
-		codePosition: c.codePosition,
+func (c CodeList) cloneCode() codeSequence {
+	return &CodeList{
+		Idx:          0,
+		Code:         c.Code,
+		CodePosition: c.CodePosition,
 	}
 }
 
-func stringToQuotation(code string, pos codePosition) (*codeQuotation, error) {
-	basis := &codeList{
-		idx:          0,
-		code:         code,
-		codePosition: pos,
+func stringToQuotation(code string, pos CodePosition) (*CodeQuotation, error) {
+	basis := &CodeList{
+		Idx:          0,
+		Code:         code,
+		CodePosition: pos,
 	}
-	quot := &codeQuotation{
-		idx:           0,
-		words:         make([]*word, 0),
-		codePositions: make([]codePosition, 0),
+	quot := &CodeQuotation{
+		Idx:           0,
+		Words:         make([]*word, 0),
+		CodePositions: make([]CodePosition, 0),
 	}
 
 	var err error
@@ -65,30 +65,30 @@ func stringToQuotation(code string, pos codePosition) (*codeQuotation, error) {
 		if err != nil {
 			return nil, err
 		}
-		quot.words = append(quot.words, _word)
-		quot.codePositions = append(quot.codePositions, basis.getcodePosition())
+		quot.Words = append(quot.Words, _word)
+		quot.CodePositions = append(quot.CodePositions, basis.getCodePosition())
 	}
 	return quot, nil
 }
 
-func (c *codeList) nextWord() (*word, error) {
+func (c *CodeList) nextWord() (*word, error) {
 	currentWord := ""
 	skipChar := false
 	inString := false
 	inLineComment := false
 	currentLine := ""
-	if c.idx >= len(c.code) {
+	if c.Idx >= len(c.Code) {
 		return &word{str: ""}, io.EOF
 	}
-	for _, v := range c.code[c.idx:] {
+	for _, v := range c.Code[c.Idx:] {
 		width := utf8.RuneLen(v)
-		c.idx += width
-		c.offset += width
+		c.Idx += width
+		c.Offset += width
 		if v == '\n' {
 			// fmt.Println("Parsing:", currentLine)
 			currentLine = ""
-			c.lineNumber++
-			c.offset = 0
+			c.LineNumber++
+			c.Offset = 0
 		}
 		currentLine += string(v)
 		if inLineComment {
@@ -127,7 +127,7 @@ func (c *codeList) nextWord() (*word, error) {
 				continue
 			default:
 				return nil, fmt.Errorf("Invalid escape sequence: %v current word: %v line: %v",
-					v, currentWord, c.lineNumber)
+					v, currentWord, c.LineNumber)
 			}
 		}
 
@@ -177,38 +177,38 @@ func (c *codeList) nextWord() (*word, error) {
 	return &word{str: currentWord}, nil
 }
 
-type codeQuotation struct {
-	idx           int
-	words         []*word
-	codePositions []codePosition
+type CodeQuotation struct {
+	Idx           int
+	Words         []*word
+	CodePositions []CodePosition
 }
 
-func (c *codeQuotation) nextWord() (*word, error) {
-	if c.idx >= len(c.words) {
+func (c *CodeQuotation) nextWord() (*word, error) {
+	if c.Idx >= len(c.Words) {
 		return nil, io.EOF
 	}
-	c.idx++
-	return c.words[c.idx-1], nil
+	c.Idx++
+	return c.Words[c.Idx-1], nil
 }
 
-func (c *codeQuotation) wrapError(e error) error {
-	fmt.Println(c.words)
+func (c *CodeQuotation) wrapError(e error) error {
+	fmt.Println(c.Words)
 	// return e
 	return fmt.Errorf("%v\n in %v in quotation starting on Line: %v column %v",
 		e.Error(),
-		c.codePositions[c.idx-1].source,
-		c.codePositions[c.idx-1].lineNumber,
-		c.codePositions[c.idx-1].offset)
+		c.CodePositions[c.Idx-1].Source,
+		c.CodePositions[c.Idx-1].LineNumber,
+		c.CodePositions[c.Idx-1].Offset)
 }
 
-func (c *codeQuotation) getcodePosition() codePosition {
-	return c.codePositions[c.idx-1]
+func (c *CodeQuotation) getCodePosition() CodePosition {
+	return c.CodePositions[c.Idx-1]
 }
 
-func (c *codeQuotation) cloneCode() codeSequence {
-	return &codeQuotation{
-		idx:           0,
-		words:         c.words,
-		codePositions: c.codePositions,
+func (c *CodeQuotation) cloneCode() codeSequence {
+	return &CodeQuotation{
+		Idx:           0,
+		Words:         c.Words,
+		CodePositions: c.CodePositions,
 	}
 }

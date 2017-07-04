@@ -1,11 +1,11 @@
-package main
+package pisc
 
 import (
 	"fmt"
 	"strings"
 )
 
-var ModMetaQuoation = PISCModule{
+var ModMetaQuoation = Module{
 	Author:    "Andrew Owen",
 	Name:      "MetaQuotation",
 	License:   "MIT",
@@ -13,12 +13,12 @@ var ModMetaQuoation = PISCModule{
 	Load:      loadQuotWords,
 }
 
-func loadQuotWords(m *machine) error {
+func loadQuotWords(m *Machine) error {
 	// This is probably a dangerous word...
-	m.addGoWord("quot-set-var", " ( quot key val -- ) ", GoWord(func(m *machine) error {
-		val := m.popValue()
-		key := m.popValue().String()
-		quot := m.popValue().(*quotation)
+	m.AddGoWord("quot-set-var", " ( quot key val -- ) ", GoWord(func(m *Machine) error {
+		val := m.PopValue()
+		key := m.PopValue().String()
+		quot := m.PopValue().(*quotation)
 		if !strings.HasPrefix(key, "_") {
 			return fmt.Errorf("attempted to set a private local (%v)", key)
 		}
@@ -28,30 +28,30 @@ func loadQuotWords(m *machine) error {
 		quot.locals[key] = val
 		return nil
 	}))
-	m.addGoWord("quot-has-var", " ( quot key -- ? ) ", GoWord(func(m *machine) error {
-		key := m.popValue().String()
-		quot := m.popValue().(*quotation)
+	m.AddGoWord("quot-has-var", " ( quot key -- ? ) ", GoWord(func(m *Machine) error {
+		key := m.PopValue().String()
+		quot := m.PopValue().(*quotation)
 		if !strings.HasPrefix(key, "_") {
 			return fmt.Errorf("attempted to get a private local (%v)", key)
 		}
 		if quot.locals == nil {
-			m.pushValue(Boolean(false))
+			m.PushValue(Boolean(false))
 			return nil
 		}
 		_, found := quot.locals[key]
-		m.pushValue(Boolean(found))
+		m.PushValue(Boolean(found))
 		return nil
 	}))
-	m.addGoWord("quot-get-var", " ( quot key -- val ) ", GoWord(func(m *machine) error {
-		key := m.popValue().String()
-		quot := m.popValue().(*quotation)
+	m.AddGoWord("quot-get-var", " ( quot key -- val ) ", GoWord(func(m *Machine) error {
+		key := m.PopValue().String()
+		quot := m.PopValue().(*quotation)
 		if !strings.HasPrefix(key, "_") {
 			return fmt.Errorf("attempted to get a private local (%v)", key)
 		}
 		if quot.locals == nil {
 			return fmt.Errorf("Attempted to get a local on a word that has no locals")
 		}
-		m.pushValue(quot.locals[key])
+		m.PushValue(quot.locals[key])
 		return nil
 	}))
 	return m.importPISCAsset("stdlib/with.pisc")

@@ -1,11 +1,11 @@
-package main
+package pisc
 
 import (
 	"fmt"
 	"strings"
 )
 
-var ModLocalsCore = PISCModule{
+var ModLocalsCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "LocalsCore",
 	License:   "MIT",
@@ -23,46 +23,46 @@ var ErrLocalNotFound = fmt.Errorf("Local variable not found!")
 var ErrNoLocalsExist = fmt.Errorf("A local frame hasn't been allocated with get-locals!")
 var ErrAttemtToIncrementNonNumber = fmt.Errorf("Attempted to increment a non-integer")
 
-func loadLocalCore(m *machine) error {
+func loadLocalCore(m *Machine) error {
 	// Make sure we always have locals
-	m.locals = append(m.locals, make(map[string]stackEntry))
+	m.Locals = append(m.Locals, make(map[string]StackEntry))
 	// ( val name -- )
-	m.predefinedWords["set-local"] = GoWord(func(m *machine) error {
-		varName := m.popValue().(String)
-		if len(m.locals) <= 0 {
+	m.PredefinedWords["set-local"] = GoWord(func(m *Machine) error {
+		varName := m.PopValue().(String)
+		if len(m.Locals) <= 0 {
 			return ErrNoLocalsExist
 		}
-		m.locals[len(m.locals)-1][varName.String()] = m.popValue()
+		m.Locals[len(m.Locals)-1][varName.String()] = m.PopValue()
 		return nil
 	})
 	// ( name -- val )
-	m.predefinedWords["get-local"] = GoWord(func(m *machine) error {
-		varName := m.popValue().(String)
-		if len(m.locals) <= 0 {
+	m.PredefinedWords["get-local"] = GoWord(func(m *Machine) error {
+		varName := m.PopValue().(String)
+		if len(m.Locals) <= 0 {
 			return ErrNoLocalsExist
 		}
-		if val, ok := m.locals[len(m.locals)-1][varName.String()]; ok {
-			m.pushValue(val)
+		if val, ok := m.Locals[len(m.Locals)-1][varName.String()]; ok {
+			m.PushValue(val)
 			return nil
 		} else {
 			return ErrLocalNotFound
 		}
 	})
-	m.predefinedWords["get-locals"] = NilWord(func(m *machine) {
-		m.locals = append(m.locals, make(map[string]stackEntry))
+	m.PredefinedWords["get-locals"] = NilWord(func(m *Machine) {
+		m.Locals = append(m.Locals, make(map[string]StackEntry))
 	})
-	m.predefinedWords["drop-locals"] = NilWord(func(m *machine) {
-		m.locals = m.locals[:len(m.locals)-1]
+	m.PredefinedWords["drop-locals"] = NilWord(func(m *Machine) {
+		m.Locals = m.Locals[:len(m.Locals)-1]
 	})
 	// ( -- locals.. )
 	// Run a quotation for each local
-	m.predefinedWords["each-local"] = GoWord(func(m *machine) error {
-		quot := m.popValue().(*quotation)
+	m.PredefinedWords["each-local"] = GoWord(func(m *Machine) error {
+		quot := m.PopValue().(*quotation)
 		code := quot.toCode()
-		for key, val := range m.locals[len(m.locals)-1] {
-			m.pushValue(val)
-			m.pushValue(String(key))
-			code.idx = 0
+		for key, val := range m.Locals[len(m.Locals)-1] {
+			m.PushValue(val)
+			m.PushValue(String(key))
+			code.Idx = 0
 			err := m.execute(code)
 			if err != nil {
 				return err
@@ -73,16 +73,16 @@ func loadLocalCore(m *machine) error {
 
 	// TODO: compress this
 	// incr-local-var is here to help ++ be faster
-	m.addGoWord("incr-local-var", "( name -- )", GoWord(func(m *machine) error {
-		varName := m.popValue().(String)
-		if len(m.locals) <= 0 {
+	m.AddGoWord("incr-local-var", "( name -- )", GoWord(func(m *Machine) error {
+		varName := m.PopValue().(String)
+		if len(m.Locals) <= 0 {
 			return ErrNoLocalsExist
 		}
-		if val, ok := m.locals[len(m.locals)-1][varName.String()]; ok {
+		if val, ok := m.Locals[len(m.Locals)-1][varName.String()]; ok {
 			// TODO: Clean up this cast
 			v, canNumber := val.(Integer)
 			if canNumber {
-				m.locals[len(m.locals)-1][varName.String()] = v + 1
+				m.Locals[len(m.Locals)-1][varName.String()] = v + 1
 				return nil
 			} else {
 				return ErrAttemtToIncrementNonNumber
@@ -91,16 +91,16 @@ func loadLocalCore(m *machine) error {
 			return ErrLocalNotFound
 		}
 	}))
-	m.addGoWord("decr-local-var", "( name -- )", GoWord(func(m *machine) error {
-		varName := m.popValue().(String)
-		if len(m.locals) <= 0 {
+	m.AddGoWord("decr-local-var", "( name -- )", GoWord(func(m *Machine) error {
+		varName := m.PopValue().(String)
+		if len(m.Locals) <= 0 {
 			return ErrNoLocalsExist
 		}
-		if val, ok := m.locals[len(m.locals)-1][varName.String()]; ok {
+		if val, ok := m.Locals[len(m.Locals)-1][varName.String()]; ok {
 			// TODO: Clean up this cast
 			v, canNumber := val.(Integer)
 			if canNumber {
-				m.locals[len(m.locals)-1][varName.String()] = v - 1
+				m.Locals[len(m.Locals)-1][varName.String()] = v - 1
 				return nil
 			} else {
 				return ErrAttemtToIncrementNonNumber

@@ -1,6 +1,6 @@
-package main
+package pisc
 
-var ModBoolCore = PISCModule{
+var ModBoolCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "BoolCore",
 	License:   "MIT",
@@ -8,20 +8,20 @@ var ModBoolCore = PISCModule{
 	Load:      loadBoolCore,
 }
 
-func loadBoolCore(m *machine) error {
-	m.predefinedWords["and"] = NilWord(func(m *machine) {
-		a := m.popValue().(Boolean)
-		b := m.popValue().(Boolean)
-		m.pushValue(Boolean(a && b))
+func loadBoolCore(m *Machine) error {
+	m.PredefinedWords["and"] = NilWord(func(m *Machine) {
+		a := m.PopValue().(Boolean)
+		b := m.PopValue().(Boolean)
+		m.PushValue(Boolean(a && b))
 	})
-	m.predefinedWords["or"] = NilWord(func(m *machine) {
-		a := m.popValue().(Boolean)
-		b := m.popValue().(Boolean)
-		m.pushValue(Boolean(a || b))
+	m.PredefinedWords["or"] = NilWord(func(m *Machine) {
+		a := m.PopValue().(Boolean)
+		b := m.PopValue().(Boolean)
+		m.PushValue(Boolean(a || b))
 	})
-	m.predefinedWords["not"] = NilWord(func(m *machine) {
-		a := m.popValue().(Boolean)
-		m.pushValue(Boolean(!a))
+	m.PredefinedWords["not"] = NilWord(func(m *Machine) {
+		a := m.PopValue().(Boolean)
+		m.PushValue(Boolean(!a))
 	})
 	return m.importPISCAsset("stdlib/bools.pisc")
 }

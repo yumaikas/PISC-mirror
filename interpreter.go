@@ -1,5 +1,5 @@
 // TODO: look for ways to split this code up better.
-package main
+package pisc
 
 import (
 	"fmt"
@@ -29,17 +29,17 @@ type word struct {
 	impl GoWord
 }
 
-// PISCModule The type for a function that extends PISC via adding words
-type PISCModule struct {
+// Module The type for a function that extends PISC via adding words
+type Module struct {
 	Author    string
 	Name      string
 	License   string
 	DocString string
-	Load      func(m *machine) error
+	Load      func(m *Machine) error
 }
 
 // LoadModules Load a bunch of modules into this instance of the VM
-func (m *machine) LoadModules(modules ...PISCModule) error {
+func (m *Machine) LoadModules(modules ...Module) error {
 	for _, mod := range modules {
 		err := mod.Load(m)
 		if err != nil {
@@ -55,75 +55,74 @@ func (w word) String() string {
 
 type codeSequence interface {
 	nextWord() (*word, error)
-	getcodePosition() codePosition
+	getCodePosition() CodePosition
 	wrapError(error) error
 	// Returns a codeSequence that starts a 0 for the same code
 	cloneCode() codeSequence
 }
 
-type machine struct {
+type Machine struct {
 	// TODO: add a stack pointer so that we can keep from re-allocating a lot.
 	// stackPtr int
-	values []stackEntry
+	Values []StackEntry
 	// This is reallocated when locals are used
-	locals []map[string]stackEntry
+	Locals []map[string]StackEntry
 	// A map from words to slices of words.
-	definedWords map[string]*codeQuotation
+	DefinedWords map[string]*CodeQuotation
 	// A map from prefixes to prefix words
-	prefixWords map[string]*codeQuotation
+	PrefixWords map[string]*CodeQuotation
 	// A map from words to predefined words (words built in go)
-	predefinedWords map[string]GoWord
+	PredefinedWords map[string]GoWord
 	// TODO: try to work this out later.
-	definedStackComments map[string]string
-	// The top of the stack it the end of the []stackEntry slice.
+	DefinedStackComments map[string]string
+	// The top of the stack it the end of the []StackEntry slice.
 	// Every so many entries, we may need to re-allocate the stack....
-	helpDocs map[string]string
+	HelpDocs map[string]string
 
 	// Each time we are asked for a symbol, supply the value here, then increment
-	symbolIncr int64
+	SymbolIncr int64
 	// Keep a default database around...
-	numDispatches int64
+	NumDispatches int64
 
-	// A place to
-	debugTrace string
+	DebugTrace string
 }
 
-func (m *machine) logAndResetDispatchCount(w io.Writer) {
-	fmt.Fprintln(w, m.numDispatches, "dispatches have occured")
-	m.numDispatches = 0
+func (m *Machine) LogAndResetDispatchCount(w io.Writer) {
+	fmt.Fprintln(w, m.NumDispatches, "dispatches have occured")
+	m.NumDispatches = 0
 }
 
 // Not the most efficient way, but should work for starting
-func (m *machine) trace(msg string) {
-	m.debugTrace += msg
+func (m *Machine) trace(msg string) {
+	m.DebugTrace += msg
 }
 
 // Append uses an allocation pattern via Go to amortize the number of allocations performed
-func (m *machine) pushValue(entry stackEntry) {
-	m.values = append(m.values, entry)
+func (m *Machine) PushValue(entry StackEntry) {
+	m.Values = append(m.Values, entry)
 }
 
-func (m *machine) genSymbol() {
-	m.pushValue(Symbol(m.symbolIncr))
-	m.symbolIncr++
+func (m *Machine) genSymbol() {
+	m.PushValue(Symbol(m.SymbolIncr))
+	m.SymbolIncr++
 }
 
-func (m *machine) popValue() stackEntry {
-	if len(m.values) <= 0 {
+func (m *Machine) PopValue() StackEntry {
+	if len(m.Values) <= 0 {
 		panic("Data underflow")
 	}
 
-	popped := m.values[len(m.values)-1]
+	popped := m.Values[len(m.Values)-1]
 	// Snip the length of value
-	m.values = m.values[:len(m.values)-1]
+	m.Values = m.Values[:len(m.Values)-1]
 	return popped
 }
 
-func noop(m *machine) error {
+func noop(m *Machine) error {
 	return nil
 }
 
-func (m *machine) executeString(code string, pos codePosition) error {
+func (m *Machine) ExecuteString(code string, pos CodePosition) error {
 	p, err := stringToQuotation(code, pos)
 	if err != nil {
 		return err
@@ -149,7 +148,7 @@ func isPrefixChar(r rune) bool {
 	return false
 }
 
-func (m *machine) hasPrefixWord(w word) (*codeQuotation, string, bool) {
+func (m *Machine) hasPrefixWord(w word) (*CodeQuotation, string, bool) {
 	if !isPrefixChar(rune(w.str[0])) {
 		return nil, "", false
 	}
@@ -158,7 +157,7 @@ func (m *machine) hasPrefixWord(w word) (*codeQuotation, string, bool) {
 	for i, r := range w.str {
 		if !isPrefixChar(r) {
 			prefix = string(w.str[0:i])
-			seq, ok := m.prefixWords[prefix]
+			seq, ok := m.PrefixWords[prefix]
 			return seq, string(w.str[i:len(w.str)]), ok
 		}
 	}
@@ -167,8 +166,8 @@ func (m *machine) hasPrefixWord(w word) (*codeQuotation, string, bool) {
 
 type intPusher int
 
-func (i intPusher) pushInt(m *machine) error {
-	m.pushValue(Integer(i))
+func (i intPusher) pushInt(m *Machine) error {
+	m.PushValue(Integer(i))
 	return nil
 }
 
@@ -191,8 +190,8 @@ func tryParseInt(w *word, intVal *int) bool {
 
 type floatPusher float64
 
-func (f floatPusher) pushFloat(m *machine) error {
-	m.pushValue(Double(f))
+func (f floatPusher) pushFloat(m *Machine) error {
+	m.PushValue(Double(f))
 	return nil
 }
 
@@ -220,16 +219,16 @@ func wordIsWhitespace(w word) bool {
 	return true
 }
 
-func (m *machine) execute(p *codeQuotation) error {
-	var old_idx = p.idx
-	p.idx = 0
+func (m *Machine) execute(p *CodeQuotation) error {
+	var old_idx = p.Idx
+	p.Idx = 0
 	var retErr = m.do_execute(p)
-	p.idx = old_idx
+	p.Idx = old_idx
 	return retErr
 }
 
 // This executes a given code sequence against a given machine
-func (m *machine) do_execute(p *codeQuotation) (retErr error) {
+func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 	var err error
 	var wordVal *word
 	for err == nil {
@@ -240,7 +239,7 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 		if err != nil {
 			return err
 		}
-		m.numDispatches++
+		m.NumDispatches++
 		var intVal int
 		var floatVal float64
 		switch {
@@ -261,7 +260,7 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 					break
 				}
 			}
-			wordVal.impl = func(m *machine) error {
+			wordVal.impl = func(m *Machine) error {
 				// fmt.Println("From impl")
 				for i := 0; i <= commentWordLen; i++ {
 					p.nextWord()
@@ -275,9 +274,9 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 
 		// Both of these functions set the .impl values for the int word in question
 		case tryParseInt(wordVal, &intVal):
-			m.pushValue(Integer(intVal))
+			m.PushValue(Integer(intVal))
 		case tryParseFloat(wordVal, &floatVal):
-			m.pushValue(Double(floatVal))
+			m.PushValue(Double(floatVal))
 
 		// This word needs to be defined before we can allow other things to be defined
 		case wordVal.str == ":":
@@ -291,9 +290,9 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 			panic("Unbalanced }!")
 		case wordVal.str == "{":
 			// fmt.Println("Not cached")
-			__quot := &codeQuotation{
-				words:         make([]*word, 0),
-				codePositions: make([]codePosition, 0),
+			__quot := &CodeQuotation{
+				Words:         make([]*word, 0),
+				CodePositions: make([]CodePosition, 0),
 			}
 			// This is the word that will be patched in holding the quotation words we're about to patch out.
 			// quote := make([]*word, 0)
@@ -313,33 +312,33 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 				if wordVal.str == "}" && depth == -1 {
 					break
 				}
-				__quot.codePositions = append(__quot.codePositions, p.getcodePosition())
-				__quot.words = append(__quot.words, wordVal)
+				__quot.CodePositions = append(__quot.CodePositions, p.getCodePosition())
+				__quot.Words = append(__quot.Words, wordVal)
 			}
 			_quot := &quotation{
 				inner:  __quot,
-				locals: m.locals[len(m.locals)-1]}
+				locals: m.Locals[len(m.Locals)-1]}
 			// Run the { } as a quotation
-			_quot.locals = m.locals[len(m.locals)-1]
-			currIdx := len(m.values)
-			m.pushValue(_quot)
+			_quot.locals = m.Locals[len(m.Locals)-1]
+			currIdx := len(m.Values)
+			m.PushValue(_quot)
 			//fmt.Println(_quot.inner.words)
-			err := m.executeQuotation()
+			err := m.ExecuteQuotation()
 			if err != nil {
 				return p.wrapError(err)
 			}
-			vals := make([]stackEntry, len(m.values)-currIdx)
-			copy(vals, m.values[currIdx:len(m.values)])
-			m.values = m.values[:currIdx]
-			m.pushValue(Array(vals))
+			vals := make([]StackEntry, len(m.Values)-currIdx)
+			copy(vals, m.Values[currIdx:len(m.Values)])
+			m.Values = m.Values[:currIdx]
+			m.PushValue(Array(vals))
 
 		case wordVal.str == "${":
 			// Begin quotation
-			pos := p.getcodePosition()
+			pos := p.getCodePosition()
 			//quote := make([]*word, 0)
-			quot := &codeQuotation{
-				words:         make([]*word, 0),
-				codePositions: make([]codePosition, 0),
+			quot := &CodeQuotation{
+				Words:         make([]*word, 0),
+				CodePositions: make([]CodePosition, 0),
 			}
 			depth := 0
 			for err == nil {
@@ -357,14 +356,14 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 				if wordVal.str == "}" && depth == -1 {
 					break
 				}
-				quot.codePositions = append(quot.codePositions, p.getcodePosition())
-				quot.words = append(quot.words, wordVal)
+				quot.CodePositions = append(quot.CodePositions, p.getCodePosition())
+				quot.Words = append(quot.Words, wordVal)
 			}
 			// anchorWord.str = fmt.Sprint("herp", len(__quot.words))
 			// Run the { } as a quotation
 			_quot := &quotation{
 				inner:  quot,
-				locals: m.locals[len(m.locals)-1],
+				locals: m.Locals[len(m.Locals)-1],
 			}
 			join, err := stringToQuotation(`"" str-join`, pos)
 			if err != nil {
@@ -372,27 +371,26 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 			}
 			_join := &quotation{
 				inner:  join,
-				locals: m.locals[len(m.locals)-1],
+				locals: m.Locals[len(m.Locals)-1],
 			}
-			_quot.locals = m.locals[len(m.locals)-1]
-			currIdx := len(m.values)
-			// m.pushValue(_quot)
+			_quot.locals = m.Locals[len(m.Locals)-1]
+			currIdx := len(m.Values)
+			// m.PushValue(_quot)
 			err = m.execute(_quot.inner)
-			//err := m.executeQuotation()
 			if err != nil {
 				return err
 			}
-			vals := make([]stackEntry, len(m.values)-currIdx)
-			copy(vals, m.values[currIdx:len(m.values)])
-			m.values = m.values[:currIdx]
-			m.pushValue(Array(vals))
+			vals := make([]StackEntry, len(m.Values)-currIdx)
+			copy(vals, m.Values[currIdx:len(m.Values)])
+			m.Values = m.Values[:currIdx]
+			m.PushValue(Array(vals))
 			err = m.execute(_join.inner)
 
 		case wordVal.str == "[":
 			// Begin quotation
-			__quot := &codeQuotation{
-				words:         make([]*word, 0),
-				codePositions: make([]codePosition, 0),
+			__quot := &CodeQuotation{
+				Words:         make([]*word, 0),
+				CodePositions: make([]CodePosition, 0),
 			}
 			depth := 0
 			for err == nil {
@@ -407,15 +405,15 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 				if wordVal.str == "]" && depth == -1 {
 					break
 				}
-				__quot.codePositions = append(__quot.codePositions, p.getcodePosition())
-				__quot.words = append(__quot.words, wordVal)
+				__quot.CodePositions = append(__quot.CodePositions, p.getCodePosition())
+				__quot.Words = append(__quot.Words, wordVal)
 			}
 			_quotation := &quotation{
 				inner:  __quot,
-				locals: m.locals[len(m.locals)-1],
+				locals: m.Locals[len(m.Locals)-1],
 			}
-			// _quotation.locals = m.locals[len(m.locals)-1]
-			m.pushValue(_quotation)
+			// _quotation.locals = m.Locals[len(m.Locals)-1]
+			m.PushValue(_quotation)
 
 		case wordVal.str == "]":
 			// panic here.
@@ -425,24 +423,24 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 			// Slice out the " chracter
 			strVal := strings.TrimSuffix(strings.TrimPrefix(wordVal.str, `"`), `"`)
 
-			m.pushValue(String(strVal))
+			m.PushValue(String(strVal))
 		case wordVal.str == ")":
 			panic("Unexpected )")
 		case wordVal.str == ";":
 			panic("Unexpected ;")
 		case wordIsWhitespace(*wordVal):
-			wordVal.impl = func(m *machine) error {
+			wordVal.impl = func(m *Machine) error {
 				return nil
 			}
 			// TODO: capture this space?
 			continue
 		case len(wordVal.str) == 0:
-			wordVal.impl = func(m *machine) error {
+			wordVal.impl = func(m *Machine) error {
 				return nil
 			}
 			continue
 		default:
-			if fn, ok := m.predefinedWords[wordVal.str]; ok {
+			if fn, ok := m.PredefinedWords[wordVal.str]; ok {
 				if ok {
 					err = fn(m)
 					if err != nil {
@@ -450,7 +448,7 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 					}
 					wordVal.impl = fn
 				}
-			} else if val, ok := m.definedWords[wordVal.str]; ok {
+			} else if val, ok := m.DefinedWords[wordVal.str]; ok {
 				// Run the definition of this word on this machine.
 				// val.idx = 0
 				err = m.execute(val)
@@ -458,21 +456,21 @@ func (m *machine) do_execute(p *codeQuotation) (retErr error) {
 					return err
 				}
 				// This is a closure, so I'll need to be careful about it's performance
-				wordVal.impl = func(m *machine) error {
+				wordVal.impl = func(m *Machine) error {
 					// val.idx = 0
 					return m.execute(val)
 				}
 			} else if prefixFunc, nonPrefix, ok := m.hasPrefixWord(*wordVal); ok {
 				// Put the post-prefix string at the top of the stack, so it can
 				// be used.
-				m.pushValue(String(nonPrefix))
+				m.PushValue(String(nonPrefix))
 				err = m.execute(prefixFunc)
 				if err != nil {
 					return err
 				}
 				// Captures prefix/nonprefix
-				wordVal.impl = func(m *machine) error {
-					m.pushValue(String(nonPrefix))
+				wordVal.impl = func(m *Machine) error {
+					m.PushValue(String(nonPrefix))
 					return m.execute(prefixFunc)
 				}
 			} else if err = m.tryLocalWord(wordVal); err == LocalFuncRun || err == WordNotFound {
@@ -497,29 +495,29 @@ var ErrNoLocals = fmt.Errorf("No locals to try !")
 var LocalFuncRun = fmt.Errorf("Nothing was wrong")
 var WordNotFound = fmt.Errorf("word was undefined")
 
-func (c *quotation) execute(m *machine) error {
+func (c *quotation) execute(m *Machine) error {
 
-	var old_idx = c.inner.idx
-	c.inner.idx = 0
-	m.locals = append(m.locals, c.locals)
+	var old_idx = c.inner.Idx
+	c.inner.Idx = 0
+	m.Locals = append(m.Locals, c.locals)
 
 	var err = m.execute(c.inner)
 
-	m.locals = m.locals[:len(m.locals)-1]
-	c.inner.idx = old_idx
+	m.Locals = m.Locals[:len(m.Locals)-1]
+	c.inner.Idx = old_idx
 	return err
 }
 
-func (m *machine) tryLocalWord(w *word) error {
+func (m *Machine) tryLocalWord(w *word) error {
 	// TODO: In progress
-	if len(m.locals) > 0 {
-		if localFunc, found := m.locals[len(m.locals)-1][w.str]; found {
+	if len(m.Locals) > 0 {
+		if localFunc, found := m.Locals[len(m.Locals)-1][w.str]; found {
 			if fn, ok := localFunc.(*quotation); ok {
 				// Push the locals on
-				m.locals = append(m.locals, fn.locals)
+				m.Locals = append(m.Locals, fn.locals)
 				err := fn.execute(m)
 				// Take the local off
-				m.locals = m.locals[:len(m.locals)-1]
+				m.Locals = m.Locals[:len(m.Locals)-1]
 				if err != nil {
 					return err
 				}
@@ -541,7 +539,7 @@ func (m *machine) tryLocalWord(w *word) error {
 	return ErrNoLocals
 }
 
-func (m *machine) readWordBody(name word, c codeSequence) ([]*word, []codePosition, error) {
+func (m *Machine) readWordBody(name word, c codeSequence) ([]*word, []CodePosition, error) {
 	var err = error(nil)
 	openPar, err2 := c.nextWord()
 	if openPar.str != "(" {
@@ -596,10 +594,10 @@ func (m *machine) readWordBody(name word, c codeSequence) ([]*word, []codePositi
 		}
 	}
 	// fmt.Println("stackComment is", stackComment)
-	m.definedStackComments[name.str] = strings.TrimSpace(stackComment)
+	m.DefinedStackComments[name.str] = strings.TrimSpace(stackComment)
 
 	wordDef := make([]*word, 0)
-	wordInfo := make([]codePosition, 0)
+	wordInfo := make([]CodePosition, 0)
 	hasLocal := false
 	for err == nil {
 		wordVal, err := c.nextWord()
@@ -613,13 +611,13 @@ func (m *machine) readWordBody(name word, c codeSequence) ([]*word, []codePositi
 			break
 		}
 		wordDef = append(wordDef, wordVal)
-		wordInfo = append(wordInfo, c.getcodePosition())
+		wordInfo = append(wordInfo, c.getCodePosition())
 	}
 	if hasLocal == true {
 		wordDef = append([]*word{&word{str: "get-locals"}}, wordDef...)
-		wordInfo = append([]codePosition{codePosition{source: "Hardcoded"}}, wordInfo...)
+		wordInfo = append([]CodePosition{CodePosition{Source: "Hardcoded"}}, wordInfo...)
 		wordDef = append(wordDef, &word{str: "drop-locals"})
-		wordInfo = append(wordInfo, codePosition{source: "Hardcoded"})
+		wordInfo = append(wordInfo, CodePosition{Source: "Hardcoded"})
 	}
 	// fmt.Println(wordDef, wordInfo)
 	return wordDef, wordInfo, nil
@@ -658,25 +656,25 @@ func stringFromWordDef(definition []*word) string {
 }
 
 // Document comments, which end in a ;
-func (m *machine) readWordDocumentation(c codeSequence) error {
+func (m *Machine) readWordDocumentation(c codeSequence) error {
 	word, err := c.nextWord()
 	if err != nil {
 		return err
 	}
-	if _, found := m.prefixWords[word.str]; !found {
-	} else if _, found := m.predefinedWords[word.str]; !found {
-	} else if _, found := m.definedWords[word.str]; !found {
+	if _, found := m.PrefixWords[word.str]; !found {
+	} else if _, found := m.PredefinedWords[word.str]; !found {
+	} else if _, found := m.DefinedWords[word.str]; !found {
 		return fmt.Errorf("No definition for word: %s", word)
 	}
 	// TODO: Make this it's own loop
 	wordDef, _, err := m.readWordBody(*word, c)
 	// Save the docs here
-	m.helpDocs[word.str] = stringFromWordDef(wordDef)
+	m.HelpDocs[word.str] = stringFromWordDef(wordDef)
 	return err
 }
 
 // Prefix (:PRE) definitions, which use a prefix
-func (m *machine) readPrefixDefinition(c codeSequence) error {
+func (m *Machine) readPrefixDefinition(c codeSequence) error {
 	prefix, err := c.nextWord()
 	if err != nil {
 		return err
@@ -688,38 +686,38 @@ func (m *machine) readPrefixDefinition(c codeSequence) error {
 	if err != nil {
 		return err
 	}
-	m.prefixWords[prefix.str] = &codeQuotation{
-		idx:           0,
-		words:         wordDef,
-		codePositions: positions,
+	m.PrefixWords[prefix.str] = &CodeQuotation{
+		Idx:           0,
+		Words:         wordDef,
+		CodePositions: positions,
 	}
 	return nil
 }
 
 // Used for : defined words
-func (m *machine) readWordDefinition(c codeSequence) error {
+func (m *Machine) readWordDefinition(c codeSequence) error {
 	name, err := c.nextWord()
 	wordDef, positions, err := m.readWordBody(*name, c)
 	if err != nil {
-		fmt.Println(c.getcodePosition())
+		fmt.Println(c.getCodePosition())
 		return err
 	}
-	m.definedWords[name.str] = &codeQuotation{
-		idx:           0,
-		words:         wordDef,
-		codePositions: positions,
+	m.DefinedWords[name.str] = &CodeQuotation{
+		Idx:           0,
+		Words:         wordDef,
+		CodePositions: positions,
 	}
 	return nil
 }
 
 // Used for call word.
-func (m *machine) executeQuotation() error {
-	quoteVal := m.popValue()
+func (m *Machine) ExecuteQuotation() error {
+	quoteVal := m.PopValue()
 	if q, ok := quoteVal.(*quotation); ok {
 		// q.inner = q.inner.cloneCode()
-		m.locals = append(m.locals, q.locals)
+		m.Locals = append(m.Locals, q.locals)
 		err := m.execute(q.toCode())
-		m.locals = m.locals[:len(m.locals)-1]
+		m.Locals = m.Locals[:len(m.Locals)-1]
 		// Works if the err is nil or
 		return err
 	} else if q, ok := quoteVal.(GoFunc); ok {
@@ -738,22 +736,22 @@ const (
 	type_else
 )
 
-func (m *machine) runConditionalOperator() error {
-	falseVal := m.popValue()
-	trueVal := m.popValue()
-	booleanVal := m.popValue()
+func (m *Machine) runConditionalOperator() error {
+	falseVal := m.PopValue()
+	trueVal := m.PopValue()
+	booleanVal := m.PopValue()
 	if b, ok := booleanVal.(Boolean); ok {
 		if b {
-			m.pushValue(trueVal)
+			m.PushValue(trueVal)
 		} else {
-			m.pushValue(falseVal)
+			m.PushValue(falseVal)
 		}
 		return nil
 	} else {
 		// Return the stack to it's previous state, for debugging...?
-		m.pushValue(booleanVal)
-		m.pushValue(trueVal)
-		m.pushValue(falseVal)
+		m.PushValue(booleanVal)
+		m.PushValue(trueVal)
+		m.PushValue(falseVal)
 		return ConditionalTypeError
 	}
 }

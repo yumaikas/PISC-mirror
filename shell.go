@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"os"
 )
 
-var ModShellUtils = PISCModule{
+var ModShellUtils = Module{
 	Author:    "Andrew Owen",
 	Name:      "ShellUtils",
 	License:   "MIT",
@@ -14,10 +14,10 @@ var ModShellUtils = PISCModule{
 	Load:      loadShellWords,
 }
 
-func loadShellWords(m *machine) error {
+func loadShellWords(m *Machine) error {
 
-	m.addGoWord("list-files-at", "( path -- files )", GoWord(func(m *machine) error {
-		dirPath := m.popValue().String()
+	m.AddGoWord("list-files-at", "( path -- files )", GoWord(func(m *Machine) error {
+		dirPath := m.PopValue().String()
 		files, err := ioutil.ReadDir(dirPath)
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error: ", err)
@@ -26,11 +26,11 @@ func loadShellWords(m *machine) error {
 		for i, f := range files {
 			arr[i] = fileInfoToDict(f)
 		}
-		m.pushValue(arr)
+		m.PushValue(arr)
 		return nil
 	}))
 
-	m.addGoWord("list-files", "( -- files ) ", GoWord(func(m *machine) error {
+	m.AddGoWord("list-files", "( -- files ) ", GoWord(func(m *Machine) error {
 		files, err := ioutil.ReadDir(".")
 		if err != nil {
 			fmt.Fprintln(os.Stderr, "Error: ", err)
@@ -39,46 +39,46 @@ func loadShellWords(m *machine) error {
 		for i, f := range files {
 			arr[i] = fileInfoToDict(f)
 		}
-		m.pushValue(arr)
+		m.PushValue(arr)
 		return nil
 	}))
 
-	m.addGoWord("stat", "( filepath -- info )", GoWord(func(m *machine) error {
-		path := m.popValue().String()
+	m.AddGoWord("stat", "( filepath -- info )", GoWord(func(m *Machine) error {
+		path := m.PopValue().String()
 		info, err := os.Stat(path)
 		if err != nil {
 			return err
 		}
 
 		// Hrm... Is there a way to avoid this double allocation (struct into dict)
-		m.pushValue(fileInfoToDict(info))
+		m.PushValue(fileInfoToDict(info))
 		return nil
 
 	}))
 
-	m.addGoWord("pwd", "( -- workingdir )", GoWord(func(m *machine) error {
+	m.AddGoWord("pwd", "( -- workingdir )", GoWord(func(m *Machine) error {
 		dir, err := os.Getwd()
 		if err != nil {
 			return err
 		}
-		m.pushValue(String(dir))
+		m.PushValue(String(dir))
 		return nil
 	}))
 
-	m.addGoWord("env-get", " ( key -- envVal ) ", GoWord(func(m *machine) error {
-		key := m.popValue().String()
-		m.pushValue(String(os.Getenv(key)))
+	m.AddGoWord("env-get", " ( key -- envVal ) ", GoWord(func(m *Machine) error {
+		key := m.PopValue().String()
+		m.PushValue(String(os.Getenv(key)))
 		return nil
 	}))
-	m.addGoWord("env-set", " ( key value -- ) ", GoWord(func(m *machine) error {
-		val := m.popValue().String()
-		key := m.popValue().String()
+	m.AddGoWord("env-set", " ( key value -- ) ", GoWord(func(m *Machine) error {
+		val := m.PopValue().String()
+		key := m.PopValue().String()
 		return os.Setenv(key, val)
 	}))
 
 	//
-	m.addGoWord("cd", "( new-dir -- ) ", GoWord(func(m *machine) error {
-		location := m.popValue().String()
+	m.AddGoWord("cd", "( new-dir -- ) ", GoWord(func(m *Machine) error {
+		location := m.PopValue().String()
 		if err := os.Chdir(location); err != nil {
 			return err
 		}

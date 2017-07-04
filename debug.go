@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"fmt"
@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-var ModDebugCore = PISCModule{
+var ModDebugCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "DebugCore",
 	License:   "MIT",
@@ -18,40 +18,40 @@ var ModDebugCore = PISCModule{
 	Load:      loadDebugCore,
 }
 
-func loadDebugCore(m *machine) error {
+func loadDebugCore(m *Machine) error {
 	// ( -- )
-	m.predefinedWords["show-prefix-words"] = NilWord(func(m *machine) {
-		for name := range m.prefixWords {
+	m.PredefinedWords["show-prefix-words"] = NilWord(func(m *Machine) {
+		for name := range m.PrefixWords {
 			fmt.Println(name)
 		}
 	})
 	// ( quot -- .. time )
-	m.addGoWord("time", "( quot -- .. time )", GoWord(func(m *machine) error {
-		words := &codeQuotation{
-			idx:   0,
-			words: []*word{&word{str: "call"}},
+	m.AddGoWord("time", "( quot -- .. time )", GoWord(func(m *Machine) error {
+		words := &CodeQuotation{
+			Idx:   0,
+			Words: []*word{&word{str: "call"}},
 		}
 		start := time.Now()
 		err := m.execute(words)
 		elapsed := time.Since(start)
-		m.pushValue(String(fmt.Sprint("Code took ", elapsed)))
+		m.PushValue(String(fmt.Sprint("Code took ", elapsed)))
 		return err
 	}))
 
-	m.addGoWord("print-debug-trace", "( -- )", func(m *machine) error {
-		fmt.Println(m.debugTrace)
+	m.AddGoWord("print-debug-trace", "( -- )", func(m *Machine) error {
+		fmt.Println(m.DebugTrace)
 		return nil
 	})
 
-	m.addGoWord("clear-debug-trace", "( -- )", func(m *machine) error {
-		m.debugTrace = ""
+	m.AddGoWord("clear-debug-trace", "( -- )", func(m *Machine) error {
+		m.DebugTrace = ""
 		return nil
 	})
 
 	// ( filepath quotation -- )
-	m.predefinedWords["cpu-pprof"] = GoWord(func(m *machine) error {
-		m.executeString("swap", codePosition{source: "cpu-pprof GoWord"})
-		path := m.popValue().String()
+	m.PredefinedWords["cpu-pprof"] = GoWord(func(m *Machine) error {
+		m.ExecuteString("swap", CodePosition{Source: "cpu-pprof GoWord"})
+		path := m.PopValue().String()
 		f, err := os.Create(path)
 		if err != nil {
 			log.Fatal("Unable to create profiling file")
@@ -61,20 +61,20 @@ func loadDebugCore(m *machine) error {
 			log.Fatal("Unable to start CPU profile")
 			return err
 		}
-		m.executeQuotation()
+		m.ExecuteQuotation()
 		pprof.StopCPUProfile()
 		return nil
 	})
 
 	// ( -- )
-	m.predefinedWords["dump-defined-words"] = GoWord(func(m *machine) error {
+	m.PredefinedWords["dump-defined-words"] = GoWord(func(m *Machine) error {
 		// var words = make(Array, 0)
-		for name, seq := range m.prefixWords {
-			fmt.Println(":PRE", name, m.definedStackComments[name], DumpToString(seq), ";")
+		for name, seq := range m.PrefixWords {
+			fmt.Println(":PRE", name, m.DefinedStackComments[name], DumpToString(seq), ";")
 		}
-		for name, seq := range m.definedWords {
-			fmt.Println(":DOC", name, m.definedStackComments[name], m.helpDocs[name], ";")
-			fmt.Println(":", name, m.definedStackComments[name], DumpToString(seq), ";")
+		for name, seq := range m.DefinedWords {
+			fmt.Println(":DOC", name, m.DefinedStackComments[name], m.HelpDocs[name], ";")
+			fmt.Println(":", name, m.DefinedStackComments[name], DumpToString(seq), ";")
 		}
 		return nil
 	})

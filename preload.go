@@ -1,113 +1,113 @@
-package main
+package pisc
 
 import "fmt"
 import "reflect"
 
 // GoWord a wrapper for functions that implement pieces of PISC
-type GoWord func(*machine) error
+type GoWord func(*Machine) error
 
 // NilWord a wrapper for GoWords that should never fail
-func NilWord(f func(*machine)) GoWord {
-	return GoWord(func(m *machine) error {
+func NilWord(f func(*Machine)) GoWord {
+	return GoWord(func(m *Machine) error {
 		f(m)
 		return nil
 	})
 }
 
-func (m *machine) addGoWord(name, docstring string, impl GoWord) {
-	m.helpDocs[name] = docstring
-	m.predefinedWords[name] = impl
+func (m *Machine) AddGoWord(name, docstring string, impl GoWord) {
+	m.HelpDocs[name] = docstring
+	m.PredefinedWords[name] = impl
 }
 
-func t(m *machine) error {
-	m.pushValue(Boolean(true))
+func t(m *Machine) error {
+	m.PushValue(Boolean(true))
 	return nil
 }
 
-func f(m *machine) error {
-	m.pushValue(Boolean(false))
+func f(m *Machine) error {
+	m.PushValue(Boolean(false))
 	return nil
 }
 
-func condOperator(m *machine) error {
+func condOperator(m *Machine) error {
 	return m.runConditionalOperator()
 }
 
-func call(m *machine) error {
-	return m.executeQuotation()
+func call(m *Machine) error {
+	return m.ExecuteQuotation()
 }
 
-func isStackEmpty(m *machine) error {
-	m.pushValue(Boolean(len(m.values) == 0))
+func isStackEmpty(m *Machine) error {
+	m.PushValue(Boolean(len(m.Values) == 0))
 	return nil
 }
 
-func typeof(m *machine) error {
-	m.pushValue(String(m.popValue().Type()))
+func typeof(m *Machine) error {
+	m.PushValue(String(m.PopValue().Type()))
 	return nil
 }
 
-func dip(m *machine) error {
-	quot := m.popValue().(*quotation).toCode()
-	a := m.popValue()
+func dip(m *Machine) error {
+	quot := m.PopValue().(*quotation).toCode()
+	a := m.PopValue()
 	err := m.execute(quot)
 	if err != nil {
 		return err
 	}
-	m.pushValue(a)
+	m.PushValue(a)
 	return nil
 }
 
-func pickDup(m *machine) error {
-	distBack := int(m.popValue().(Integer))
-	if distBack > len(m.values)+1 {
-		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.values))
+func pickDup(m *Machine) error {
+	distBack := int(m.PopValue().(Integer))
+	if distBack > len(m.Values)+1 {
+		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.Values))
 	}
-	m.pushValue(m.values[len(m.values)-distBack-1])
+	m.PushValue(m.Values[len(m.Values)-distBack-1])
 	return nil
 }
 
-func pickDrop(m *machine) error {
-	distBack := int(m.popValue().(Integer))
-	if distBack > len(m.values)+1 {
-		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.values))
+func pickDrop(m *Machine) error {
+	distBack := int(m.PopValue().(Integer))
+	if distBack > len(m.Values)+1 {
+		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.Values))
 	}
-	valIdx := len(m.values) - distBack - 1
-	val := m.values[valIdx]
-	m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
-	m.pushValue(val)
+	valIdx := len(m.Values) - distBack - 1
+	val := m.Values[valIdx]
+	m.Values = append(m.Values[:valIdx], m.Values[valIdx+1:]...)
+	m.PushValue(val)
 	return nil
 }
 
-func pickDel(m *machine) error {
-	distBack := int(m.popValue().(Integer))
-	if distBack > len(m.values)+1 {
-		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.values))
+func pickDel(m *Machine) error {
+	distBack := int(m.PopValue().(Integer))
+	if distBack > len(m.Values)+1 {
+		return fmt.Errorf("Cannot pick %v items back from stack of length %v", distBack, len(m.Values))
 	}
-	valIdx := len(m.values) - distBack - 1
-	m.values = append(m.values[:valIdx], m.values[valIdx+1:]...)
+	valIdx := len(m.Values) - distBack - 1
+	m.Values = append(m.Values[:valIdx], m.Values[valIdx+1:]...)
 	return nil
 }
 
-func lenEntry(m *machine) error {
-	length := m.popValue().(lenable).Length()
-	m.pushValue(Integer(length))
+func lenEntry(m *Machine) error {
+	length := m.PopValue().(Lenable).Length()
+	m.PushValue(Integer(length))
 	return nil
 }
 
-func errorFromEntry(m *machine) error {
-	msg := m.popValue().String()
+func errorFromEntry(m *Machine) error {
+	msg := m.PopValue().String()
 	return fmt.Errorf(msg)
 }
 
-func reflectEq(m *machine) error {
-	a := m.popValue()
-	b := m.popValue()
-	m.pushValue(Boolean(reflect.DeepEqual(a, b)))
+func reflectEq(m *Machine) error {
+	a := m.PopValue()
+	b := m.PopValue()
+	m.PushValue(Boolean(reflect.DeepEqual(a, b)))
 	return nil
 }
 
-var ModPISCCore = PISCModule{
+var ModPISCCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "PISCCore",
 	License:   "MIT",
@@ -116,7 +116,7 @@ var ModPISCCore = PISCModule{
 }
 
 // These are the standard libraries that are currently trusted to not
-var StandardModules = []PISCModule{
+var StandardModules = []Module{
 	ModLoopCore,
 	ModLocalsCore,
 	ModDictionaryCore,
@@ -131,38 +131,24 @@ var StandardModules = []PISCModule{
 	ModPISCCore,
 }
 
-func (m *machine) loadForCLI() error {
-	return m.LoadModules(append(StandardModules,
-		ModIOCore, ModDebugCore, ModShellUtils)...)
-}
-func (m *machine) loadForDB() error {
-	return m.LoadModules(append(StandardModules,
-		ModBoltDB, ModIOCore, ModShellUtils)...)
-}
-
-func (m *machine) loadForChatbot() error {
-	return m.LoadModules(append(StandardModules,
-		ModBoltDB, ModIRCKit)...)
-}
-
-func loadPISCCore(m *machine) error {
-	if m.predefinedWords == nil {
+func loadPISCCore(m *Machine) error {
+	if m.PredefinedWords == nil {
 		panic("Uninitialized stack machine!")
 	}
-	m.addGoWord("t", "( -- t )", GoWord(t))
-	m.addGoWord("f", "( -- f )", GoWord(f))
-	m.addGoWord("dip", "( a quot -- ... a )", GoWord(dip))
-	m.addGoWord("stack-empty?", "( -- empty? )", GoWord(isStackEmpty))
-	m.addGoWord("typeof", "( a -- typeofa )", GoWord(typeof))
-	m.addGoWord("?", "( a b ? -- a/b )", GoWord(condOperator))
-	m.addGoWord("call", "( quot -- ... )", GoWord(call))
-	m.predefinedWords["pick-dup"] = GoWord(pickDup)
-	m.predefinedWords["pick-drop"] = GoWord(pickDrop)
-	m.predefinedWords["pick-del"] = GoWord(pickDel)
-	m.addGoWord("len", "( e -- lenOfE ) ", GoWord(lenEntry))
-	m.addGoWord("eq", " ( a b -- same? ) ", GoWord(runEq))
+	m.AddGoWord("t", "( -- t )", GoWord(t))
+	m.AddGoWord("f", "( -- f )", GoWord(f))
+	m.AddGoWord("dip", "( a quot -- ... a )", GoWord(dip))
+	m.AddGoWord("stack-empty?", "( -- empty? )", GoWord(isStackEmpty))
+	m.AddGoWord("typeof", "( a -- typeofa )", GoWord(typeof))
+	m.AddGoWord("?", "( a b ? -- a/b )", GoWord(condOperator))
+	m.AddGoWord("call", "( quot -- ... )", GoWord(call))
+	m.PredefinedWords["pick-dup"] = GoWord(pickDup)
+	m.PredefinedWords["pick-drop"] = GoWord(pickDrop)
+	m.PredefinedWords["pick-del"] = GoWord(pickDel)
+	m.AddGoWord("len", "( e -- lenOfE ) ", GoWord(lenEntry))
+	m.AddGoWord("eq", " ( a b -- same? ) ", GoWord(runEq))
 	// Discourage use of reflection based eq via long name
-	m.addGoWord("deep-slow-reflect-eq", "( a b -- same? )", GoWord(reflectEq))
-	m.addGoWord("error", "( msg -- !! )", GoWord(errorFromEntry))
+	m.AddGoWord("deep-slow-reflect-eq", "( a b -- same? )", GoWord(reflectEq))
+	m.AddGoWord("error", "( msg -- !! )", GoWord(errorFromEntry))
 	return m.importPISCAsset("stdlib/std_lib.pisc")
 }

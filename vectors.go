@@ -1,10 +1,10 @@
-package main
+package pisc
 
 import (
 	"fmt"
 )
 
-var ModVectorCore = PISCModule{
+var ModVectorCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "VectorCore",
 	License:   "MIT",
@@ -12,23 +12,23 @@ var ModVectorCore = PISCModule{
 	Load:      loadVectorCore,
 }
 
-func loadVectorCore(m *machine) error {
-	m.addGoWord("vec-set-at", " ( vec val idx -- vec ) ", GoWord(vecSetAt))
-	m.addGoWord("vec-at", " ( vec idx -- elem ) ", GoWord(vecAt))
-	m.addGoWord("<vector>", " ( -- vector )", GoWord(makeVec))
-	m.addGoWord("vec-each", " ( vec quot -- .. ) ", GoWord(vecEach))
-	m.addGoWord("vec-append", " ( vec elem -- newVect ) ", GoWord(vecAppend))
-	m.addGoWord("vec-prepend", " ( vec elem -- newVect ) ", GoWord(vecPrepend))
-	m.addGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
-	m.addGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
+func loadVectorCore(m *Machine) error {
+	m.AddGoWord("vec-set-at", " ( vec val idx -- vec ) ", GoWord(vecSetAt))
+	m.AddGoWord("vec-at", " ( vec idx -- elem ) ", GoWord(vecAt))
+	m.AddGoWord("<vector>", " ( -- vector )", GoWord(makeVec))
+	m.AddGoWord("vec-each", " ( vec quot -- .. ) ", GoWord(vecEach))
+	m.AddGoWord("vec-append", " ( vec elem -- newVect ) ", GoWord(vecAppend))
+	m.AddGoWord("vec-prepend", " ( vec elem -- newVect ) ", GoWord(vecPrepend))
+	m.AddGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
+	m.AddGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
 	// Return success if we can load out PISC file as well.
 	return m.importPISCAsset("stdlib/vectors.pisc")
 }
 
-func vecSetAt(m *machine) error {
-	idx := int(m.popValue().(Integer))
-	val := m.popValue()
-	arr := m.values[len(m.values)-1].(Array)
+func vecSetAt(m *Machine) error {
+	idx := int(m.PopValue().(Integer))
+	val := m.PopValue()
+	arr := m.Values[len(m.Values)-1].(Array)
 	if idx > len(arr)-1 || idx < 0 {
 		return fmt.Errorf("index out of bounds: %v", idx)
 	}
@@ -36,28 +36,28 @@ func vecSetAt(m *machine) error {
 	return nil
 }
 
-func vecAt(m *machine) error {
-	idx := int(m.popValue().(Integer))
-	arr := m.popValue().(Array)
+func vecAt(m *Machine) error {
+	idx := int(m.PopValue().(Integer))
+	arr := m.PopValue().(Array)
 	if idx > len(arr)-1 || idx < 0 {
 		return fmt.Errorf("index out of bounds: %v", idx)
 	}
-	m.pushValue(arr[idx])
+	m.PushValue(arr[idx])
 	return nil
 }
 
-func makeVec(m *machine) error {
-	m.pushValue(Array(make([]stackEntry, 0)))
+func makeVec(m *Machine) error {
+	m.PushValue(Array(make([]StackEntry, 0)))
 	return nil
 }
 
-func vecEach(m *machine) error {
-	quot := m.popValue().(*quotation)
-	vect := m.popValue().(Array)
+func vecEach(m *Machine) error {
+	quot := m.PopValue().(*quotation)
+	vect := m.PopValue().(Array)
 	for _, elem := range vect {
-		m.pushValue(elem)
-		m.pushValue(quot)
-		err := m.executeQuotation()
+		m.PushValue(elem)
+		m.PushValue(quot)
+		err := m.ExecuteQuotation()
 		if err != nil {
 			fmt.Println("ERROR HAPPENED")
 			return err
@@ -66,42 +66,42 @@ func vecEach(m *machine) error {
 	return nil
 }
 
-func vecAppend(m *machine) error {
-	toAppend := m.popValue()
-	arr := m.popValue().(Array)
+func vecAppend(m *Machine) error {
+	toAppend := m.PopValue()
+	arr := m.PopValue().(Array)
 	arr = append(arr, toAppend)
-	m.pushValue(arr)
+	m.PushValue(arr)
 	return nil
 }
 
-func vecPrepend(m *machine) error {
-	toPrepend := m.popValue()
-	arr := m.popValue().(Array)
-	arr = append([]stackEntry{toPrepend}, arr...)
-	m.pushValue(arr)
+func vecPrepend(m *Machine) error {
+	toPrepend := m.PopValue()
+	arr := m.PopValue().(Array)
+	arr = append([]StackEntry{toPrepend}, arr...)
+	m.PushValue(arr)
 	return nil
 }
 
-func vecPopback(m *machine) error {
-	arr := m.popValue().(Array)
+func vecPopback(m *Machine) error {
+	arr := m.PopValue().(Array)
 	if len(arr) < 1 {
 		return fmt.Errorf("no elements in array")
 	}
 	val := arr[len(arr)-1]
 	arr = arr[:len(arr)-1]
-	m.pushValue(arr)
-	m.pushValue(val)
+	m.PushValue(arr)
+	m.PushValue(val)
 	return nil
 }
 
-func vecPopfront(m *machine) error {
-	arr := m.popValue().(Array)
+func vecPopfront(m *Machine) error {
+	arr := m.PopValue().(Array)
 	if len(arr) < 1 {
 		return fmt.Errorf("no elements in array")
 	}
 	val := arr[0]
 	arr = arr[1:]
-	m.pushValue(arr)
-	m.pushValue(val)
+	m.PushValue(arr)
+	m.PushValue(val)
 	return nil
 }

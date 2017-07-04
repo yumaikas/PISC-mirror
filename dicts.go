@@ -1,8 +1,8 @@
-package main
+package pisc
 
 // "strings"
 
-var ModDictionaryCore = PISCModule{
+var ModDictionaryCore = Module{
 	Author:  "Andrew Owen",
 	Name:    "DictionaryCore",
 	License: "MIT", // TODO: Clarify here
@@ -10,55 +10,55 @@ var ModDictionaryCore = PISCModule{
 	// Possible: indicate PISC files to be loaded?
 }
 
-func loadDictMod(m *machine) error {
+func loadDictMod(m *Machine) error {
 	return m.loadDictWords()
 }
 
-func (m *machine) loadDictWords() error {
+func (m *Machine) loadDictWords() error {
 
 	// Push a dictionary to the stack.
-	m.predefinedWords["<dict>"] = NilWord(func(m *machine) {
-		dict := make(map[string]stackEntry)
-		m.pushValue(Dict(dict))
+	m.PredefinedWords["<dict>"] = NilWord(func(m *Machine) {
+		dict := make(map[string]StackEntry)
+		m.PushValue(Dict(dict))
 	})
 
 	// ( dict key -- bool )
-	m.predefinedWords["dict-has-key?"] = NilWord(func(m *machine) {
-		key := m.popValue().(String).String()
-		dict := m.popValue().(Dict)
+	m.PredefinedWords["dict-has-key?"] = NilWord(func(m *Machine) {
+		key := m.PopValue().(String).String()
+		dict := m.PopValue().(Dict)
 		_, ok := dict[key]
-		m.pushValue(Boolean(ok))
+		m.PushValue(Boolean(ok))
 	})
 
 	// ( dict value key -- dict )
-	m.predefinedWords["dict-set"] = NilWord(func(m *machine) {
-		key := m.popValue().(String).String()
-		value := m.popValue()
+	m.PredefinedWords["dict-set"] = NilWord(func(m *Machine) {
+		key := m.PopValue().(String).String()
+		value := m.PopValue()
 		// Peek, since we have no intention of popping here.
-		dict := m.popValue().(Dict)
+		dict := m.PopValue().(Dict)
 		dict[string(key)] = value
 	})
 
 	// ( dict key -- value )
-	m.predefinedWords["dict-get"] = NilWord(func(m *machine) {
-		key := m.popValue().(String).String()
-		m.pushValue(m.popValue().(Dict)[key])
+	m.PredefinedWords["dict-get"] = NilWord(func(m *Machine) {
+		key := m.PopValue().(String).String()
+		m.PushValue(m.PopValue().(Dict)[key])
 	})
 
-	m.predefinedWords["push-dict-keys"] = NilWord(func(m *machine) {
-		dic := m.popValue().(Dict)
+	m.PredefinedWords["push-dict-keys"] = NilWord(func(m *Machine) {
+		dic := m.PopValue().(Dict)
 		for k, _ := range dic {
-			m.pushValue(String(k))
+			m.PushValue(String(k))
 		}
 	})
 
 	// ( dict -- key value )
-	m.predefinedWords["dict-get-rand"] = GoWord(func(m *machine) error {
-		dic := m.popValue().(Dict)
+	m.PredefinedWords["dict-get-rand"] = GoWord(func(m *Machine) error {
+		dic := m.PopValue().(Dict)
 		// Rely on random key ordering
 		for k, v := range dic {
-			m.pushValue(String(k))
-			m.pushValue(v)
+			m.PushValue(String(k))
+			m.PushValue(v)
 			break
 		}
 		return nil
