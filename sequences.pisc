@@ -20,6 +20,21 @@
 
 : take-seq ( seq n -- elms ) 
   :n :seq $n [ $seq .get-next ] times
+  # An alternative would be 
+  # [ :seq ] dip [ $seq .get-next ] times
 ;
 
 <int-seq> [ even? ] filt-seq 10 take-seq
+
+/* Output:
+0 <Integer> 
+2 <Integer> 
+4 <Integer> 
+6 <Integer> 
+8 <Integer> 
+10 <Integer> 
+12 <Integer> 
+14 <Integer> 
+16 <Integer> 
+18 <Integer> 
+*/
