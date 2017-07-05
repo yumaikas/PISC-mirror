@@ -1,8 +1,27 @@
-: <int-seq> ( -- seq ) 
-  0 :curr
+: <seq> ( dict -- seq )
+  :proto
+  $proto ->get-next :inner-get-next
+  $proto [ 
+    $proto .has-next [ inner-get-next ] [ "Sequence empty!" error ] if  
+  ] <<-get-next
+;
+
+: <int-seq-at> ( start -- seq )
+  :curr 
   <dict> 
     [ t ] <<-has-next
     [ $curr ++curr ] <<-get-next
+    <seq>
+;
+
+: <int-seq> ( -- seq ) 0 <int-seq-at> ;
+
+: <int-seq-bounded> ( start end -- seq ) 
+  :end dup :start :curr
+  <dict>
+    [ $end $curr >= ] <<-has-next
+    [ $curr ++curr ] <<-get-next
+  <seq>
 ;
 
 : filt-seq ( seq pred -- seq ) 
@@ -16,25 +35,26 @@
       ] while
       $item
     ] <<-get-next
+  <seq>
 ;
 
 : take-seq ( seq n -- elms ) 
-  :n :seq $n [ $seq .get-next ] times
+  :n :seq $n [ $seq .has-next [ $seq .get-next ] when ] times
   # An alternative would be 
   # [ :seq ] dip [ $seq .get-next ] times
 ;
 
-<int-seq> [ even? ] filt-seq 10 take-seq
+: seq-each ( seq quot -- .. ) 
+  :quot :seq
+  <dict> 
+    [ $seq .has-next ] <<-has-next
+    [ $seq .get-next quot ] <<-get-next
+  <seq>
+;
 
-/* Output:
-0 <Integer> 
-2 <Integer> 
-4 <Integer> 
-6 <Integer> 
-8 <Integer> 
-10 <Integer> 
-12 <Integer> 
-14 <Integer> 
-16 <Integer> 
-18 <Integer> 
-*/
+: seq-example ( -- .. ) <int-seq> [ even? ] filt-seq [ 2 * ] seq-each 10 take-seq ;
+
+: seq-example-2 ( -- .. ) 
+  1 100 <int-seq-bounded> :s 
+  101 [ $s .get-next drop ] times 
+;
