@@ -9,6 +9,7 @@ import (
 func log(message string) {
 	js.Global.Get("console").Call("log", message)
 }
+
 func log_error(message string) {
 	js.Global.Get("console").Call("error", message)
 }
@@ -23,7 +24,11 @@ func main() {
 		PrefixWords:          make(map[string]*pisc.CodeQuotation),
 		HelpDocs:             make(map[string]string),
 	}
-	m.LoadModules(append(pisc.StandardModules, pisc.ModDebugCore, pisc.ModIOCore)...)
+	m.LoadModules(append(
+		pisc.StandardModules,
+		pisc.ModDebugCore,
+		pisc.ModIOCore,
+		ModPlayground)...)
 
 	printStack := func(this *js.Object, arguments []*js.Object) interface{} {
 		for _, val := range m.Values {
@@ -49,6 +54,7 @@ func main() {
 		err := m.ExecuteString(code, pisc.CodePosition{Source: "User Input"})
 		if err != nil {
 			log_error(err.Error())
+			return err
 		}
 		/*
 			for idx, val := range m.Values {
