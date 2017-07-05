@@ -3,8 +3,6 @@ package main
 import (
 	"pisc"
 
-	"strconv"
-
 	"github.com/gopherjs/gopherjs/js"
 )
 
@@ -25,18 +23,22 @@ func main() {
 		PrefixWords:          make(map[string]*pisc.CodeQuotation),
 		HelpDocs:             make(map[string]string),
 	}
-	m.LoadModules(pisc.StandardModules...)
+	m.LoadModules(append(pisc.StandardModules, pisc.ModDebugCore, pisc.ModIOCore)...)
 
 	printStack := func(this *js.Object, arguments []*js.Object) interface{} {
 		for _, val := range m.Values {
-			printVal := val.String() + "<" + val.Type() + ">"
+			printVal := val.String() + " <" + val.Type() + ">"
 			log(printVal)
 		}
 		return js.Undefined
 	}
 
 	getStack := func(this *js.Object, arguments []*js.Object) interface{} {
-		return m.Values
+		var jsVals = make([]*js.Object, 0)
+		for _, val := range m.Values {
+			jsVals = append(jsVals, js.MakeWrapper(val))
+		}
+		return jsVals
 	}
 
 	eval := func(this *js.Object, arguments []*js.Object) interface{} {
@@ -48,10 +50,12 @@ func main() {
 		if err != nil {
 			log_error(err.Error())
 		}
-		for idx, val := range m.Values {
-			printVal := val.String() + "<" + val.Type() + "> : " + strconv.Itoa(idx)
-			log(printVal)
-		}
+		/*
+			for idx, val := range m.Values {
+				printVal := val.String() + "<" + val.Type() + "> : " + strconv.Itoa(idx)
+				log(printVal)
+			}
+		*/
 		return js.Undefined
 	}
 

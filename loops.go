@@ -21,6 +21,7 @@ func loadLoopCore(m *Machine) error {
 		}
 		return nil
 	})
+
 	// ( pred body -- .. )
 	m.PredefinedWords["while"] = GoWord(func(m *Machine) error {
 		body := m.PopValue().(*Quotation).toCode()

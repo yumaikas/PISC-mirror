@@ -35,7 +35,7 @@ func (kv *kvDB) Close(m *pisc.Machine) error {
 }
 
 func (kv kvNode) WithTransaction(m *pisc.Machine) error {
-	// Should be a quotation
+	// Should be a Quotation
 	quot := m.PopValue()
 	db := kv.node
 	node, err := db.Begin(true)

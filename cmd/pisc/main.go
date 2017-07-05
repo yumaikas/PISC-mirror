@@ -128,7 +128,6 @@ func LoadForChatbot(m *pisc.Machine) error {
 
 func handleFlags(ctx *cli.Context) {
 	m := initMachine()
-	fmt.Println("???")
 	// Execute this before benchmarking since we aren't yet benchmarking file loads
 	if ctx.IsSet("benchmark") {
 		benchmark(m)
