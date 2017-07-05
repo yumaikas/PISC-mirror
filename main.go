@@ -2,23 +2,11 @@
 // Independent
 // Source
 // Code
-package main
+package pisc
 
-import (
-	"io"
-	// "flag" TODO: Implement flags for file and burst modes
-	"fmt"
-	"os"
-	"strings"
+// "flag" TODO: Implement flags for file and burst modes
 
-	"log"
-
-	"runtime/pprof"
-
-	"gopkg.in/readline.v1"
-	cli "gopkg.in/urfave/cli.v1"
-)
-
+/*
 // This function starts an interpreter
 func main() {
 	app := cli.NewApp()
@@ -56,25 +44,26 @@ func main() {
 	app.Run(os.Args)
 }
 
-func initMachine() *machine {
-	m := &machine{
-		values:               make([]stackEntry, 0),
-		definedWords:         make(map[string]*codeQuotation),
-		definedStackComments: make(map[string]string),
-		predefinedWords:      make(map[string]GoWord),
-		prefixWords:          make(map[string]*codeQuotation),
-		helpDocs:             make(map[string]string),
+
+func initMachine() *Machine {
+	m := &Machine{
+		Values:               make([]StackEntry, 0),
+		DefinedWords:         make(map[string]*CodeQuotation),
+		DefinedStackComments: make(map[string]string),
+		PredefinedWords:      make(map[string]GoWord),
+		PrefixWords:          make(map[string]*CodeQuotation),
+		HelpDocs:             make(map[string]string),
 	}
 	return m
 }
 
-func benchmark(m *machine) {
+func benchmark(m *Machine) {
 	err := m.loadForCLI()
 	if err != nil {
 		log.Fatalf("Unable to start benchmark due to error %v", err.Error())
 		return
 	}
-	err = m.executeString(`"factorial.pisc" import`, codePosition{source: "pre-benchmark import"})
+	err = m.ExecuteString(`"factorial.pisc" import`, CodePosition{Source: "pre-benchmark import"})
 	if err != nil {
 		log.Fatalf("Unable to start benchmark due to error %v", err.Error())
 		return
@@ -84,11 +73,11 @@ func benchmark(m *machine) {
 		log.Fatal("Unable to create profiling file")
 		return
 	}
-	pos := codePosition{source: "Benchmark recursive"}
+	pos := CodePosition{Source: "Benchmark recursive"}
 	if err := pprof.StartCPUProfile(f); err != nil {
 		log.Fatal("Unable to start CPU profile")
 	}
-	err = m.executeString("100000 [ 12 factorial drop ] times", pos)
+	err = m.ExecuteString("100000 [ 12 factorial drop ] times", pos)
 	if err != nil {
 		log.Fatal("Recursive benchmark failed:", err)
 	}
@@ -98,12 +87,12 @@ func benchmark(m *machine) {
 		log.Fatal("Unable to create profiling file")
 		return
 	}
-	pos = codePosition{source: "Benchmark loop"}
+	pos = CodePosition{Source: "Benchmark loop"}
 	if err := pprof.StartCPUProfile(f); err != nil {
 		log.Fatal("Unable to start CPU profile")
 		return
 	}
-	err = m.executeString("100000 [ 12 factorial-loop drop ] times", pos)
+	err = m.ExecuteString("100000 [ 12 factorial-loop drop ] times", pos)
 	if err != nil {
 		log.Fatal("Recursive benchmark failed:", err)
 		pprof.StopCPUProfile()
@@ -145,9 +134,9 @@ func handleFlags(ctx *cli.Context) {
 		m.logAndResetDispatchCount(os.Stderr)
 	}
 	if ctx.IsSet("file") {
-		m.pushValue(String(ctx.String("file")))
-		err := m.executeString("import", codePosition{
-			source: "argument line",
+		m.PushValue(String(ctx.String("file")))
+		err := m.ExecuteString("import", CodePosition{
+			Source: "argument line",
 		})
 		if err != nil {
 			log.Println(err)
@@ -157,7 +146,7 @@ func handleFlags(ctx *cli.Context) {
 	}
 	if ctx.IsSet("command") {
 		line := ctx.String("command")
-		p, err := stringToQuotation(line, codePosition{source: "args"})
+		p, err := stringToQuotation(line, CodePosition{Source: "args"})
 		if err != nil {
 			log.Fatal("Error in command: ", err)
 		}
@@ -172,7 +161,7 @@ func handleFlags(ctx *cli.Context) {
 	}
 }
 
-func loadInteractive(m *machine) {
+func loadInteractive(m *Machine) {
 
 	// given_files := flag.Bool("f", false, "Sets the rest of the arguments to list of files")
 	// Run command stuff here.
@@ -211,7 +200,7 @@ Code`)
 		numEntries++
 		// fmt.Println(words)
 
-		err = m.executeString(line, codePosition{source: fmt.Sprint("stdin:", numEntries)})
+		err = m.ExecuteString(line, CodePosition{Source: fmt.Sprint("stdin:", numEntries)})
 		if err == ExitingProgram {
 			fmt.Println("Exiting program")
 			return
@@ -222,9 +211,10 @@ Code`)
 		}
 		m.logAndResetDispatchCount(os.Stderr)
 		fmt.Println("Data Stack:")
-		for _, val := range m.values {
+		for _, val := range m.Values {
 			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}
 	}
 
 }
+*/

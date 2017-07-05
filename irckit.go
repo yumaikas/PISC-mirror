@@ -1,9 +1,9 @@
-package main
+package pisc
 
 import "gopkg.in/sorcix/irc.v2"
 import "fmt"
 
-var ModIRCKit = PISCModule{
+var ModIRCKit = Module{
 	Author:    "Andrew Owen",
 	Name:      "IRCKit",
 	License:   "MIT",
@@ -16,12 +16,12 @@ type ircMessage irc.Message
 
 var InvalidIRCMessage = fmt.Errorf("IRC message formmated incorrectly")
 
-func (conn *ircConn) close(m *machine) error {
+func (conn *ircConn) close(m *Machine) error {
 	return ((*irc.Conn)(conn)).Close()
 }
 
-func (conn *ircConn) write(m *machine) error {
-	str := m.popValue().String()
+func (conn *ircConn) write(m *Machine) error {
+	str := m.PopValue().String()
 	msg := irc.ParseMessage(str)
 
 	fmt.Println(msg)
@@ -36,41 +36,41 @@ func (conn *ircConn) write(m *machine) error {
 	return nil
 }
 
-func (_msg ircMessage) getMessageCommand(m *machine) error {
+func (_msg ircMessage) getMessageCommand(m *Machine) error {
 	msg := irc.Message(_msg)
-	m.pushValue(String(msg.Command))
+	m.PushValue(String(msg.Command))
 	return nil
 }
 
-func (_msg ircMessage) getMessagePrefixIsUserLike(m *machine) error {
+func (_msg ircMessage) getMessagePrefixIsUserLike(m *Machine) error {
 	msg := irc.Message(_msg)
-	m.pushValue(Boolean(msg.IsHostmask()))
+	m.PushValue(Boolean(msg.IsHostmask()))
 	return nil
 }
 
-func (_msg ircMessage) getMessagePrefixIsServerLike(m *machine) error {
+func (_msg ircMessage) getMessagePrefixIsServerLike(m *Machine) error {
 	msg := irc.Message(_msg)
-	m.pushValue(Boolean(msg.IsServer()))
+	m.PushValue(Boolean(msg.IsServer()))
 	return nil
 }
 
-func (_msg ircMessage) getName(m *machine) error {
+func (_msg ircMessage) getName(m *Machine) error {
 	msg := irc.Message(_msg)
-	m.pushValue(String(msg.Name))
+	m.PushValue(String(msg.Name))
 	return nil
 }
 
-func (_msg ircMessage) getParams(m *machine) error {
+func (_msg ircMessage) getParams(m *Machine) error {
 	msg := irc.Message(_msg)
 	params := make(Array, len(msg.Params))
 	for i := 0; i < len(msg.Params); i++ {
 		params[i] = String(msg.Params[i])
 	}
-	m.pushValue(Array(params))
+	m.PushValue(Array(params))
 	return nil
 }
 
-func (conn *ircConn) readMessage(m *machine) error {
+func (conn *ircConn) readMessage(m *Machine) error {
 	_msg, err := (*irc.Conn)(conn).Decode()
 	if err != nil {
 		return err
@@ -85,25 +85,25 @@ func (conn *ircConn) readMessage(m *machine) error {
 		"params":        GoFunc(msg.getParams),
 	}
 
-	m.pushValue(msgDict)
+	m.PushValue(msgDict)
 	return nil
 }
 
-func (conn *ircConn) readMessageString(m *machine) error {
+func (conn *ircConn) readMessageString(m *Machine) error {
 	msg, err := (*irc.Conn)(conn).Decode()
 	if err != nil {
 		return err
 	}
 	str := String(msg.Bytes())
-	m.pushValue(str)
+	m.PushValue(str)
 	return nil
 }
 
 // TODO: Load IRCKit here, using IRCX library
-func loadIRCKit(m *machine) error {
+func loadIRCKit(m *Machine) error {
 
-	m.addGoWord("irc-dial", "( addr-str -- conn )", func(m *machine) error {
-		addr := m.popValue().String()
+	m.AddGoWord("irc-dial", "( addr-str -- conn )", func(m *Machine) error {
+		addr := m.PopValue().String()
 		conn, err := irc.Dial(addr)
 		if err != nil {
 			return err
@@ -117,7 +117,7 @@ func loadIRCKit(m *machine) error {
 			"recieve-message":     GoFunc(stackConn.readMessage),
 		}
 
-		m.pushValue(connDict)
+		m.PushValue(connDict)
 		return nil
 	})
 	return nil

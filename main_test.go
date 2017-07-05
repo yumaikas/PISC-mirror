@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import "testing"
 
@@ -10,7 +10,7 @@ func TestRunPISCTests(t *testing.T) {
 		t.Fail()
 	}
 
-	err = m.executeString(`"tests/all.pisc" import`, codePosition{source: "go test"})
+	err = m.ExecuteString(`"tests/all.pisc" import`, CodePosition{Source: "go test"})
 	if err != nil {
 		t.Log(err)
 		t.Fail()

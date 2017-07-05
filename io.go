@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"bufio"
@@ -9,7 +9,7 @@ import (
 	"strings"
 )
 
-var ModIOCore = PISCModule{
+var ModIOCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "IOCore",
 	License:   "MIT",
@@ -17,22 +17,22 @@ var ModIOCore = PISCModule{
 	Load:      loadIOCore,
 }
 
-func loadIOCore(m *machine) error {
-	m.addGoWord("import", "( file-path -- )", GoWord(importPISC))
-	m.addGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
+func loadIOCore(m *Machine) error {
+	m.AddGoWord("import", "( file-path -- )", GoWord(importPISC))
+	m.AddGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
 
-	m.predefinedWords["filepath>string"] = GoWord(func(m *machine) error {
-		fileName := m.popValue().(String)
+	m.PredefinedWords["filepath>string"] = GoWord(func(m *Machine) error {
+		fileName := m.PopValue().(String)
 		data, err := ioutil.ReadFile(string(fileName))
 		if err != nil {
 			return err
 		}
-		m.pushValue(String(string(data)))
+		m.PushValue(String(string(data)))
 		return nil
 	})
 
-	m.predefinedWords["open-file-writer"] = GoWord(func(m *machine) error {
-		fileName := m.popValue().(String)
+	m.PredefinedWords["open-file-writer"] = GoWord(func(m *Machine) error {
+		fileName := m.PopValue().(String)
 		goFile, err := os.Create(string(fileName))
 		if err != nil {
 			return err
@@ -42,47 +42,47 @@ func loadIOCore(m *machine) error {
 			return err
 		}
 		fileWriter := bufio.NewWriter(goFile)
-		var file = Dict(make(map[string]stackEntry))
-		file["close"] = GoFunc(func(m *machine) error {
+		var file = Dict(make(map[string]StackEntry))
+		file["close"] = GoFunc(func(m *Machine) error {
 			return goFile.Close()
 		})
-		file["write-line"] = GoFunc(func(m *machine) error {
-			str := m.popValue().String()
+		file["write-line"] = GoFunc(func(m *Machine) error {
+			str := m.PopValue().String()
 			_, err := fileWriter.WriteString(str + "\n")
 			fileWriter.Flush()
 			return err
 		})
 
-		file["write-string"] = GoFunc(func(m *machine) error {
-			str := m.popValue().String()
+		file["write-string"] = GoFunc(func(m *Machine) error {
+			str := m.PopValue().String()
 			_, err := fileWriter.WriteString(str)
 			fileWriter.Flush()
 			return err
 		})
-		m.pushValue(file)
+		m.PushValue(file)
 
 		return m.importPISCAsset("stdlib/io.pisc")
 
 	})
 
-	m.predefinedWords["open-file-reader"] = GoWord(func(m *machine) error {
-		var fileName = m.popValue().(String)
-		// var file = Dict(make(map[string]stackEntry))
+	m.PredefinedWords["open-file-reader"] = GoWord(func(m *Machine) error {
+		var fileName = m.PopValue().(String)
+		// var file = Dict(make(map[string]StackEntry))
 		goFile, err := os.Open(string(fileName))
 		if err != nil {
 			return err
 		}
 		var reader = bufio.NewReader(goFile)
 		file := makeReader(reader)
-		file["close"] = GoFunc(func(m *machine) error {
+		file["close"] = GoFunc(func(m *Machine) error {
 			return goFile.Close()
 		})
-		m.pushValue(file)
+		m.PushValue(file)
 		return nil
 	})
 
-	m.predefinedWords["priv_puts"] = NilWord(func(m *machine) {
-		data := m.popValue().(String)
+	m.PredefinedWords["priv_puts"] = NilWord(func(m *Machine) {
+		data := m.PopValue().(String)
 		fmt.Print(string(data))
 	})
 	return nil
@@ -98,7 +98,7 @@ type PISCReader interface {
 func makeReader(reader PISCReader) Dict {
 	file := make(Dict)
 	EOF := false
-	file["read-byte"] = GoFunc(func(m *machine) error {
+	file["read-byte"] = GoFunc(func(m *Machine) error {
 		b, err := reader.ReadByte()
 		if err == io.EOF {
 			EOF = true
@@ -107,10 +107,10 @@ func makeReader(reader PISCReader) Dict {
 		if err != nil {
 			return err
 		}
-		m.pushValue(Integer(int(b)))
+		m.PushValue(Integer(int(b)))
 		return nil
 	})
-	file["read-rune"] = GoFunc(func(m *machine) error {
+	file["read-rune"] = GoFunc(func(m *Machine) error {
 		ch, _, err := reader.ReadRune()
 		if err == io.EOF {
 			EOF = true
@@ -119,10 +119,10 @@ func makeReader(reader PISCReader) Dict {
 		if err != nil {
 			return err
 		}
-		m.pushValue(String(string(ch)))
+		m.PushValue(String(string(ch)))
 		return nil
 	})
-	file["read-line"] = GoFunc(func(m *machine) error {
+	file["read-line"] = GoFunc(func(m *Machine) error {
 		str, err := reader.ReadString('\n')
 		if err == io.EOF {
 			EOF = true
@@ -132,24 +132,24 @@ func makeReader(reader PISCReader) Dict {
 			return err
 		}
 		// Deal with \r on windows
-		m.pushValue(String(strings.TrimRight(str, "\r\n")))
+		m.PushValue(String(strings.TrimRight(str, "\r\n")))
 		return nil
 	})
-	file["EOF"] = GoFunc(func(m *machine) error {
-		m.pushValue(Boolean(EOF))
+	file["EOF"] = GoFunc(func(m *Machine) error {
+		m.PushValue(Boolean(EOF))
 		return nil
 	})
 	return file
 }
 
-func importPISC(m *machine) error {
-	fileName := m.popValue().(String)
+func importPISC(m *Machine) error {
+	fileName := m.PopValue().(String)
 	data, err := ioutil.ReadFile(string(fileName))
 	if err != nil {
 		return err
 	}
 	// Reading in the data
-	code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(fileName)})
+	code, err := stringToQuotation(string(data), CodePosition{Source: "file:" + string(fileName)})
 	if err != nil {
 		return err
 	}
@@ -160,13 +160,13 @@ func importPISC(m *machine) error {
 	return nil
 }
 
-func (m *machine) importPISCAsset(assetkey string) error {
+func (m *Machine) importPISCAsset(assetkey string) error {
 	data, err := Asset(string(assetkey))
 	if err != nil {
 		return err
 	}
 	// Reading in the data
-	code, err := stringToQuotation(string(data), codePosition{source: "file:" + string(assetkey)})
+	code, err := stringToQuotation(string(data), CodePosition{Source: "file:" + string(assetkey)})
 	if err != nil {
 		return err
 	}
@@ -178,7 +178,7 @@ func (m *machine) importPISCAsset(assetkey string) error {
 
 }
 
-func importAssetPISC(m *machine) error {
-	fileName := m.popValue().(String).String()
+func importAssetPISC(m *Machine) error {
+	fileName := m.PopValue().(String).String()
 	return m.importPISCAsset(fileName)
 }

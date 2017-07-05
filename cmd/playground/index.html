@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html>
+	<head>
+	<meta charset="utf-8" />
+	<style type="text/css">
+		body {
+			font: sans-serif;
+			max-width: 800px;
+			margin: 20px;
+		}
+		#current-code {
+			display: block;
+		}
+		#repl {
+			display: block;
+		}
+
+		#body {
+			min-width: 200;
+		}
+		#stack-output {
+			display: block;
+			margin-bottom: 10px;
+		}
+		.stack-entry {
+			display: block;
+		}
+
+		.loading {
+			color: #AAA;
+		}
+
+	</style>
+	</head>
+	<body>
+	<div id="body">
+		<h2>PISC Playground</h2>
+		<textarea id="current-code" cols="80" rows="10" class="loading" ></textarea>
+
+		<input type="submit" id="run-code" class="loading" value="Loading PISC..."/>
+		<hr>
+
+		<div>
+		Stack: (<a href="javascript:app.clearStack();">Clear</a>)
+		<div id="stack-output"></div>
+		</div>
+		<input type="text" id="repl" placeholder="repl, Enter submits code"/>
+	</div>
+	<script type="text/javascript" src="playground.js"></script>
+	<script type="text/javascript">
+	var app = (function(){
+		var exported = {};
+		var codeElem, inputElem, runCode, stackOutput;
+
+		function buildStackElem(val, idx) {
+			return ("<div class='stack-entry'>" + val.String() + " &lt;" + val.Type() + "&gt;" +
+			 ' <a href="javascript:app.removeStackElem('+ (idx) +');">Remove</a> </div>');
+		}
+
+		function displayStack() {
+			var stack = pisc_get_stack(),
+				builtHTML = ""
+			;
+
+			for (var i = 0; i < stack.length; i++) {
+				builtHTML += buildStackElem(stack[i], stack.length - i - 1);
+			}
+			stackOutput.innerHTML = builtHTML;
+		}
+
+		exported.clearStack = function() {
+			pisc_eval("clear-stack");
+			displayStack();
+		}
+		exported.removeStackElem = function(idx) {
+			pisc_eval(idx + " pick-del");
+			displayStack();
+		}
+
+		exported.load = function() {
+			codeElem = elmID("current-code");
+			inputElem = elmID("repl");
+			runCode = elmID("run-code");
+			stackOutput = elmID("stack-output");
+
+			// Clear loading indicators
+			codeElem.className= "";
+			runCode.className = "";
+			runCode.value = "Run Code";
+
+			runCode.onclick = function() {
+				var code = codeElem.value;
+				pisc_eval(code);
+				displayStack();
+				return false;
+			};
+
+			inputElem.onkeypress = function(event) {
+				if (event.keyCode != 13 /*Enter*/) {
+					return;
+				}
+				var code = inputElem.value;
+				inputElem.value = "Executing code...";
+				pisc_eval(code);
+				displayStack();
+				inputElem.value = "";
+				return false;
+			};
+		}
+
+		function elmID(id) {
+			return document.getElementById(id);
+		}
+		return exported;
+	})();
+	window.onload = app.load;
+	</script>
+	</body>
+</html>

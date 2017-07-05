@@ -1,6 +1,6 @@
-package main
+package pisc
 
-var ModLoopCore = PISCModule{
+var ModLoopCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "LoopCore",
 	License:   "MIT",
@@ -8,35 +8,36 @@ var ModLoopCore = PISCModule{
 	Load:      loadLoopCore,
 }
 
-func loadLoopCore(m *machine) error {
-	m.predefinedWords["times"] = GoWord(func(m *machine) error {
-		toExec := m.popValue().(*quotation)
-		nOfTimes := m.popValue().(Integer)
+func loadLoopCore(m *Machine) error {
+	m.PredefinedWords["times"] = GoWord(func(m *Machine) error {
+		toExec := m.PopValue().(*Quotation)
+		nOfTimes := m.PopValue().(Integer)
 		for i := int(0); i < int(nOfTimes); i++ {
-			m.pushValue(toExec)
-			err := m.executeQuotation()
+			m.PushValue(toExec)
+			err := m.ExecuteQuotation()
 			if err != nil {
 				return err
 			}
 		}
 		return nil
 	})
+
 	// ( pred body -- .. )
-	m.predefinedWords["while"] = GoWord(func(m *machine) error {
-		body := m.popValue().(*quotation).toCode()
-		pred := m.popValue().(*quotation).toCode()
+	m.PredefinedWords["while"] = GoWord(func(m *Machine) error {
+		body := m.PopValue().(*Quotation).toCode()
+		pred := m.PopValue().(*Quotation).toCode()
 
 		for {
-			pred.idx = 0
+			pred.Idx = 0
 			err := m.execute(pred)
 			if err != nil {
 				return err
 			}
 
-			if !bool(m.popValue().(Boolean)) {
+			if !bool(m.PopValue().(Boolean)) {
 				break
 			}
-			body.idx = 0
+			body.Idx = 0
 			err = m.execute(body)
 			if err != nil {
 				return err

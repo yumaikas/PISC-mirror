@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"bufio"
@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var ModStringsCore = PISCModule{
+var ModStringsCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "StringCore",
 	License:   "MIT",
@@ -24,88 +24,88 @@ type stringPattern struct {
 // TODO: Add more words to support strings here, we need a way to handle a lot more cases, like
 // replacement, substringing, joining and so on.
 
-func _concat(m *machine) error {
-	a := m.popValue().(String)
-	b := m.popValue().(String)
-	m.pushValue(String(b + a))
+func _concat(m *Machine) error {
+	a := m.PopValue().(String)
+	b := m.PopValue().(String)
+	m.PushValue(String(b + a))
 	return nil
 }
 
-func _toString(m *machine) error {
-	a := m.popValue()
+func _toString(m *Machine) error {
+	a := m.PopValue()
 	if s, ok := a.(String); ok {
-		m.pushValue(String(s))
+		m.PushValue(String(s))
 		return nil
 	}
-	m.pushValue(String(a.String()))
+	m.PushValue(String(a.String()))
 	return nil
 }
 
-func _strToInt(m *machine) error {
-	a := m.popValue().(String).String()
+func _strToInt(m *Machine) error {
+	a := m.PopValue().(String).String()
 	if i, err := strconv.Atoi(a); err != nil {
 		return err
 	} else {
-		m.pushValue(Integer(i))
+		m.PushValue(Integer(i))
 		return nil
 	}
 }
 
 // Potential TODO: Review for performance?
-func _strJoin(m *machine) error {
-	sep := m.popValue().(String).String()
-	elems := m.popValue().(Array)
+func _strJoin(m *Machine) error {
+	sep := m.PopValue().(String).String()
+	elems := m.PopValue().(Array)
 	str := ""
 	for _, val := range elems[:len(elems)-1] {
 		str += val.String() + sep
 	}
 	str += elems[len(elems)-1].String()
-	m.pushValue(String(str))
+	m.PushValue(String(str))
 	return nil
 }
 
-func _strSplit(m *machine) error {
-	sep := m.popValue().(String).String()
-	str := m.popValue().(String).String()
+func _strSplit(m *Machine) error {
+	sep := m.PopValue().(String).String()
+	str := m.PopValue().(String).String()
 	strs := strings.Split(str, sep)
 	toPush := make(Array, len(strs))
 	for idx, val := range strs {
 		toPush[idx] = String(val)
 	}
-	m.pushValue(toPush)
+	m.PushValue(toPush)
 	return nil
 }
 
-func _strEmpty(m *machine) error {
-	a := m.popValue().String()
-	m.pushValue(Boolean(len(a) <= 0))
+func _strEmpty(m *Machine) error {
+	a := m.PopValue().String()
+	m.PushValue(Boolean(len(a) <= 0))
 	return nil
 }
 
-func _strEq(m *machine) error {
-	b := m.popValue().String()
-	a := m.popValue().String()
-	m.pushValue(Boolean(a == b))
+func _strEq(m *Machine) error {
+	b := m.PopValue().String()
+	a := m.PopValue().String()
+	m.PushValue(Boolean(a == b))
 	return nil
 }
 
-func _strToRuneReader(m *machine) error {
-	a := m.popValue().(String)
+func _strToRuneReader(m *Machine) error {
+	a := m.PopValue().(String)
 	reader := strings.NewReader(string(a))
 	bufReader := bufio.NewReader(reader)
 
 	readerObj := makeReader(bufReader)
-	m.pushValue(Dict(readerObj))
+	m.PushValue(Dict(readerObj))
 	return nil
 }
 
-func _eachChar(m *machine) error {
-	quot := m.popValue().(*quotation).toCode()
-	str := m.popValue().(String).String()
+func _eachChar(m *Machine) error {
+	quot := m.PopValue().(*Quotation).toCode()
+	str := m.PopValue().(String).String()
 	var err error
 	for _, r := range str {
-		m.pushValue(String(string(r)))
-		quot.idx = 0
+		m.PushValue(String(string(r)))
+		quot.Idx = 0
 		err = m.execute(quot)
 		if err != nil {
 			break
@@ -114,82 +114,82 @@ func _eachChar(m *machine) error {
 	return err
 }
 
-func _strReplace(m *machine) error {
-	replace := m.popValue().String()
-	pat := m.popValue().String()
-	str := m.popValue().String()
+func _strReplace(m *Machine) error {
+	replace := m.PopValue().String()
+	pat := m.PopValue().String()
+	str := m.PopValue().String()
 	newstr := strings.Replace(str, pat, replace, -1)
-	m.pushValue(String(newstr))
+	m.PushValue(String(newstr))
 	return nil
 }
 
-func _strContains(m *machine) error {
-	substr := m.popValue().String()
-	str := m.popValue().String()
-	m.pushValue(Boolean(strings.Contains(str, substr)))
+func _strContains(m *Machine) error {
+	substr := m.PopValue().String()
+	str := m.PopValue().String()
+	m.PushValue(Boolean(strings.Contains(str, substr)))
 	return nil
 }
 
-func _strEndsWith(m *machine) error {
-	endStr := m.popValue().String()
-	str := m.popValue().String()
-	m.pushValue(Boolean(strings.HasSuffix(str, endStr)))
+func _strEndsWith(m *Machine) error {
+	endStr := m.PopValue().String()
+	str := m.PopValue().String()
+	m.PushValue(Boolean(strings.HasSuffix(str, endStr)))
 	return nil
 }
 
-func _strStartsWith(m *machine) error {
-	prefix := m.popValue().String()
-	str := m.popValue().String()
-	m.pushValue(Boolean(strings.HasPrefix(str, prefix)))
+func _strStartsWith(m *Machine) error {
+	prefix := m.PopValue().String()
+	str := m.PopValue().String()
+	m.PushValue(Boolean(strings.HasPrefix(str, prefix)))
 	return nil
 }
 
-func _strSubstr(m *machine) error {
-	end := m.popValue().(Integer)
-	start := m.popValue().(Integer)
-	str := m.popValue().String()
+func _strSubstr(m *Machine) error {
+	end := m.PopValue().(Integer)
+	start := m.PopValue().(Integer)
+	str := m.PopValue().String()
 
-	m.pushValue(String(str[start:end]))
+	m.PushValue(String(str[start:end]))
 	return nil
 }
 
-func _strIdxOf(m *machine) error {
-	substr := m.popValue().String()
-	str := m.popValue().String()
+func _strIdxOf(m *Machine) error {
+	substr := m.PopValue().String()
+	str := m.PopValue().String()
 	idx := strings.Index(str, substr)
-	m.pushValue(Integer(idx))
+	m.PushValue(Integer(idx))
 	return nil
 }
 
-func _strRepeat(m *machine) error {
-	numRepeats := int(m.popValue().(Integer))
-	str := m.popValue().String()
-	m.pushValue(String(strings.Repeat(str, numRepeats)))
+func _strRepeat(m *Machine) error {
+	numRepeats := int(m.PopValue().(Integer))
+	str := m.PopValue().String()
+	m.PushValue(String(strings.Repeat(str, numRepeats)))
 	return nil
 }
 
-func loadStringCore(m *machine) error {
+func loadStringCore(m *Machine) error {
 
-	m.addGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
-	m.addGoWord(">string", "( anyVal -- str )", _toString)
-	m.addGoWord("str>int", "( str -- int! )", _strToInt)
-	m.addGoWord("str-join", "( vec sep -- str )", _strJoin)
+	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
+	m.AddGoWord(">string", "( anyVal -- str )", _toString)
+	m.AddGoWord("str>int", "( str -- int! )", _strToInt)
+	m.AddGoWord("str-join", "( vec sep -- str )", _strJoin)
 
-	m.addGoWord("str-ends?", "( str endstr -- endswith? )", _strEndsWith)
-	m.addGoWord("str-eq?", "( a b -- eq? )", _strEq)
-	m.addGoWord("str-substr", "( str start end -- substr )", _strSubstr)
-	m.addGoWord("str-idx-of", "( str sub -- idx )", _strIdxOf)
-	m.addGoWord("str-split", "( str sep -- vec )", _strSplit)
-	m.addGoWord("str-starts?", "( str prefix -- startswith? )", _strStartsWith)
+	m.AddGoWord("str-ends?", "( str endstr -- endswith? )", _strEndsWith)
+	m.AddGoWord("str-eq?", "( a b -- eq? )", _strEq)
+	m.AddGoWord("str-substr", "( str start end -- substr )", _strSubstr)
+	m.AddGoWord("str-idx-of", "( str sub -- idx )", _strIdxOf)
+	m.AddGoWord("str-split", "( str sep -- vec )", _strSplit)
+	m.AddGoWord("str-starts?", "( str prefix -- startswith? )", _strStartsWith)
 
-	m.addGoWord("str-empty?", "( str -- empty? )", _strEmpty)
-	m.addGoWord("str>rune-reader", "( str -- reader )", _strToRuneReader)
-	m.addGoWord("each-char", "( str quot -- .. )", _eachChar)
+	m.AddGoWord("str-empty?", "( str -- empty? )", _strEmpty)
+	m.AddGoWord("str>rune-reader", "( str -- reader )", _strToRuneReader)
+	m.AddGoWord("each-char", "( str quot -- .. )", _eachChar)
 
-	m.addGoWord("str-replace", "( str pat replace -- .. )", _strReplace)
-	m.addGoWord("str-contains?", "( str cont -- contained? )", _strContains)
+	m.AddGoWord("str-replace", "( str pat replace -- .. )", _strReplace)
+	m.AddGoWord("str-contains?", "( str cont -- contained? )", _strContains)
 
-	m.addGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
+	m.AddGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
 
 	return m.importPISCAsset("stdlib/strings.pisc")
 }

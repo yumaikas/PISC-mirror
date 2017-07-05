@@ -1,4 +1,4 @@
-package main
+package pisc
 
 import (
 	"bytes"
@@ -7,19 +7,19 @@ import (
 	"strconv"
 )
 
-type stackEntry interface {
+type StackEntry interface {
 	String() string
 	Type() string
 }
 
-type lenable interface {
+type Lenable interface {
 	Length() int
 }
 
-func runEq(m *machine) error {
-	a := m.popValue()
-	b := m.popValue()
-	m.pushValue(Boolean(eq(a, b)))
+func runEq(m *Machine) error {
+	a := m.PopValue()
+	b := m.PopValue()
+	m.PushValue(Boolean(eq(a, b)))
 	return nil
 }
 
@@ -46,7 +46,7 @@ func mapRefEq(a, b Dict) bool {
 	return aVal == bVal
 }
 
-func eq(a, b stackEntry) bool {
+func eq(a, b StackEntry) bool {
 
 	if a.Type() != b.Type() {
 		return false
@@ -72,7 +72,7 @@ func eq(a, b stackEntry) bool {
 	case "Go Word":
 		return &a == &b
 	}
-	// If we got here, something
+	// If we got here, something is borked
 	panic("eq failed!!!")
 
 }
@@ -88,10 +88,10 @@ type Double float64
 
 // Dict is the wrapper around dictionaries.
 // TODO: Find a way to support dicts with arbitrary keys, not just strings
-type Dict map[string]stackEntry
+type Dict map[string]StackEntry
 
-// Array is the wrapper around slices of stackEntry
-type Array []stackEntry
+// Array is the wrapper around slices of StackEntry
+type Array []StackEntry
 
 // String is the PISC wrapper around strings
 type String string
@@ -100,13 +100,13 @@ type String string
 type Symbol int64
 
 // This is a separate sematic from arrays.
-type quotation struct {
-	inner  *codeQuotation
+type Quotation struct {
+	inner  *CodeQuotation
 	locals Dict
 }
 
-func (q quotation) toCode() *codeQuotation {
-	q.inner.idx = 0
+func (q Quotation) toCode() *CodeQuotation {
+	q.inner.Idx = 0
 	return q.inner
 }
 
@@ -139,12 +139,12 @@ func (d Double) String() string {
 	return fmt.Sprint(float64(d))
 }
 
-func (q quotation) String() string {
-	return fmt.Sprint([]*word(q.inner.words))
+func (q *Quotation) String() string {
+	return fmt.Sprint([]*word(q.inner.Words))
 }
 
 func (dict Dict) String() string {
-	var key_order stackEntry
+	var key_order StackEntry
 	var found bool
 	buf := bytes.NewBufferString("map[")
 	if key_order, found = dict["__ordering"]; found {
@@ -155,15 +155,15 @@ func (dict Dict) String() string {
 			buf.WriteString("]")
 			return buf.String()
 		}
-		return fmt.Sprint(map[string]stackEntry(dict))
+		return fmt.Sprint(map[string]StackEntry(dict))
 	} else {
-		return fmt.Sprint(map[string]stackEntry(dict))
+		return fmt.Sprint(map[string]StackEntry(dict))
 	}
 
 }
 
 func (a Array) String() string {
-	return fmt.Sprint([]stackEntry(a))
+	return fmt.Sprint([]StackEntry(a))
 }
 
 func (g GoFunc) Type() string {
@@ -178,7 +178,7 @@ func (d Double) Type() string {
 	return "Double"
 }
 
-func (q quotation) Type() string {
+func (q *Quotation) Type() string {
 	return "Quotation"
 }
 

@@ -1,11 +1,11 @@
-package main
+package pisc
 
 import (
 	"fmt"
 	"math"
 )
 
-var ModMathCore = PISCModule{
+var ModMathCore = Module{
 	Author:    "Andreb Owen",
 	Name:      "MathCore",
 	License:   "MIT",
@@ -13,12 +13,12 @@ var ModMathCore = PISCModule{
 	Load:      loadMathCore,
 }
 
-func loadMathCore(m *machine) error {
+func loadMathCore(m *Machine) error {
 	return m.loadHigherMathWords()
 }
 
 type number interface {
-	stackEntry
+	StackEntry
 	Add(number) number
 	Negate() number
 	Multiply(number) number
@@ -26,15 +26,15 @@ type number interface {
 	LessThan(number) Boolean
 }
 
-func (m *machine) loadHigherMathWords() error {
+func (m *Machine) loadHigherMathWords() error {
 
-	m.addGoWord("+", "( a b -- c )  addition", executeAdd)
-	m.addGoWord("-", " ( a b -- c ) subtraction ", executeSubtract)
-	m.addGoWord("*", " ( a b -- c ) multiplication ", executeMultiply)
-	m.addGoWord("/", " ( a b -- c ) division ", executeDivide)
-	m.addGoWord("mod", " ( a b -- c ) modulus ", executeModulus)
-	m.addGoWord("<", " ( a b -- c ) numeric less than ", executeLessThan)
-	m.addGoWord("zero?", " ( a -- isZero? ) returns if a is zero or not ", isZeroPred)
+	m.AddGoWord("+", "( a b -- c )  addition", executeAdd)
+	m.AddGoWord("-", " ( a b -- c ) subtraction ", executeSubtract)
+	m.AddGoWord("*", " ( a b -- c ) multiplication ", executeMultiply)
+	m.AddGoWord("/", " ( a b -- c ) division ", executeDivide)
+	m.AddGoWord("mod", " ( a b -- c ) modulus ", executeModulus)
+	m.AddGoWord("<", " ( a b -- c ) numeric less than ", executeLessThan)
+	m.AddGoWord("zero?", " ( a -- isZero? ) returns if a is zero or not ", isZeroPred)
 
 	// For now, PISC words are late-bound, so we can get away with this.
 	err := m.importPISCAsset("stdlib/math.pisc")
@@ -45,28 +45,28 @@ func (m *machine) loadHigherMathWords() error {
 	// Why do we duplicate the work here?
 	// Because we want both the >double word and the
 	// math1arg words
-	m.predefinedWords[">double"] = GoWord(func(m *machine) error {
-		a := m.popValue()
+	m.PredefinedWords[">double"] = GoWord(func(m *Machine) error {
+		a := m.PopValue()
 		if i, ok := a.(Integer); ok {
-			m.pushValue(Double(float64(i)))
+			m.PushValue(Double(float64(i)))
 			return nil
 		}
 		if d, ok := a.(Double); ok {
-			m.pushValue(Double(d))
+			m.PushValue(Double(d))
 			return nil
 		}
 		return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
 	})
 
 	var math1Arg = func(name string, mathyFunc func(float64) float64) {
-		m.predefinedWords[name] = GoWord(func(m *machine) error {
-			a := m.popValue()
+		m.PredefinedWords[name] = GoWord(func(m *Machine) error {
+			a := m.PopValue()
 			if i, ok := a.(Integer); ok {
-				m.pushValue(Double(mathyFunc(float64(i))))
+				m.PushValue(Double(mathyFunc(float64(i))))
 				return nil
 			}
 			if d, ok := a.(Double); ok {
-				m.pushValue(Double(mathyFunc(float64(d))))
+				m.PushValue(Double(mathyFunc(float64(d))))
 				return nil
 			}
 			return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
@@ -109,61 +109,61 @@ func (m *machine) loadHigherMathWords() error {
 	return nil
 }
 
-func isZeroPred(m *machine) error {
-	a, ok := m.popValue().(number)
+func isZeroPred(m *Machine) error {
+	a, ok := m.PopValue().(number)
 	if !ok {
 		return fmt.Errorf("value %v was not a number", a)
 	}
 	if a == Integer(0) || a == Double(0.0) {
-		m.pushValue(Boolean(true))
+		m.PushValue(Boolean(true))
 	} else {
-		m.pushValue(Boolean(false))
+		m.PushValue(Boolean(false))
 	}
 	return nil
 }
 
-func executeLessThan(m *machine) error {
-	a := m.popValue().(number)
-	b := m.popValue().(number)
-	m.pushValue(b.LessThan(a))
+func executeLessThan(m *Machine) error {
+	a := m.PopValue().(number)
+	b := m.PopValue().(number)
+	m.PushValue(b.LessThan(a))
 	return nil
 }
 
 // Run add on doubles and ints
-func executeAdd(m *machine) error {
-	a := m.popValue().(number)
-	b := m.popValue().(number)
-	m.pushValue(a.Add(b))
+func executeAdd(m *Machine) error {
+	a := m.PopValue().(number)
+	b := m.PopValue().(number)
+	m.PushValue(a.Add(b))
 	return nil
 }
 
 // Run subtract on doubles and ints
-func executeSubtract(m *machine) error {
-	a := m.popValue().(number)
-	b := m.popValue().(number)
-	m.pushValue(b.Add(a.Negate()))
+func executeSubtract(m *Machine) error {
+	a := m.PopValue().(number)
+	b := m.PopValue().(number)
+	m.PushValue(b.Add(a.Negate()))
 	return nil
 }
 
-func executeMultiply(m *machine) error {
-	a := m.popValue().(number)
-	b := m.popValue().(number)
-	m.pushValue(a.Multiply(b))
+func executeMultiply(m *Machine) error {
+	a := m.PopValue().(number)
+	b := m.PopValue().(number)
+	m.PushValue(a.Multiply(b))
 	return nil
 }
 
-func executeDivide(m *machine) error {
-	a := m.popValue().(number)
-	b := m.popValue().(number)
-	m.pushValue(b.Divide(a))
+func executeDivide(m *Machine) error {
+	a := m.PopValue().(number)
+	b := m.PopValue().(number)
+	m.PushValue(b.Divide(a))
 	return nil
 }
 
 // Currently modulus is for ints only
-func executeModulus(m *machine) error {
-	a := m.popValue().(Integer)
-	b := m.popValue().(Integer)
-	m.pushValue(Integer(b % a))
+func executeModulus(m *Machine) error {
+	a := m.PopValue().(Integer)
+	b := m.PopValue().(Integer)
+	m.PushValue(Integer(b % a))
 	return nil
 }
 
