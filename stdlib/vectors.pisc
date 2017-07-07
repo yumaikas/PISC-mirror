@@ -46,11 +46,23 @@
 ;
 
 : vec-filter ( vec quot -- filteredVec ) 
-<vector> :newvec
-:quot
- [ dup quot [ $newvec swap vec-append :newvec ] [ drop ] if ] vec-each
-$newvec
- ;
+	<vector> :newvec
+	:quot
+	[ 
+		 dup quot [ $newvec swap vec-append :newvec ] [ drop ] if 
+	] vec-each
+	$newvec
+;
+
+: vec-map ( vec quot -- mappedVec )
+ 	:quot :vec 0 :i
+ 	$vec len [ 
+ 		$vec $i vec-at quot 
+ 		$vec swap $i vec-set-at drop
+	 	++i
+ 	] times
+ 	$vec
+;
 
 /* :DOC vec-dropfront ( vec -- newvec ) Drop the front of the vector ; */
 : vec-dropfront ( vec -- newvec ) vec-popfront drop ;
