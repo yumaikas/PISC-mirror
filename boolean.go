@@ -23,5 +23,5 @@ func loadBoolCore(m *Machine) error {
 		a := m.PopValue().(Boolean)
 		m.PushValue(Boolean(!a))
 	})
-	return m.importPISCAsset("stdlib/bools.pisc")
+	return m.ImportPISCAsset("stdlib/bools.pisc")
 }

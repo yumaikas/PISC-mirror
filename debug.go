@@ -78,7 +78,7 @@ func loadDebugCore(m *Machine) error {
 		}
 		return nil
 	})
-	return m.importPISCAsset("stdlib/debug.pisc")
+	return m.ImportPISCAsset("stdlib/debug.pisc")
 }
 
 // TODO: See about this...

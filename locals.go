@@ -109,5 +109,5 @@ func loadLocalCore(m *Machine) error {
 			return ErrLocalNotFound
 		}
 	}))
-	return m.importPISCAsset("stdlib/locals.pisc")
+	return m.ImportPISCAsset("stdlib/locals.pisc")
 }

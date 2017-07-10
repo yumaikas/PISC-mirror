@@ -48,5 +48,5 @@ func loadLoopCore(m *Machine) error {
 	// ( pred body -- .. )
 	m.AddGoWord("while", "( pred quot -- ... )", _doWhile)
 
-	return m.importPISCAsset("stdlib/loops.pisc")
+	return m.ImportPISCAsset("stdlib/loops.pisc")
 }

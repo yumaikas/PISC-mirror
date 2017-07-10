@@ -54,5 +54,5 @@ func loadQuotWords(m *Machine) error {
 		m.PushValue(quot.locals[key])
 		return nil
 	}))
-	return m.importPISCAsset("stdlib/with.pisc")
+	return m.ImportPISCAsset("stdlib/with.pisc")
 }

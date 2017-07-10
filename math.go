@@ -37,7 +37,7 @@ func (m *Machine) loadHigherMathWords() error {
 	m.AddGoWord("zero?", " ( a -- isZero? ) returns if a is zero or not ", isZeroPred)
 
 	// For now, PISC words are late-bound, so we can get away with this.
-	err := m.importPISCAsset("stdlib/math.pisc")
+	err := m.ImportPISCAsset("stdlib/math.pisc")
 	if err != nil {
 		return err
 	}

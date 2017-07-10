@@ -30,5 +30,5 @@ func loadRandy(m *Machine) error {
 		min := m.PopValue().(Integer)
 		m.PushValue(min + Integer(rand.Intn(int(max-min))))
 	})
-	return m.importPISCAsset("stdlib/random.pisc")
+	return m.ImportPISCAsset("stdlib/random.pisc")
 }

@@ -61,7 +61,7 @@ func loadIOCore(m *Machine) error {
 		})
 		m.PushValue(file)
 
-		return m.importPISCAsset("stdlib/io.pisc")
+		return m.ImportPISCAsset("stdlib/io.pisc")
 
 	})
 
@@ -160,7 +160,7 @@ func importPISC(m *Machine) error {
 	return nil
 }
 
-func (m *Machine) importPISCAsset(assetkey string) error {
+func (m *Machine) ImportPISCAsset(assetkey string) error {
 	data, err := Asset(string(assetkey))
 	if err != nil {
 		return err
@@ -180,5 +180,5 @@ func (m *Machine) importPISCAsset(assetkey string) error {
 
 func importAssetPISC(m *Machine) error {
 	fileName := m.PopValue().(String).String()
-	return m.importPISCAsset(fileName)
+	return m.ImportPISCAsset(fileName)
 }

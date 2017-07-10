@@ -34,5 +34,5 @@ func loadSymbolCore(m *Machine) error {
 		return nil
 
 	})
-	return m.importPISCAsset("stdlib/symbols.pisc")
+	return m.ImportPISCAsset("stdlib/symbols.pisc")
 }

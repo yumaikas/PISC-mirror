@@ -22,7 +22,7 @@ func loadVectorCore(m *Machine) error {
 	m.AddGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
 	m.AddGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
 	// Return success if we can load out PISC file as well.
-	return m.importPISCAsset("stdlib/vectors.pisc")
+	return m.ImportPISCAsset("stdlib/vectors.pisc")
 }
 
 func vecSetAt(m *Machine) error {

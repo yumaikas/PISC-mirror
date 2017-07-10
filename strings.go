@@ -168,6 +168,13 @@ func _strRepeat(m *Machine) error {
 	return nil
 }
 
+func _strTrim(m *Machine) error {
+	str := m.PopValue().String()
+	str = strings.Trim(str, "\t\n\r ")
+	m.PushValue(String(str))
+	return nil
+}
+
 func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
@@ -190,6 +197,7 @@ func loadStringCore(m *Machine) error {
 	m.AddGoWord("str-contains?", "( str cont -- contained? )", _strContains)
 
 	m.AddGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
+	m.AddGoWord("str-trim", "( str -- 'str )", _strTrim)
 
-	return m.importPISCAsset("stdlib/strings.pisc")
+	return m.ImportPISCAsset("stdlib/strings.pisc")
 }

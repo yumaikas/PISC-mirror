@@ -150,5 +150,5 @@ func loadPISCCore(m *Machine) error {
 	// Discourage use of reflection based eq via long name
 	m.AddGoWord("deep-slow-reflect-eq", "( a b -- same? )", GoWord(reflectEq))
 	m.AddGoWord("error", "( msg -- !! )", GoWord(errorFromEntry))
-	return m.importPISCAsset("stdlib/std_lib.pisc")
+	return m.ImportPISCAsset("stdlib/std_lib.pisc")
 }
