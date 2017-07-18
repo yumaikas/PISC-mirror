@@ -16,6 +16,14 @@ type Lenable interface {
 	Length() int
 }
 
+type Error struct {
+	message string
+}
+
+func (e Error) Error() string {
+	return e.message
+}
+
 func runEq(m *Machine) error {
 	a := m.PopValue()
 	b := m.PopValue()

@@ -54,7 +54,7 @@ func main() {
 		err := m.ExecuteString(code, pisc.CodePosition{Source: "User Input"})
 		if err != nil {
 			log_error(err.Error())
-			return err
+			return js.MakeWrapper(err)
 		}
 		/*
 			for idx, val := range m.Values {

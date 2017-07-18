@@ -34,6 +34,3 @@
 /*
 : quot>dict ( quot -- dict ) get-locals call <dict> [ dict-set ] each-local drop-locals ;
 */
-
-/* TODO: Figure out a if this can be made more proper or not. */
-: dict-keys ( dict -- keysvec ) :q { $q push-dict-keys } ;

@@ -1,6 +1,12 @@
 
 : ls ( -- ) list-files [ print ] vec-each ;
 
+: in-dir ( dir quot -- .. ) 
+	pwd :prev
+	[ cd ] dip call
+	$prev cd
+;
+
 : shell-module ( quot -- )
 	<vector> :pathhist
 	[ $pathhist pwd vec-append :pathhist ] :pushd

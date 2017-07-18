@@ -10,58 +10,102 @@ var ModDictionaryCore = Module{
 	// Possible: indicate PISC files to be loaded?
 }
 
+var ErrMissingKey = Error{
+	message: "Dictionary was missing key",
+}
+
 func loadDictMod(m *Machine) error {
 	return m.loadDictWords()
 }
 
-func (m *Machine) loadDictWords() error {
+func _buildDict(m *Machine) error {
+	dict := make(map[string]StackEntry)
+	m.PushValue(Dict(dict))
+	return nil
+}
 
-	// Push a dictionary to the stack.
-	m.PredefinedWords["<dict>"] = NilWord(func(m *Machine) {
-		dict := make(map[string]StackEntry)
-		m.PushValue(Dict(dict))
-	})
+func _dictHasKey(m *Machine) error {
+	key := m.PopValue().(String).String()
+	dict := m.PopValue().(Dict)
+	_, ok := dict[key]
+	m.PushValue(Boolean(ok))
+	return nil
+}
 
-	// ( dict key -- bool )
-	m.PredefinedWords["dict-has-key?"] = NilWord(func(m *Machine) {
-		key := m.PopValue().(String).String()
-		dict := m.PopValue().(Dict)
-		_, ok := dict[key]
-		m.PushValue(Boolean(ok))
-	})
+func _dictSet(m *Machine) error {
+	key := m.PopValue().(String).String()
+	value := m.PopValue()
+	// Peek, since we have no intention of popping here.
+	dict := m.PopValue().(Dict)
+	dict[string(key)] = value
+	return nil
+}
 
-	// ( dict value key -- dict )
-	m.PredefinedWords["dict-set"] = NilWord(func(m *Machine) {
-		key := m.PopValue().(String).String()
-		value := m.PopValue()
-		// Peek, since we have no intention of popping here.
-		dict := m.PopValue().(Dict)
-		dict[string(key)] = value
-	})
+func getMissingKeyErr(key string) Error {
+	return Error{
+		message: "Dictionary was missing key:" + key,
+	}
+}
 
-	// ( dict key -- value )
-	m.PredefinedWords["dict-get"] = NilWord(func(m *Machine) {
-		key := m.PopValue().(String).String()
-		m.PushValue(m.PopValue().(Dict)[key])
-	})
-
-	m.PredefinedWords["push-dict-keys"] = NilWord(func(m *Machine) {
-		dic := m.PopValue().(Dict)
-		for k, _ := range dic {
-			m.PushValue(String(k))
-		}
-	})
-
-	// ( dict -- key value )
-	m.PredefinedWords["dict-get-rand"] = GoWord(func(m *Machine) error {
-		dic := m.PopValue().(Dict)
-		// Rely on random key ordering
-		for k, v := range dic {
-			m.PushValue(String(k))
-			m.PushValue(v)
-			break
-		}
+func _dictGet(m *Machine) error {
+	key := m.PopValue().(String).String()
+	dict := m.PopValue().(Dict)
+	if val, found := dict[key]; found {
+		m.PushValue(val)
 		return nil
-	})
+	} else {
+		return getMissingKeyErr(key)
+	}
+}
+
+func _dictKeys(m *Machine) error {
+	dict := m.PopValue().(Dict)
+
+	keyArr := make(Array, dict.Length())
+
+	var i int = 0
+	for k, _ := range dict {
+		keyArr[i] = String(k)
+		i++
+	}
+	return nil
+}
+
+func _dictGetRand(m *Machine) error {
+	dict := m.PopValue().(Dict)
+	// Rely on random key ordering
+	for k, v := range dict {
+		m.PushValue(String(k))
+		m.PushValue(v)
+		break
+	}
+	return nil
+}
+
+// dict quot -- ...
+func _dictEachKey(m *Machine) error {
+	quot := m.PopValue().(Quotation)
+	dict := m.PopValue().(Dict)
+
+	for k, _ := range dict {
+		m.PushValue(String(k))
+		err := m.execute(quot)
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func loadDictWords(m *Machine) error {
+
+	m.AddGoWord("<dict>", "( -- dict ) Place an empty dictionary on the stack", _buildDict)
+	m.AddGoWord("dict-has-key?", "( dict key -- has-key? )", _dictHasKey)
+	m.AddGoWord("dict-set", "( dict value key -- dict )", _dictSet)
+	m.AddGoWord("dict-get", "( dict key -- value|error? )", _dictGet)
+	m.AddGoWord("dict-keys", "( dict -- { keys }) Puts all the keys for a dictionary in an array", _dictKeys)
+	m.AddGoWord("dict-get-rand", "( dict -- key value )", _dictGetRand)
+	m.AddGoWord("dict-each-key", "(dict quot -- .. )", _dictEachKey)
+
 	return m.ImportPISCAsset("stdlib/dicts.pisc")
 }

@@ -1,0 +1,33 @@
+# This is the test section
+"tests/test_root.pisc" import
+
+"Vectors" <test-suite> :vec-suite
+
+/* Little shortcut */
+[ $vec-suite .addTest ] :test
+
+"Vector manipulation" [
+	{ 1 2 } :a
+	"Vec-at" [ $a 1 vec-at ] [ 2 ] assert
+	"Vec-set-at" [ $a 1 1 vec-set-at ] [ { 1 1 } ] assert
+	"<vector>" [ <vector> ] [ { } ] assert
+	"vec-each" [ { 1 2 3 } [ ] vec-each ] [ 1 2 3 ] assert
+	"vec-append" [ { 1 2 } 3 vec-append ] [ { 1 2 3 } ] assert
+	"vec-prepend" [ { 1 2 } 3 vec-prepend ] [ { 3 1 2 } ] assert
+	"vec-popback" [ { 1 2 3 } vec-popback ] [ { 1 2 } 3 ] assert
+	"vec-popfront" [ { 1 2 3 } vec-popfront ] [ { 2 3 } 1 ] assert
+] test
+
+"Vector utils" [
+	"splat" [ { 1 2 3 } splat ] [ 1 2 3 ] assert
+	"each2" 
+		[ { 1 2 3 } { 4 5 6 } [ 2vector ] each2 ] 
+		[ { { 1 4 } { 2 5 } { 3 6 } } ] 
+	assert
+
+	"vec-reverse odd" [ { 1 2 3 4 5 } vec-reverse ] [ { 5 4 3 2 1 } ] assert
+	"vec-reverse even" [ { 1 2 3 4 } vec-reverse ] [ { 4 3 2 1 } ] assert
+	"vec-map" [ { 1 2 3 4 5 6 } [ 2 * ] vec-map ] [ { 2 4 6 8 10 12 } ] assert
+] test
+
+$vec-suite .runTests

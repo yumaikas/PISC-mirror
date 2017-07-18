@@ -12,6 +12,7 @@ import (
 
 	"pisc"
 	"pisc/libs/boltdb"
+	"pisc/libs/shell"
 
 	"gopkg.in/readline.v1"
 	cli "gopkg.in/urfave/cli.v1"
@@ -113,12 +114,12 @@ func benchmark(m *pisc.Machine) {
 
 func LoadForCLI(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		pisc.ModIOCore, pisc.ModDebugCore, pisc.ModShellUtils)...)
+		pisc.ModIOCore, pisc.ModDebugCore, shell.ModShellUtils)...)
 }
 
 func LoadForDB(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		boltdb.ModBoltDB, pisc.ModIOCore, pisc.ModShellUtils)...)
+		boltdb.ModBoltDB, pisc.ModIOCore, shell.ModShellUtils)...)
 }
 
 func LoadForChatbot(m *pisc.Machine) error {

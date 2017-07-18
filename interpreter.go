@@ -286,6 +286,12 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			// err = m.readPatternDefinition
 		case wordVal.str == ":DOC":
 			err = m.readWordDocumentation(p)
+		case wordVal.str == "error":
+			pos := p.getCodePosition()
+			str := m.PopValue().String()
+			output := fmt.Sprint(pos.Source, " ", pos.LineNumber+1, ":", pos.Offset, ": ", str)
+			return fmt.Errorf("%s", output)
+
 		case wordVal.str == "}":
 			panic("Unbalanced }!")
 		case wordVal.str == "{":

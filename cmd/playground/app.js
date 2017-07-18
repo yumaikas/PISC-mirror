@@ -49,9 +49,17 @@ var app = (function(){
 
 	function runCode(code) {
 		errElem.innerHTML = "";
-		var err = pisc_eval(code);
-		if (err) {
-			errElem.innerHTML = err.Error();
+		errElem.className = "hidden";
+		try {
+			var err = pisc_eval(code);
+			if (err) {
+				errElem.innerHTML = err.Error();
+				errElem.className = "error";
+
+			}
+		} catch(ex) {
+			errElem.innerHTML = ex.toString();
+			errElem.className = "error";
 		}
 		displayStack();
 	}

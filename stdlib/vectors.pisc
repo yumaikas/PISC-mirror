@@ -5,25 +5,18 @@
 :DOC <vector> ( -- vector ) Init a new vector ;
 :DOC vec-each ( vec quot -- .. ) Run `quot` for each element in the vector ;
 
-
-:DOC <vector> ( -- vec ) "<vector>" extern-call ;
-:DOC vec-each ( vec quot -- .. ) "vec-each" extern-call ;
-:DOC vec-append ( vec elem --  newVect ) "vec-append" extern-call ;
-:DOC vec-prepend ( vec elem -- newVect ) "vec-prepend" extern-call ;
-:DOC vec-popback ( vec -- vec elem  ) "vec-popback" extern-call ;
-:DOC vec-popfront ( vec -- vec elem ) "vec-popfront" extern-call ;
-
 :PRE [] ( vec idx -- ) str>int vec-at ;
 
 : 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;
 
 :DOC each2 ( v1 v2 quot -- v3 ) Applies a quotation to each elementwise pair in v1 and v2, to result in v3 ;
-: each2 ( v1 v2 quot -- v3 ) 
+: each2 ( v1 v2 quot ( a b -- ab ) -- v3 ) 
 	:quot :v2 :v1
-	0 :i <vector>
+	0 :i <vector> :out
 	$v2 len $v1 len min [
-		 $v1 $i vec-at 
-		 $v2 $i vec-at quot vec-append
+		$v1 $i vec-at 
+		$v2 $i vec-at
+		quot vec-append
 		[ 1 + ] $:i
 	] times ;
 
@@ -34,13 +27,13 @@
 : vec-reverse ( vec -- reversevec ) 
 	dup :vec len :end 0 :i
 	[ 1 - ] $:end
-	$end 2 / [ 
+	$end 2 / 1 + [ 
 		$vec $i vec-at :x
 		$vec $end vec-at :y
 		$vec $y $i vec-set-at :vec
 		$vec $x $end vec-set-at :vec
-		[ 1 - ] $:end
-		[ 1 + ] $:i
+		--end
+		++i
 	] times
 	$vec
 ;

@@ -1,0 +1,21 @@
+# Importing the test core
+"tests/test_root.pisc" import
+
+"BoltDB KV" <test-suite> :boltdb-suite
+
+[ $boltdb-suite .addTest ] :test
+
+"Saving integers and strings works as expected" [ 
+	".test.db" <open-kv-at-path> :db
+
+	"two" 2 $db .save-int
+	"Integer storage works" [ 2 ] [ "foo" $db .get-int ] assert
+
+	"test" "value" $db .save-str 
+	"String storage works" [ "value" ] [ "test" $db .get-str ] assert
+	
+	$db .close
+] test
+
+
+$boltdb-suite .runTests
