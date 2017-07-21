@@ -1,0 +1,14 @@
+
+: diff-filter ( filt -- ci-command )
+	:filt?
+	[ "\"" ] :'
+
+	"diff" get-paste-text
+	"==================================================================" str-split 
+	[ filt? ] vec-filter 
+	[ 
+		"+++" str-split 0 vec-at
+		"---" "" str-replace str-trim
+	] vec-map :arr
+	${ "f ci " $arr " " str-join " -m 'Rename importPISCAsset to ImportPISCAsset'" } 
+;

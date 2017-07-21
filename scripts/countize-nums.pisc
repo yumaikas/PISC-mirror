@@ -1,0 +1,8 @@
+0 :i
+[ "\"" ] :'
+
+"th st nd rd th th th th th th" " " str-split [
+ :s ${ ' $i $s ' } 
+ ++i
+] vec-map 
+",<br/>" str-join /* Using <br/> in web context, I'd use \n otherwise */
