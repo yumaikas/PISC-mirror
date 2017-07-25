@@ -15,7 +15,7 @@ var ErrMissingKey = Error{
 }
 
 func loadDictMod(m *Machine) error {
-	return m.loadDictWords()
+	return loadDictWords(m)
 }
 
 func _buildDict(m *Machine) error {
@@ -84,12 +84,12 @@ func _dictGetRand(m *Machine) error {
 
 // dict quot -- ...
 func _dictEachKey(m *Machine) error {
-	quot := m.PopValue().(Quotation)
+	quot := m.PopValue().(*Quotation)
 	dict := m.PopValue().(Dict)
 
 	for k, _ := range dict {
 		m.PushValue(String(k))
-		err := m.execute(quot)
+		err := m.execute(quot.inner)
 		if err != nil {
 			return err
 		}

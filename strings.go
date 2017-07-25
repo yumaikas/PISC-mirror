@@ -175,6 +175,14 @@ func _strTrim(m *Machine) error {
 	return nil
 }
 
+// ( str sep -- count )
+func _strCount(m *Machine) error {
+	sep := m.PopValue().String()
+	str := m.PopValue().String()
+	m.PushValue(Integer(strings.Count(str, sep)))
+	return nil
+}
+
 func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
@@ -195,6 +203,7 @@ func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-replace", "( str pat replace -- .. )", _strReplace)
 	m.AddGoWord("str-contains?", "( str cont -- contained? )", _strContains)
+	m.AddGoWord("str-count", "( str sep -- count )", _strCount)
 
 	m.AddGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
 	m.AddGoWord("str-trim", "( str -- 'str )", _strTrim)
