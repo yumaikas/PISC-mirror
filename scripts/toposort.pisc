@@ -1,0 +1,54 @@
+# Toposort.pisc
+# Implementing a basic topological sort of a set of nodes+edges, for later use
+
+
+: <node> ( id { edges } -- node ) <dict> swap <<-edges swap <<-id ;
+
+# "foo" { "a" "b" "c" } <node>
+
+# todo: benchmark this thing
+: vec-contains? ( vec elem -- contains? ) 
+	:elem :vec
+	$vec len :l
+	f :contained
+	0 :i
+	[ $i $l < $contained not and ] [
+		$vec $i vec-at $elem eq :contained
+		++i
+	] while
+	$contained
+; 
+
+: vecset-merge ( vec-a vec-b -- merged-vec ) 
+	:b :a
+	<vector> :dest
+	$b [ $dest swap vec-append :dest ] vec-each
+	$a [ :elem $dest $elem vec-contains? not [ $dest $elem vec-append :dest ] when ] vec-each
+    $dest
+;
+
+: <graph> ( -- graph ) 
+	<dict> :nodes
+	<dict> 
+	[  /* node -- error? */
+		:n
+		$nodes $n ->id dict-has-key?  [ 
+			$n ->edges
+		] [
+			 $nodes $n ->id $n dict-set
+		] if
+	] <<-add-node
+	[ $nodes ] <<-get-nodes
+;
+
+: topological-sort ( graph -- nodes )
+	:graph
+	<dict> :visited-nodes
+	$graph .get-nodes 
+
+
+
+;
+
+
+
