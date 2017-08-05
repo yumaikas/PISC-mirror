@@ -94,7 +94,7 @@ func _strToRuneReader(m *Machine) error {
 	reader := strings.NewReader(string(a))
 	bufReader := bufio.NewReader(reader)
 
-	readerObj := makeReader(bufReader)
+	readerObj := MakeReader(bufReader)
 	m.PushValue(Dict(readerObj))
 	return nil
 }

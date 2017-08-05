@@ -12,6 +12,7 @@ import (
 
 	"pisc"
 	"pisc/libs/boltdb"
+	piscHTTP "pisc/libs/http"
 	"pisc/libs/shell"
 
 	"gopkg.in/readline.v1"
@@ -114,7 +115,7 @@ func benchmark(m *pisc.Machine) {
 
 func LoadForCLI(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		pisc.ModIOCore, pisc.ModDebugCore, shell.ModShellUtils)...)
+		pisc.ModIOCore, pisc.ModDebugCore, shell.ModShellUtils, piscHTTP.ModHTTPRequests)...)
 }
 
 func LoadForDB(m *pisc.Machine) error {

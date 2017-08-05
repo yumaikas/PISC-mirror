@@ -86,5 +86,5 @@ seed-rand-time
 : text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
 
 /* Finally, some code to run when this is imported */
-"poem.txt" filepath>string :input 
+"poem.txt" get-str-at-path :input 
 $input text-from-string print

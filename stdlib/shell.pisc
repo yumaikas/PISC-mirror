@@ -22,7 +22,7 @@
 	[ pushd ".." cd ] <<-up
 	[ pushd cd ] <<-cd
 	[ popd cd ] <<-back
-	[ filepath>string ] <<-cat
+	[ get-str-at-path ] <<-cat
 	[ "\n" str-count ] <<-wcl
 	[ "PATH" env-get ] <<-PATH
 	[ env-get ] <<-env

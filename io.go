@@ -9,19 +9,37 @@ import (
 	"strings"
 )
 
+//#include<conio.h>
+import "C"
+
 var ModIOCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "IOCore",
 	License:   "MIT",
-	DocString: "TODO: Fill this in",
+	DocString: "Some File I/O bits",
 	Load:      loadIOCore,
+}
+
+// Windows only right now!
+func getch(m *Machine) error {
+	char := C.getch()
+	m.PushValue(Integer(char))
+	return nil
 }
 
 func loadIOCore(m *Machine) error {
 	m.AddGoWord("import", "( file-path -- )", GoWord(importPISC))
-	m.AddGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
+	m.AddGoWord("getkey", "( -- keyval )", GoWord(getch))
+	m.AddGoWord("ESC",
+		"( -- ESC-char ) Emits the terminal escape char, for use in terminal escape codes",
+		GoWord(func(m *Machine) error {
+			m.PushValue(String("\x1B"))
+			return nil
+		}))
+	// TODO: Consider deleting this later, if it isn't used.
+	// m.AddGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
 
-	m.PredefinedWords["filepath>string"] = GoWord(func(m *Machine) error {
+	m.AddGoWord("get-str-at-path", "( path -- contents )", GoWord(func(m *Machine) error {
 		fileName := m.PopValue().(String)
 		data, err := ioutil.ReadFile(string(fileName))
 		if err != nil {
@@ -29,7 +47,13 @@ func loadIOCore(m *Machine) error {
 		}
 		m.PushValue(String(string(data)))
 		return nil
-	})
+	}))
+
+	m.AddGoWord("save-str-to-path", "( str path -- )", GoWord(func(m *Machine) error {
+		fileName := m.PopValue().(String)
+		data := m.PopValue().String()
+		return ioutil.WriteFile(string(fileName), []byte(data), os.FileMode(0644))
+	}))
 
 	m.PredefinedWords["open-file-writer"] = GoWord(func(m *Machine) error {
 		fileName := m.PopValue().(String)
@@ -73,7 +97,7 @@ func loadIOCore(m *Machine) error {
 			return err
 		}
 		var reader = bufio.NewReader(goFile)
-		file := makeReader(reader)
+		file := MakeReader(reader)
 		file["close"] = GoFunc(func(m *Machine) error {
 			return goFile.Close()
 		})
@@ -95,7 +119,7 @@ type PISCReader interface {
 	ReadString(delim byte) (string, error)
 }
 
-func makeReader(reader PISCReader) Dict {
+func MakeReader(reader PISCReader) Dict {
 	file := make(Dict)
 	EOF := false
 	file["read-byte"] = GoFunc(func(m *Machine) error {
