@@ -4,17 +4,54 @@
 
 What is the economy going to be like in this game?
 
-Basic Goods
+## Basic Goods
 
 Water
 Food
 Fuel
 Ore/Scrap
-Vids/Data capsules
 
-Luxury Goods
+## Data Capsules
 
+Programs
+Videos
+Games
+Maps/Charts
 
+## Heavy Goods
 
+Robots
+Munitions
+Build-Crete
+Enviro-shielding
+
+## Fragile Goods
+
+Solar Panels
+Computer Chips
+Documents
+Sculptures
+
+*/
+
+: show-market ( -- ) ;
+
+/*
+World archetypes
+
+Colony:
+Exports basic goods, with a random chance of exporting one other type of good at a low price
+
+Monastic Technocracy:
+Imports basic goods, exports data capsules of various types
+
+Corporatist Industocracy:
+Imports basic goods, exports heavy goods 
+
+Creatist Fabritocracy:
+Imports basic goods, exports Fragile Goods
+
+Beurocratic Metrocracy:
+Imports everything, exports power/influence (heh)
 
 */

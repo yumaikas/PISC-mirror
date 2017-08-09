@@ -1,4 +1,7 @@
 # This is final frontier, a game inspiredc by space, tradewinds, and a little bit of lane-based combat
+/*
+IDEAS: Maybe find some way to integrate long time travel into the culture of spacefarers
+*/
 
 : color-code ( code -- color-esc ) :code ${ ESC "[" $code "m" } ;
 : CLS ( -- ) ${ ESC "[2J" } print ;
@@ -61,7 +64,6 @@
 
 : opening-menu ( game -- next )
 	:game
-
 	4 <up-down-menu> :m
 	$m ->highlight :MENU
  	[ back-black ] :CHOICE
@@ -83,7 +85,6 @@
 
 		$m .proc-key
 	] while
-
 	{ 
 		 [ new-game ] 
 		 [ load-game ]

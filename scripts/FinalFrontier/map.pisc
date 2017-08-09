@@ -1,0 +1,41 @@
+/*
+
+Render a galatic map from here
+
+*/
+
+: star-map ( game -- next ) 
+	
+;
+
+
+: show-world ( planet game -- next ) 
+	:game :planet
+
+	$planet ->description println
+
+	$planet ->locations dup dup [ ->name ] vec-map :locs [ ->command ] vec-map :choices
+	$locs len 1 - <up-down-menu> :m
+
+	$m ->highlight :MENU
+ 	[ back-black ] :CHOICE
+
+
+	[ $m .done? ]
+	# We're re-building the menu each time with a rest to $i
+	[ 
+		CLS
+		CHOICE println
+		0 :i
+		${
+			$planet ->name NNL
+			red
+			$locs [ :l
+				$i MENU "  " $l CHOICE NNL
+			] vec-each
+			white "Up/down to select, enter to choose" NL
+		}
+	] while
+
+	$choices $m .chosen-idx vec-at
+; 

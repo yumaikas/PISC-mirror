@@ -1,13 +1,29 @@
 # What is the model for ships going to be?
 
-: <ship> ( name segments -- ship ) 
-	:segments :name
-	
+# Lane types can be 1 of the 4 major types
+
+# 0 - Basic: Can carry basic cargo
+# 1 - Data: Can carry data of various kinds, is radiation shielded. A cockpit has 1 data slot by default
+# 2 - Heavy: Can carry basic cargo, or heavier goods 
+# 3 - Fragile: Is built with shock absorbsion to allow transport of fragile goods
+
+: <lane> ( size type -- lane ) 
+	:type :size
+	{ $size [ f ] times } :cargo
+	<dict>
+		$cargo <<-cargo
+		$type <<-type
+;
+
+: <ship> ( name lanes -- ship ) 
+	:lanes :name
+	<dict>
+		$lanes <<-lanes
+		$name <<-name
 ;
 
 /*
-
-Each ship is built out of segments
+Each ship is built out of lanes
 Each ship has a drone loadout controlled by the Cockpit
 If the cockpit is destroyed, you game is over. 
 Most ships don't try to destroy a cockpit however, 
@@ -15,14 +31,14 @@ preferring to leave you helpless or capture you.
 
 Ships can have 1x3 to 3x10 in dimentions, and filled with different segments
 
-Segments can come in 3 sizes as well, Small, Medim and Large
+Lanes can come in 3 sizes as well, Small, Medim and Large
 
 Segment types (* indicate mandatory segment): 
 
 Life-support/Cockpit*, 
 Engines*,
 Fuel Tank*
-cargo bay (5 cargo per section)
+cargo pod
 Crew quarter (1 crew member per section)
 drone pod (1 drone per section)
 
@@ -43,7 +59,6 @@ Drones come in 3 basic types:
 Attack: Shoots stuff
 Defence: Defends against attack drones, each shot charges up a mega-beam
 Ion: shorts-out drones and/or sections
-
 
 Advanced drones: Raider
 
