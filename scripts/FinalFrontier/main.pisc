@@ -100,11 +100,19 @@
 		" The final frontier. Many explore it in various craft and ship" NL
 		" goods between the various planets. Pirate organizations have  " NL
 		" sprung up, making this an increasingly dangerous job." NNL
-		""
-	} println
+		" (enter to continue)"
+	} print
+	wait-enter
+
+	CLS
+	${
+		" There are a few crews looking for a captain of your caliber." NL
+		" Three have caught your interest: (enter to continue)"
+	} print
 	wait-enter
 	CLS
 
+	${}
 ;
 
 : load-game ( game --  ) ;

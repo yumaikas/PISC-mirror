@@ -1,0 +1,72 @@
+# What is the model for ships going to be?
+
+: <ship> ( name segments -- ship ) 
+	:segments :name
+	
+;
+
+/*
+
+Each ship is built out of segments
+Each ship has a drone loadout controlled by the Cockpit
+If the cockpit is destroyed, you game is over. 
+Most ships don't try to destroy a cockpit however, 
+preferring to leave you helpless or capture you.
+
+Ships can have 1x3 to 3x10 in dimentions, and filled with different segments
+
+Segments can come in 3 sizes as well, Small, Medim and Large
+
+Segment types (* indicate mandatory segment): 
+
+Life-support/Cockpit*, 
+Engines*,
+Fuel Tank*
+cargo bay (5 cargo per section)
+Crew quarter (1 crew member per section)
+drone pod (1 drone per section)
+
+There are also possible non-standard segments:
+
+Long range sensors ( extra combat round )
+Contraband pod ( far better chance of passing an inspection )
+Ship scanner (allows you to see into ship segments)
+Tow package (allows you to haul ships/trailers around)
+
+Segments have varying levels of armor:
+low: Can be breached by any attck
+medium: Will withstand a minimum of 1 successful attack.
+heavy: Will withstand a minimum of 3 successful attacks.
+
+Drones come in 3 basic types:
+
+Attack: Shoots stuff
+Defence: Defends against attack drones, each shot charges up a mega-beam
+Ion: shorts-out drones and/or sections
+
+
+Advanced drones: Raider
+
+Raider drones do a variety of things, depending on which type of segment they manage to hit
+
+If they hit Life-support/cockpit, they take over the ship, 
+which allows it to be slaved to yours for transport to shipyards
+
+If they hit a engine pod, the opposing ship will be slowed down
+
+If they hit a Fuel tank, all the fuel in that tank is transfered to your ship next turn
+
+If they hit a cargo bay, the cargo in that bay is transfared to your ship next turn
+
+If they hit a crew-quarter, the crew member in that quarter is either 
+captured or killed, depending on if you have space to carry them or not.
+
+
+
+
+
+
+
+
+
+
