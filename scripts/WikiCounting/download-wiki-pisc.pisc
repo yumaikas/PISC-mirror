@@ -1,0 +1,31 @@
+# ${ "https://en.wikipedia.org/wiki/" $page } http-get .content-as-str ${ $page ".html" } 
+
+: wiki-get ( page-name -- http-resp ) :name
+	"GET" 
+	${ "https://en.wikipedia.org/wiki/" $name }
+	<dict> #options, can contain body and headers
+	do-http-req
+;
+
+
+
+: str-to-file ( str/content path --  ) 
+	:path :content
+	$path open-file-writer :OUT
+	$content $OUT .write-string
+	$OUT .close
+;
+
+: main ( -- ) :quot 
+	"ABCDEFGHIJKLMNOPQRSTUVWXYZ" :chars
+	$chars len 26 = not [ "Invalid Alphabet length!" error ] when
+	$chars [ :o
+		$chars [ $o swap str-concat :name
+			$name wiki-get .content-str $name save-str-to-path
+		] each-char
+	] each-char
+;
+
+: test ( -- )
+	"GET" "http://junglecoder.com" <dict> do-http-req .content-str "out.html" save-str-to-path
+;
