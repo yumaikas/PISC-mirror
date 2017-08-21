@@ -1,0 +1,75 @@
+#! /bin/bash
+
+set -uo pipefail
+export PISCDIR="/c/My Go/src/pisc/"
+
+function older_than() {
+  local target="$1"
+  shift
+  if [ ! -e "$target" ]
+  then
+    echo "updating $target" >&2
+    return 0  # success
+  fi
+  local f
+  for f in "$@"
+  do
+    if [ "$f" -nt "$target" ]
+    then
+      echo "updating $target" >&2
+      return 0  # success
+    fi
+  done
+  return 1  # failure
+}
+
+cd "$PISCDIR"
+
+function generate {
+	echo "Generating..." >&2
+	older_than bindata.go stdlib/*.pisc && {
+		echo "Generating bindata" >&2 
+		go-bindata -pkg pisc stdlib/...
+	}
+}
+
+function webbuild {
+	older_than ./cmd/playground/playground.js *.go stdlib/*.pisc && {
+		cd "./cmd/playground"
+		gopherjs build
+		cd ../..
+	} 
+}
+
+function upload {
+	generate
+	webbuild
+	cd ./cmd/playground
+	# Note: This command won't work w/o a password for the scp
+	scp *.css *.js *.html yumaikas@junglecoder.com:/var/www/pisc-static/playground
+	cd ../..
+}
+
+function interpinstall {
+	generate
+	cd "./cmd/pisc"
+	echo "Installing new PISC interpreter"
+	go install 
+	cd "../.."
+}
+
+case "$1" in 
+"generate")
+	generate
+	;;
+"install")
+	interpinstall
+	;;
+"web")
+	webbuild
+	;;
+"upload")
+	upload
+esac
+
+exit 0
