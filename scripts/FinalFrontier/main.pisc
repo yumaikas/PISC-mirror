@@ -3,64 +3,9 @@
 IDEAS: Maybe find some way to integrate long time travel into the culture of spacefarers
 */
 
-: color-code ( code -- color-esc ) :code ${ ESC "[" $code "m" } ;
-: CLS ( -- ) ${ ESC "[2J" } print ;
-: NL ( -- NL ) "\n" ;
-: NNL ( -- NL ) NL NL ;
-
-# Fore-colors
-: black ( -- esc-black ) "30" color-code ;
-: red ( -- esc-red ) "31" color-code ;
-: green ( -- esc-green ) "32" color-code ;
-: yellow ( -- esc-yellow ) "33" color-code ;
-: blue ( -- esc-blue ) "34" color-code ;
-: magenta ( -- esc-magenta ) "35" color-code ;
-: cyan ( -- esc-cyan ) "36" color-code ;
-: white ( -- esc-white ) "37" color-code ;
-
-# back-colors
-: back-black ( -- esc-black ) "40" color-code ;
-: back-red ( -- esc-red ) "41" color-code ;
-: back-green ( -- esc-green ) "42" color-code ;
-: back-yellow ( -- esc-yellow ) "43" color-code ;
-: back-blue ( -- esc-blue ) "44" color-code ;
-: back-magenta ( -- esc-magenta ) "45" color-code ;
-: back-cyan ( -- esc-cyan ) "46" color-code ;
-: back-white ( -- esc-white ) "47" color-code ;
-
-: is-enter? ( k -- ? ) 13 = ;
-: is-arrow? ( k -- ? ) 224 = ;
-
-: is-up? ( k -- ? ) 72 = ;
-: is-down? ( k -- ? ) 80 = ;
-: is-right? ( k -- ? ) 77 = ;
-: is-left? ( k -- ? ) 75 = ;
-
-: wait-enter ( -- ) 
-	[ getkey is-enter? ] [ ] while
-;
-
-: <up-down-menu> ( num-opts -- obj ) 
-	:num
-	0 :m-idx
-	t :choosing
-	[ 
-		getkey :k
-		$k is-enter? [ f :choosing ] when 
-		$k is-arrow? [ 
-			getkey :dir
-			$dir is-up? [ --m-idx ] when
-			$dir is-down? [ ++m-idx ] when
-			$m-idx 4 mod :m-idx
-			$m-idx 0 < [ 3 :m-idx ] when
-		] when
-	] :check
-	<dict> 
-	[ $choosing ] <<-done?
-	[ $m-idx ] <<-chosen-idx
-	[ check ] <<-proc-key
-	[ $m-idx = [ back-white ] when ] <<-highlight
-;
+"lib.pisc" import
+"markets.pisc" import
+"intro.pisc" import
 
 : opening-menu ( game -- next )
 	:game
@@ -86,43 +31,22 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 		$m .proc-key
 	] while
 	{ 
-		 [ new-game ] 
+		 [ intro ] 
 		 [ load-game ]
 		 [ options ]
 		 [ exit-game ]
 	} $m .chosen-idx vec-at 
 ;
 
-: new-game ( game --  )  
-	CLS
-
-	${
-		"Space..." NNL
-		" The final frontier. Many explore it in various craft and ship" NL
-		" goods between the various planets. Pirate organizations have  " NL
-		" sprung up, making this an increasingly dangerous job." NNL
-		" (enter to continue)"
-	} print
-	wait-enter
-
-	CLS
-	${
-		" There are a few crews looking for a captain of your caliber." NL
-		" Three have caught your interest: (enter to continue)"
-	} print
-	wait-enter
-	CLS
-
-	${}
-;
-
-: load-game ( game --  ) ;
+: load-game ( game --  ) :game CLS "TODO: Implement game-loads" println [ " " . ] ;
+: save-game ( game -- ) :game CLS "TODO: Implement game-saves" println [ " " . ] ;
+: options ( -- ) :game CLS "TODO: Implement game options " println [ " " . ] ;
+: exit-game ( game -- ) save-game quit ;
 
 : main ( -- )
 	<dict> opening-menu :curr-state
-
-	[ t ] [ $curr-state call :curr-state ] while
-
+	<dict> :game
+	[ t ] [ $game $curr-state call :curr-state ] while
 	getkey
 	back-black println CLS 
 ;

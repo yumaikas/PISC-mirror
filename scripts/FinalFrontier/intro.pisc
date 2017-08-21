@@ -1,0 +1,34 @@
+
+: intro ( game -- next )
+:game
+CLS
+
+"Space, the Final Frontier
+
+The stars have beckoned you, even when you were but a wee child.
+It's a risky life, spacefaring, what with pirates, smugglers, and planetary police
+in a constant struggle, not to mention asteriods, navigation difficulty, and the utter
+void of space. You've prepared for this day. Your reading time was dedicated to charts
+and ship operation, your spare time to training in simulators, and your savings
+have amounted to $5000. Will you explore the stars? (Y/n)
+" println
+
+0 :k [ $k is-yn? not ] [ getkey :k ] while
+
+$k is-n? [ 
+	"Though, perhaps the stars are for another time. After all, they won't be going anywhere" println
+	wait-enter
+		[ opening-menu ] ] when
+$k is-y? [ [ pick-ship ] ] when
+;
+
+: pick-ship ( game -- next ) 
+CLS
+" You're going to need a ship before you can travel through space, however. " println
+wait-enter
+[ quit ]
+;
+
+
+
+
