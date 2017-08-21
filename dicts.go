@@ -102,6 +102,7 @@ func loadDictWords(m *Machine) error {
 	m.AddGoWord("<dict>", "( -- dict ) Place an empty dictionary on the stack", _buildDict)
 	m.AddGoWord("dict-has-key?", "( dict key -- has-key? )", _dictHasKey)
 	m.AddGoWord("dict-set", "( dict value key -- dict )", _dictSet)
+
 	m.AddGoWord("dict-get", "( dict key -- value|error? )", _dictGet)
 	m.AddGoWord("dict-keys", "( dict -- { keys }) Puts all the keys for a dictionary in an array", _dictKeys)
 	m.AddGoWord("dict-get-rand", "( dict -- key value )", _dictGetRand)

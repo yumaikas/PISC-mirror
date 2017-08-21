@@ -24,3 +24,5 @@
 # Get and set local
  :PRE $ ( name -- val ) get-local ;
  :PRE : ( val name -- ) set-local ;
+
+ :PRE _: ( dict name -- val ) dup get-local swap dict-set ;

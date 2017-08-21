@@ -9,8 +9,10 @@ import (
 	"strings"
 )
 
+/*
 //#include<conio.h>
 import "C"
+*/
 
 var ModIOCore = Module{
 	Author:    "Andrew Owen",
@@ -20,16 +22,18 @@ var ModIOCore = Module{
 	Load:      loadIOCore,
 }
 
+/*
 // Windows only right now!
 func getch(m *Machine) error {
 	char := C.getch()
 	m.PushValue(Integer(char))
 	return nil
 }
+*/
 
 func loadIOCore(m *Machine) error {
 	m.AddGoWord("import", "( file-path -- )", GoWord(importPISC))
-	m.AddGoWord("getkey", "( -- keyval )", GoWord(getch))
+	// m.AddGoWord("getkey", "( -- keyval )", GoWord(getch))
 	m.AddGoWord("ESC",
 		"( -- ESC-char ) Emits the terminal escape char, for use in terminal escape codes",
 		GoWord(func(m *Machine) error {

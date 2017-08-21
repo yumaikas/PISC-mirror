@@ -134,10 +134,10 @@ var (
 	// spaceMatch       = regexp.MustCompile(`[\s\r\n]+`)
 	// floatMatch       = regexp.MustCompile(`^-?\d+\.\d+$`)
 	// intMatch         = regexp.MustCompile(`^-?\d+$`)
-	prefixMatchRegex = regexp.MustCompile(`^[-\[\]:~!@$%^&*<>+?.]+`)
+	prefixMatchRegex = regexp.MustCompile(`^[-_:~!@$%^&*<>+?.]+`)
 )
 
-var prefixChars = []rune{'-', '[', ']', ':', '~', '!', '@', '$', '%', '^', '&', '*', '<', '>', '+', '?', '.'}
+var prefixChars = []rune{'-', '_', ':', '~', '!', '@', '$', '%', '^', '&', '*', '<', '>', '+', '?', '.'}
 
 func isPrefixChar(r rune) bool {
 	for _, c := range prefixChars {
