@@ -68,6 +68,7 @@ func _dictKeys(m *Machine) error {
 		keyArr[i] = String(k)
 		i++
 	}
+	m.PushValue(keyArr)
 	return nil
 }
 

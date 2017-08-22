@@ -8,9 +8,9 @@
 : 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;
 
 :DOC each2 ( v1 v2 quot -- v3 ) Applies a quotation to each elementwise pair in v1 and v2, to result in v3 ;
-: each2 ( v1 v2 quot ( a b -- ab ) -- v3 ) 
+: each2 ( v1 v2 quot [ a b -- ab ] v3 ) 
 	:quot :v2 :v1
-	0 :i <vector> :out
+	0 :i <vector> #:out
 	$v2 len $v1 len min [
 		$v1 $i vec-at 
 		$v2 $i vec-at
