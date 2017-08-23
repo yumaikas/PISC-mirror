@@ -1,0 +1,69 @@
+#Change this function to set properties
+: *props* ( -- data )
+"
+DateTime Time
+String Message
+" process-props ;
+
+: main ( -- ) 
+  [  "LogEntry" *props*  ] :args
+  args gen-immutable-class
+  args gen-ctor-call
+;
+
+: NL ( -- nl ) "<br/>" ;
+
+: TAB ( -- t ) "&nbsp;&nbsp;&nbsp;&nbsp;" ;
+
+: process-props ( str -- props ) 
+str-trim "\n" str-split [
+    ";" "" str-replace " " str-split
+    splat :n :t <dict> $n <<-name $t <<-type
+] vec-map 
+;
+
+: gen-ctor ( name exposed-props -- str ) 
+	:props :name
+	${ 
+	    # Gen args
+          "public " $name "(" NL 
+
+	    { $props [ :q ${ TAB $q ->type " " $q ->name } ] vec-each } ${ "," NL } str-join
+	    ")" NL 
+	    "{" NL
+	    # Gen assignments
+	    $props [ ->name :name TAB "this._" $name " = " $name ";" NL ] vec-each 
+	    "}" NL
+	}
+;
+
+: gen-immutable-class ( name exposed-props -- str ) 
+    :props :name
+	${
+    	"class " $name " {" NL
+    	# emit public get-only properties
+    	$props [ :q $q ->type :t $q ->name :n
+			TAB "public " $t " " $n " { get { return _" $n "; } } " NL
+    	] vec-each 
+	    NL
+
+	    # emit ctor
+	    $name $props gen-ctor NL   
+
+	    # emit private backing fields
+	    $props [ :q $q ->type :t $q ->name :n 
+	        TAB "private readonly " $t " _" $n ";" NL
+	    ] vec-each
+	   "}"
+    }
+;
+
+: gen-ctor-call ( name exposed-props -- str ) 
+	:props :name
+	${ "new " $name "(" NL
+	    { $props [ :q ${ TAB $q ->name ": " } ] vec-each } ${ "," NL } str-join
+	    ");"
+	}   
+;
+
+main
