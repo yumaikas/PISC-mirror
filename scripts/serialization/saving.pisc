@@ -1,0 +1,90 @@
+/* 
+
+func (i Integer) Type() string {
+	return "Integer"
+}
+
+func (d Double) Type() string {
+	return "Double"
+}
+
+func (a Array) Type() string {
+	return "Vector"
+}
+
+func (dict Dict) Type() string {
+	return "Dictionary"
+}
+
+func (b Boolean) Type() string {
+	return "Boolean"
+}
+
+func (s String) Type() string {
+	return "String"
+}
+
+*/
+
+: serial-mapping ( -- mapping )
+	<dict>
+		[ write-dict ] <<-Dictionary
+		[ write-vec ] <<-Vector
+		[ write-int ] <<-Integer
+		[ write-double ] <<-Double
+		[ write-string ] <<-String
+		[ write-bool ] <<-Boolean
+	:t-table
+
+	[ :v 
+	  $t-table $v typeof dict-has-key?
+		[ ${ "Type " $v typeof " cannot be saved."} error ]
+		[ $t-table $v typeof dict-get ]
+	  if
+	] 
+ ;
+
+: save-state ( path state -- state ) :state :path
+	$state typeof :type
+	f :success
+	[ eq dup $success or :success ] :eqn
+	[ $path open-file-writer dup :OUT ] :get-output
+	$type "Dictionary" eqn [ get-output $state write-dict ] when
+	$type "Vector" eqn [ get-output $state write-vec ] when
+	$success not [ ${ "Cannot write value of type: " $type } ] when
+	$OUT .close
+;
+
+: write-dict ( OUT dict -- ) 
+	:pairs :OUT
+	serial-mapping :dispatch
+	[ $OUT .write-string ] :output
+
+	"<dict>"
+	$pairs [ :k $pairs ->$k :v
+		$v dispatch :write
+		"\t" output
+		$OUT $v write 
+		${ "<<-" $k "\n" } output
+	] dict-each-key
+;
+
+: write-vec ( OUT vec -- )
+	:elems :OUT
+	serial-mapping :dispatch
+	[ $OUT .write-string ] :output
+
+	"{ " output
+	$elems [ :e
+		$e $e dispatch output
+		"  " output
+	] vec-each
+	" }" output
+ ;
+
+: write-int ( OUT int -- ) >string swap .write-string ;
+: write-string ( OUT str -- )  :s { "\"" $s "\"" } "\\" "\\\\" str-replace swap  .write-string ; 
+: write-double ( OUT double --  )  >string swap .write-string ;
+: write-bool ( OUT bool --  ) [ :OUT ] dip [ "t " ] [ "f " ] if $OUT .write-string ;
+
+

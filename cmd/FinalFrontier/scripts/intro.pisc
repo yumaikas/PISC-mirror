@@ -18,15 +18,16 @@ have amounted to $5000. Will you explore the stars? (Y/n)
 $k is-n? [ 
 	"Though, perhaps the stars are for another time. After all, they won't be going anywhere" println
 	wait-enter
-		[ opening-menu ] ] when
+		[ opening-menu ] 
+] when
 $k is-y? [ [ pick-ship ] ] when
 ;
 
 : pick-ship ( game -- next ) 
-CLS
-" You're going to need a ship before you can travel through space, however. " println
-wait-enter
-[ quit ]
+	CLS
+	" You're going to need a ship before you can travel through space, however. " println
+	wait-enter
+	[ quit-game ]
 ;
 
 

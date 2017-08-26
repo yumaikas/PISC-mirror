@@ -114,7 +114,7 @@ func (c *CodeList) nextWord() (*word, error) {
 				skipChar = false
 				continue
 			case 'r':
-				currentWord += "\n"
+				currentWord += "\r"
 				skipChar = false
 				continue
 			case '\\':

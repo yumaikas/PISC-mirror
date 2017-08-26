@@ -22,6 +22,14 @@
  :PRE <<- ( dict val key -- dict )  [ [ dup :dict ] dip ] dip dict-set $dict ;
  :PRE <- ( dict val key -- ) dict-set ;
 
+ :PRE ->$ ( dict key -- ) get-local dict-get ;
+ :PRE ->>$ ( dict key -- dict ) [ dup ] dip get-local dict-get swap ;
+
+ :PRE $<- ( dict val key -- ) dup get-local swap dict-set ;
+ :PRE $<<- ( dict val key -- dict ) [ [ dup ] dip ] dip dup get-local swap dict-set ;
+
+
+
 /* :PRE <-$ ( dict val key -- ) get-local dict-set ; */
 
 /*  Set an entry to true for each unicode character in this string */

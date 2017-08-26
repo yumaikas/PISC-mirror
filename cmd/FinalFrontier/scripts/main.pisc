@@ -3,9 +3,9 @@
 IDEAS: Maybe find some way to integrate long time travel into the culture of spacefarers
 */
 
-"lib.pisc" import
-"markets.pisc" import
-"intro.pisc" import
+"scripts\\lib.pisc" game-script
+"scripts\\markets.pisc" game-script
+"scripts\\intro.pisc" game-script
 
 : opening-menu ( game -- next )
 	:game
@@ -41,7 +41,7 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 : load-game ( game --  ) :game CLS "TODO: Implement game-loads" println [ " " . ] ;
 : save-game ( game -- ) :game CLS "TODO: Implement game-saves" println [ " " . ] ;
 : options ( -- ) :game CLS "TODO: Implement game options " println [ " " . ] ;
-: exit-game ( game -- ) save-game quit ;
+: exit-game ( game -- ) save-game quit-game ;
 
 : main ( -- )
 	<dict> opening-menu :curr-state

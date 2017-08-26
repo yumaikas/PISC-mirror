@@ -9,11 +9,6 @@ import (
 	"strings"
 )
 
-/*
-//#include<conio.h>
-import "C"
-*/
-
 var ModIOCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "IOCore",
@@ -41,7 +36,7 @@ func loadIOCore(m *Machine) error {
 			return nil
 		}))
 	// TODO: Consider deleting this later, if it isn't used.
-	// m.AddGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
+	m.AddGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
 
 	m.AddGoWord("get-str-at-path", "( path -- contents )", GoWord(func(m *Machine) error {
 		fileName := m.PopValue().(String)
@@ -65,7 +60,7 @@ func loadIOCore(m *Machine) error {
 		if err != nil {
 			return err
 		}
-		err = goFile.Chmod(os.ModePerm | 0644)
+		// err = goFile.Chmod(os.ModePerm | 0644)
 		if err != nil {
 			return err
 		}
@@ -203,7 +198,6 @@ func (m *Machine) ImportPISCAsset(assetkey string) error {
 		return err
 	}
 	return nil
-
 }
 
 func importAssetPISC(m *Machine) error {
