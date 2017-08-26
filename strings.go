@@ -183,6 +183,19 @@ func _strCount(m *Machine) error {
 	return nil
 }
 
+// ( str -- upperstr )
+func _strUpper(m *Machine) error {
+	str := m.PopValue().String()
+	m.PushValue(String(strings.ToUpper(str)))
+	return nil
+}
+
+// ( str -- lowerstr )
+func _strLower(m *Machine) error {
+	str := m.PopValue().String()
+	m.PushValue(String(strings.ToLower(str)))
+	return nil
+}
 func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
@@ -207,6 +220,9 @@ func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-repeat", "( str repeat-count -- 'str )", _strRepeat)
 	m.AddGoWord("str-trim", "( str -- 'str )", _strTrim)
+
+	m.AddGoWord("str-upper", " ( str -- upper-str ) ", _strUpper)
+	m.AddGoWord("str-lower", " ( str -- lower-str ) ", _strLower)
 
 	return m.ImportPISCAsset("stdlib/strings.pisc")
 }

@@ -82,6 +82,8 @@ ghi"
 	] [ "a,b,cookie" ] assert
 
 	"str-repeat" [ "*" 8 str-repeat ] [ "********" ] assert
+	"str-upper" [ "abc" str-upper ] [ "ABC" ] assert
+	"str-lower" [ "ABC" str-lower ] [ "abc" ] assert
 ] $string-suite .addTest
 
 $string-suite .runTests
