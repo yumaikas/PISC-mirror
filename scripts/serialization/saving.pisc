@@ -38,53 +38,87 @@ func (s String) Type() string {
 
 	[ :v 
 	  $t-table $v typeof dict-has-key?
-		[ ${ "Type " $v typeof " cannot be saved."} error ]
 		[ $t-table $v typeof dict-get ]
+		[ ${ "Type " $v typeof " cannot be saved." } error ]
 	  if
 	] 
- ;
+;
 
 : save-state ( path state -- state ) :state :path
 	$state typeof :type
 	f :success
+	[ $path open-file-writer :OUT
+		": . ( dict value key -- dict ) dict-push ;" $OUT .write-line
+		<dict> 
+			$OUT <<-OUT
+			0 <<-tab
+	] :get-output
 	[ eq dup $success or :success ] :eqn
-	[ $path open-file-writer dup :OUT ] :get-output
 	$type "Dictionary" eqn [ get-output $state write-dict ] when
 	$type "Vector" eqn [ get-output $state write-vec ] when
-	$success not [ ${ "Cannot write value of type: " $type } ] when
+	$success
+		[ "\n: . ( a -- ) drop ; " $OUT .write-line ]
+		[ ${ "Cannot write value of type: " $type } error ]
+	if
 	$OUT .close
 ;
 
-: write-dict ( OUT dict -- ) 
-	:pairs :OUT
+# Replace " with \" in the string, to keep it from breaking up
+: quote-safe ( str -- str ) "\\" "\\\\" str-replace "\"" "\\\"" str-replace ;
+: wrap-quotes ( str -- str ) "\"" swap str-concat "\"" str-concat ;
+
+: write-dict ( ctx dict -- ) 
+	:pairs dup :ctx ->OUT :OUT
+	# Increase the tab-indent
+	$ctx dup ->tab 1 + <-tab 
+
 	serial-mapping :dispatch
 	[ $OUT .write-string ] :output
+	[ "\t" $ctx ->tab str-repeat output ] :TAB
 
-	"<dict>"
+	"\n" output
+	TAB "<dict>" output
+
 	$pairs [ :k $pairs ->$k :v
 		$v dispatch :write
-		"\t" output
-		$OUT $v write 
-		${ "<<-" $k "\n" } output
+		"\n" output TAB "\t" output
+		$ctx $v write 
+		" " output
+		$k quote-safe wrap-quotes output
+		" ." output 
 	] dict-each-key
+	$ctx dup ->tab 1 - <-tab 
 ;
-
-: write-vec ( OUT vec -- )
-	:elems :OUT
+	
+: write-vec ( ctx vec -- )
+	:elems dup :ctx ->OUT :OUT
+	$ctx dup ->tab 1 + <-tab 
+	[ "\t" $ctx ->tab str-repeat output ] :TAB
 	serial-mapping :dispatch
+	# Increase the tab-indent
 	[ $OUT .write-string ] :output
 
-	"{ " output
+	"{" output 
 	$elems [ :e
-		$e $e dispatch output
-		"  " output
+		" " output
+		$ctx $e $e dispatch call 
 	] vec-each
 	" }" output
- ;
+	$ctx dup ->tab 1 - <-tab 
+;
+ 
 
-: write-int ( OUT int -- ) >string swap .write-string ;
-: write-string ( OUT str -- )  :s { "\"" $s "\"" } "\\" "\\\\" str-replace swap  .write-string ; 
-: write-double ( OUT double --  )  >string swap .write-string ;
-: write-bool ( OUT bool --  ) [ :OUT ] dip [ "t " ] [ "f " ] if $OUT .write-string ;
+: write-int ( ctx int -- ) >string swap ->OUT .write-string ;
+: write-string ( ctx str -- ) quote-safe wrap-quotes swap ->OUT .write-string ; 
+: write-double ( ctx double --  )  >string swap ->OUT .write-string ;
+: write-bool ( ctx bool --  ) [ :ctx ] dip [ "t" ] [ "f" ] if $ctx ->OUT .write-string ;
 
 
+# DEBUG
+"out.txt" import :d
+
+"out.txt" $d save-state
+
+"TODO: Add tests!!" println
+"TODO: Consider switching dicts to use critbit trees" println
+# GUBED
