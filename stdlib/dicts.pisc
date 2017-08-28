@@ -19,7 +19,7 @@
  :PRE ->> ( dict key -- val dict ) [ dup :d ] dip dict-get $d ;
 
 /* Set the key for a given dictinoary value, but leave the dictionary on the stack */
- :PRE <<- ( dict val key -- dict )  [ [ dup :dict ] dip ] dip dict-set $dict ;
+ :PRE <<- ( dict val key -- dict ) dict-push ;
  :PRE <- ( dict val key -- ) dict-set ;
 
  :PRE ->$ ( dict key -- ) get-local dict-get ;
