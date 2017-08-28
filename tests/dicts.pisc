@@ -13,6 +13,9 @@
 	"Key can be retrived" 
 		[ $subject "a" dict-get ] [ 1 ] assert
 
+	"Dict is left on stack when pair is pushed"
+		[ $subject 3 "a" dict-push ] [ $subject ] assert
+
 	"Key can have value checked" 
 		[ $subject "a" dict-has-key? ] [ t ] assert
 

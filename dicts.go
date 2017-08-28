@@ -35,8 +35,15 @@ func _dictHasKey(m *Machine) error {
 func _dictSet(m *Machine) error {
 	key := m.PopValue().(String).String()
 	value := m.PopValue()
-	// Peek, since we have no intention of popping here.
 	dict := m.PopValue().(Dict)
+	dict[string(key)] = value
+	return nil
+}
+
+func _dictPush(m *Machine) error {
+	key := m.PopValue().(String).String()
+	value := m.PopValue()
+	dict := m.Values[len(m.Values)-1].(Dict)
 	dict[string(key)] = value
 	return nil
 }
@@ -102,7 +109,8 @@ func loadDictWords(m *Machine) error {
 
 	m.AddGoWord("<dict>", "( -- dict ) Place an empty dictionary on the stack", _buildDict)
 	m.AddGoWord("dict-has-key?", "( dict key -- has-key? )", _dictHasKey)
-	m.AddGoWord("dict-set", "( dict value key -- dict )", _dictSet)
+	m.AddGoWord("dict-set", "( dict value key -- )", _dictSet)
+	m.AddGoWord("dict-push", "( dict value key -- dict )", _dictPush)
 
 	m.AddGoWord("dict-get", "( dict key -- value|error? )", _dictGet)
 	m.AddGoWord("dict-keys", "( dict -- { keys }) Puts all the keys for a dictionary in an array", _dictKeys)
