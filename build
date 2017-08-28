@@ -81,4 +81,10 @@ case "$1" in
 	;;
 esac
 
+cat <<EONOTE
+TODO: Consider using crit-bit trees for dictionaries
+TODO: Now that something close to a save-game has been implemented for final-frontier, start implementing the initial states and such
+TODO: Finally make vectors fully mutable? (What does this entail?)
+EONOTE
+
 exit 0
