@@ -107,6 +107,18 @@ func reflectEq(m *Machine) error {
 	return nil
 }
 
+func isModuleLoaded(m *Machine) error {
+	modName := m.PopValue().String()
+	for _, mod := range m.LoadedModules {
+		if modName == mod {
+			m.PushValue(Boolean(true))
+			return nil
+		}
+	}
+	m.PushValue(Boolean(false))
+	return nil
+}
+
 var ModPISCCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "PISCCore",
@@ -115,7 +127,7 @@ var ModPISCCore = Module{
 	Load:      loadPISCCore,
 }
 
-// These are the standard libraries that are currently trusted to not
+// These are the standard libraries that are currently trusted to not cause problems in general
 var StandardModules = []Module{
 	ModLoopCore,
 	ModLocalsCore,
@@ -135,20 +147,22 @@ func loadPISCCore(m *Machine) error {
 	if m.PredefinedWords == nil {
 		panic("Uninitialized stack machine!")
 	}
-	m.AddGoWord("t", "( -- t )", GoWord(t))
-	m.AddGoWord("f", "( -- f )", GoWord(f))
-	m.AddGoWord("dip", "( a quot -- ... a )", GoWord(dip))
-	m.AddGoWord("stack-empty?", "( -- empty? )", GoWord(isStackEmpty))
-	m.AddGoWord("typeof", "( a -- typeofa )", GoWord(typeof))
-	m.AddGoWord("?", "( a b ? -- a/b )", GoWord(condOperator))
-	m.AddGoWord("call", "( quot -- ... )", GoWord(call))
+	m.AddGoWord("t", "( -- t )", t)
+	m.AddGoWord("f", "( -- f )", f)
+	m.AddGoWord("dip", "( a quot -- ... a )", dip)
+	m.AddGoWord("stack-empty?", "( -- empty? )", isStackEmpty)
+	m.AddGoWord("typeof", "( a -- typeofa )", typeof)
+	m.AddGoWord("?", "( a b ? -- a/b )", condOperator)
+	m.AddGoWord("call", "( quot -- ... )", call)
 	m.PredefinedWords["pick-dup"] = GoWord(pickDup)
 	m.PredefinedWords["pick-drop"] = GoWord(pickDrop)
 	m.PredefinedWords["pick-del"] = GoWord(pickDel)
-	m.AddGoWord("len", "( e -- lenOfE ) ", GoWord(lenEntry))
-	m.AddGoWord("eq", " ( a b -- same? ) ", GoWord(runEq))
+	m.AddGoWord("len", "( e -- lenOfE ) ", lenEntry)
+	m.AddGoWord("eq", " ( a b -- same? ) ", runEq)
 	// Discourage use of reflection based eq via long name
-	m.AddGoWord("deep-slow-reflect-eq", "( a b -- same? )", GoWord(reflectEq))
-	m.AddGoWord("error", "( msg -- !! )", GoWord(errorFromEntry))
+	m.AddGoWord("deep-slow-reflect-eq", "( a b -- same? )", reflectEq)
+	m.AddGoWord("error", "( msg -- !! )", errorFromEntry)
+	m.AddGoWord("module-loaded?", "( module-name -- loaded? )", isModuleLoaded)
+
 	return m.ImportPISCAsset("stdlib/std_lib.pisc")
 }

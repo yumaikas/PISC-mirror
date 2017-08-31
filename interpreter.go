@@ -42,6 +42,8 @@ type Module struct {
 func (m *Machine) LoadModules(modules ...Module) error {
 	for _, mod := range modules {
 		err := mod.Load(m)
+		// Append the name
+		m.LoadedModules = append(m.LoadedModules, mod.Name)
 		if err != nil {
 			return fmt.Errorf("Error loading %s, %s", mod.Name, err.Error())
 		}
@@ -65,6 +67,10 @@ type Machine struct {
 	// TODO: add a stack pointer so that we can keep from re-allocating a lot.
 	// stackPtr int
 	Values []StackEntry
+
+	// Keep a list of loaded modules names here, for doing some detection
+	LoadedModules []string
+
 	// This is reallocated when locals are used
 	Locals []map[string]StackEntry
 	// A map from words to slices of words.
