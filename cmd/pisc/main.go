@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"io/ioutil"
 	"os"
 	"strings"
 
@@ -11,8 +12,8 @@ import (
 	"runtime/pprof"
 
 	"pisc"
-	"pisc/libs/boltdb"
-	piscHTTP "pisc/libs/http"
+	// "pisc/libs/boltdb"
+	// piscHTTP "pisc/libs/http"
 	"pisc/libs/shell"
 
 	"gopkg.in/readline.v1"
@@ -35,13 +36,27 @@ func main() {
 			Name:  "command, c",
 			Usage: "Expressions to run from the command line, before -i, if it exists",
 		},
-		cli.BoolFlag{
-			Name:  "boltdb, d",
-			Usage: "Tells PISC to enable boltdb integration",
-		},
+		/*
+			cli.BoolFlag{
+				Name:  "boltdb, d",
+				Usage: "Tells PISC to enable boltdb integration",
+			},
+		*/
 		cli.StringFlag{
 			Name:  "file, f",
 			Usage: "Execute a file as a bit of pisc, runs before -i or -c",
+		},
+		cli.BoolFlag{
+			Name:  "skip, x",
+			Usage: "Skip the first line of a file, for shebangs or ",
+		},
+		cli.IntFlag{
+			Name:  "skip-multiple, xn",
+			Usage: "Skip the first n lines of a scripe",
+		},
+		cli.StringFlag{
+			Name:  "skip-to-mark, xm",
+			Usage: "Skip until the given mark is on a line by itself",
 		},
 		cli.BoolFlag{
 			Name:  "chatbot",
@@ -115,17 +130,22 @@ func benchmark(m *pisc.Machine) {
 
 func LoadForCLI(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		pisc.ModIOCore, pisc.ModDebugCore, shell.ModShellUtils, piscHTTP.ModHTTPRequests)...)
+		pisc.ModIOCore, pisc.ModDebugCore, shell.ModShellUtils,
+	// piscHTTP.ModHTTPRequests
+	)...)
 }
 
+/*
 func LoadForDB(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		boltdb.ModBoltDB, pisc.ModIOCore, shell.ModShellUtils)...)
+			boltdb.ModBoltDB, pisc.ModIOCore, shell.ModShellUtils)...)
 }
+*/
 
 func LoadForChatbot(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		boltdb.ModBoltDB, pisc.ModIRCKit)...)
+		// boltdb.ModBoltDB,
+		pisc.ModIRCKit)...)
 }
 
 func handleFlags(ctx *cli.Context) {
@@ -143,25 +163,60 @@ func handleFlags(ctx *cli.Context) {
 				log.Fatal("Error while loading modules")
 			}
 		}
-		if ctx.IsSet("boltdb") {
-			err := LoadForDB(m)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				log.Fatal("Error while loading modules")
-			}
-		} else {
-			err := LoadForCLI(m)
-			if err != nil {
-				fmt.Fprintln(os.Stderr, err.Error())
-				log.Fatal("Error while loading modules")
-			}
+		/*
+			if ctx.IsSet("boltdb") {
+				err := LoadForDB(m)
+				if err != nil {
+					fmt.Fprintln(os.Stderr, err.Error())
+					log.Fatal("Error while loading modules")
+				}
+			} else {
+		*/
+		err := LoadForCLI(m)
+		if err != nil {
+			fmt.Fprintln(os.Stderr, err.Error())
+			log.Fatal("Error while loading modules")
 		}
+		// }
 		m.LogAndResetDispatchCount(os.Stderr)
 	}
 	if ctx.IsSet("file") {
-		m.PushValue(pisc.String(ctx.String("file")))
-		err := m.ExecuteString("import", pisc.CodePosition{
-			Source: "argument line",
+		path := ctx.String("file")
+		data, err := ioutil.ReadFile(path)
+		filedata := string(data)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		if ctx.IsSet("skip") {
+			sectors := strings.SplitN(filedata, "\n", 2)
+			if len(sectors) < 2 {
+				log.Println("-x was supplied, but only one line was in the file in question. ")
+				return
+			}
+			// The filedata is the last sector
+			filedata = sectors[len(sectors)-1]
+		} else if ctx.IsSet("skip-multiple") {
+			numSkipLines := ctx.Int("skip-multiple")
+			sectors := strings.SplitN(filedata, "\n", numSkipLines+1)
+			if len(sectors) != (numSkipLines + 1) {
+				log.Println("-xn was supplied, but skips all the lines in the file")
+				return
+			}
+			// The filedata is the last sector
+			filedata = sectors[len(sectors)-1]
+		} else if ctx.IsSet("skip-to-mark") {
+			mark := ctx.String("skip-to-mark")
+			sectors := strings.SplitN(filedata, mark+"\n", 2)
+			if len(sectors) < 2 {
+				log.Println("-xm was supplied, but the given mark was not found in the file")
+				return
+			}
+			filedata = sectors[len(sectors)-1]
+		}
+		err = m.ExecuteString(filedata, pisc.CodePosition{
+			Source: "file:" + string(path),
 		})
 		if err != nil {
 			log.Println(err)
@@ -186,7 +241,6 @@ func loadInteractive(m *pisc.Machine) {
 
 	// given_files := flag.Bool("f", false, "Sets the rest of the arguments to list of files")
 	// Run command stuff here.
-
 	rl, err := readline.NewEx(&readline.Config{
 		Prompt:          ">> ",
 		HistoryFile:     "/tmp/readline.tmp",

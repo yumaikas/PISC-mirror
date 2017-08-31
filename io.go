@@ -172,7 +172,9 @@ func importPISC(m *Machine) error {
 		return err
 	}
 	// Reading in the data
-	code, err := stringToQuotation(string(data), CodePosition{Source: "file:" + string(fileName)})
+	code, err := stringToQuotation(string(data), CodePosition{
+		Source: "file:" + string(fileName),
+	})
 	if err != nil {
 		return err
 	}
