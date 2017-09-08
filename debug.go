@@ -18,7 +18,40 @@ var ModDebugCore = Module{
 	Load:      loadDebugCore,
 }
 
+// Inspired by a computerphile video on how
+// Postscript was a "big" language at 400
+// "Operators" (words in PISC), so I can instruement
+// the relative size of PISC in terms of surface area
+
+func getNumGoWords(m *Machine) error {
+	m.PushValue(Integer(len(m.PredefinedWords)))
+	return nil
+}
+
+func getNumPiscWords(m *Machine) error {
+	m.PushValue(Integer(len(m.DefinedWords)))
+	return nil
+}
+
+func getNumPrefixWords(m *Machine) error {
+	m.PushValue(Integer(len(m.PrefixWords)))
+	return nil
+}
+
 func loadDebugCore(m *Machine) error {
+
+	m.AddGoWord("count-go-words",
+		"( -- num-go-words )",
+		getNumGoWords)
+
+	m.AddGoWord("count-pisc-words",
+		"( -- num-pisc-words )",
+		getNumPiscWords)
+
+	m.AddGoWord("count-prefix-words",
+		"( -- num-go-words )",
+		getNumPrefixWords)
+
 	// ( -- )
 	m.PredefinedWords["show-prefix-words"] = NilWord(func(m *Machine) {
 		for name := range m.PrefixWords {

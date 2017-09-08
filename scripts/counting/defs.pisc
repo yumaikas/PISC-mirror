@@ -1,0 +1,11 @@
+#! /home/yumaikas/gocode/bin/pisc -f
+# Update the shebang value by filling in the contents of 'which pisc'
+# After installing pisc
+
+: NL ( -- ) "\n" ;
+
+${  NL
+    "There are " count-go-words >string " Go words" NL
+    "There are " count-pisc-words >string " PISC words" NL
+    "There are " count-prefix-words >string " PREFIX  words" NL
+} println
