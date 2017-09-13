@@ -4,7 +4,7 @@ import "pisc"
 
 var ModBuildCore = pisc.Module{
 	Author:    "Andrew Owen",
-	Name:      "ShellUtils",
+	Name:      "BuildKit",
 	License:   "MIT",
 	DocString: `commands for running pisc Buildscripts`,
 	Load:      loadBuildWords,

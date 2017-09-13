@@ -1,3 +1,4 @@
+#! /bin/bash
 function older_than() {
   local target="$1"
   shift
