@@ -1,0 +1,7 @@
+/* This counter is an example of using closures for state management with dictionaries */
+: <counter> ( val -- counter ) 
+	dup :val :orig
+	<dict> 
+		[ $val 1 - dup :val 0 > ] <<-down
+		[ $orig :val ] <<-reset 
+;

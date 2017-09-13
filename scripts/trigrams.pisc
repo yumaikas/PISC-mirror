@@ -1,0 +1,87 @@
+/* By turning comma into a no-op, use commas for helping space a few wide expressions later */
+: , ( -- ) ;
+
+/* Seed the random number generator to keep from getting the same result each run */
+seed-rand-time
+
+: char-any ( c chars -- ? )
+	:chars :c
+ 	f :isAny 
+	$chars [ $c str-eq? $isAny or :isAny ] each-char
+	$isAny
+; 
+
+: get-words ( string -- words ) 
+	:input <vector> :words
+	"" :currWord
+	$input [ :c
+		/* Add words if  */
+	 	$c " \t\n\r\"" char-any :isSpace
+	 	$currWord len 0 > :haveData
+	 	$isSpace $haveData and [ 
+	 		/* Add the word if it's had a chance to be longer than 0 */
+	 		$words $currWord vec-push
+	 		"" :currWord
+	 	] [ 
+	 		/* Add the char to the current word */
+			$isSpace not [ $currWord $c str-concat :currWord ] when
+ 		] if
+	] each-char
+	/* finally, add any leftover word, leaving $words on the stack */
+	$words $currWord vec-append 
+;
+
+: get-trigram ( words -- key value ) 
+	:words
+	${ $words 0 vec-at " " $words 1 vec-at }
+	$words 2 vec-at 
+;
+
+: add-trigram ( trigrams key value -- ) 
+	:value :key :trigrams
+	# ${ $key "|" $value "|" $trigrams $key dict-has-key } print
+	$trigrams $key dict-has-key? [
+		/* Add the element to the vector */
+		$trigrams $key dict-get $value vec-push
+	] [
+	 	$trigrams { $value } $key dict-set 
+	] if
+;
+
+: trigrams-of-string ( string -- trigrams ) 
+	get-words :words 
+	<dict> :trigrams
+	/* While we still have enough words to build trigrams. */
+	[ $words len 3 >= ] [
+		$trigrams 
+			$words get-trigram add-trigram
+		$words vec-dropfront :words
+	] while
+	$trigrams
+;
+
+: last-pair ( words -- pair ) 
+	dup :words len :words-len
+	$words-len 1 - :end
+	$words-len 2 - :nextToEnd
+	${ $words $nextToEnd vec-at , " " , $words $end vec-at }
+;
+
+: dict-rand-key ( dict -- key ) dict-get-rand drop ;
+: dict-rand-value ( dict -- value ) dict-get-rand nip ;
+
+: text-of-trigrams ( trigrams -- text ) 
+	dup :trigrams dict-rand-key " " str-split :text
+	$text last-pair :key
+	[ $trigrams $key dict-has-key? ] [
+	     $text $trigrams $key dict-get choice vec-push
+	     $text last-pair :key
+	] while
+	$text " " str-join 
+;
+
+: text-from-string ( string -- text ) trigrams-of-string text-of-trigrams ;
+
+/* Finally, some code to run when this is imported */
+"poem.txt" get-str-at-path :input 
+$input text-from-string print

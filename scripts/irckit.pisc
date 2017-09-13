@@ -1,0 +1,108 @@
+: handle-ping ( conn message -- was-ping ) 
+	:msg :conn
+	$msg "PING" str-contains :was-ping
+	$was-ping [
+		$msg " " str-split 1 vec-at :resp-key
+		${ "PONG :" $resp-key } :resp 
+		$resp $conn .send-message
+	] when
+	$was-ping
+;
+
+: <ping-responder> ( conn -- resp ) 
+	:conn
+	[ :msg
+		$msg .command "PRIVMSG" str-eq? [
+			$msg .params 0 vec-at :replyId
+			${ "PRIVMSG " $replyId " ping!" } $conn .send-message
+		] when
+	]
+;
+
+: irc-conf-defaults ( conf -- filledConf ) 
+	:conf
+	/* ( key fallbackVal --  ) */
+	[ :v :k 
+		$conf $k dict-has-key? not [
+			$conf $v $k dict-set
+		] when
+	] :fallback
+
+	"pass" "0" fallback
+	"nick" "piscbot" fallback
+	"chanlist" { "#botwars" } fallback
+	"responders" { 
+		[ <ping-responder> ]
+	} fallback
+	"address" "" fallback
+	$conf
+;
+
+: clean-chanlist ( chan-vec -- chancsv ) 
+	:list
+	{
+		$list [ :c
+			$c "#" str-starts? [ $c ] [ ${ "#" $c } ] if
+		] vec-each 
+	} "," str-join
+;
+
+: irc-evented-server! ( conf -- ) 
+	irc-conf-defaults :conf
+	"Checking address" println
+	# Make sure we have an address
+	$conf ->address len 0 > [
+		$conf do-irc-evented-server!
+	] [ "Need an address to dial into server!" println ] if
+;
+
+: do-irc-evented-server! ( conf -- )
+	/* This server is single threaded for now */
+	:conf 
+	"Before trying to connect" println
+	$conf ->address irc-dial :conn /* TODO: Figure out how to handle errors here, if at all */
+	[ $conn .send-message ] :send
+	[ $conn dup .recieve-message handle-ping ] :check-ping
+	[ $conn .recieve-message ] :get-message
+
+	$conf ->chanlist clean-chanlist :chanlist
+	# Initialize the responders with an open connection
+	{ $conf ->responders [ $conn swap call ] vec-each } :responders
+
+	/* Get the server MOTD and the like */
+	${ "PASS " $conf ->pass } send
+	${ "NICK " $conf ->nick } send
+	check-ping
+	${ "USER piscbot piscbot i :" $conf ->nick } send
+	check-ping
+
+
+	/* Waiting for a MODE command so we know that MOTD has been finished */
+	t :reading-motd
+	[ $reading-motd ] [
+		get-message :msg
+		$msg println
+		$msg .params " " str-join "MODE" str-contains not :reading-motd
+	] while
+
+	${ "JOIN " $chanlist } send
+
+	[ t ] [
+		"Awaiting a message" println
+		get-message :msg
+		$conn $msg handle-ping not [
+			# This is a sandboxing technique
+			{ $responders [ $msg swap call ] vec-each } drop
+		] when
+	] while
+	$conn .close
+;
+
+
+: irc-conf-ping-freenode! ( -- ) 
+	<dict> dup :conf
+		"wiki-bot" <<-nick
+		"0" <<-pass
+		"irc.freenode.com:6667" <<-address
+	irc-conf-defaults irc-evented-server!
+;
