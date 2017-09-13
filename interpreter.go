@@ -342,7 +342,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			vals := make([]StackEntry, len(m.Values)-currIdx)
 			copy(vals, m.Values[currIdx:len(m.Values)])
 			m.Values = m.Values[:currIdx]
-			m.PushValue(Vector{Elements: &vals})
+			m.PushValue(&Vector{Elements: vals})
 
 		case wordVal.str == "${":
 			// Begin Quotation
@@ -395,7 +395,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			vals := make([]StackEntry, len(m.Values)-currIdx)
 			copy(vals, m.Values[currIdx:len(m.Values)])
 			m.Values = m.Values[:currIdx]
-			m.PushValue(Vector{Elements: &vals})
+			m.PushValue(&Vector{Elements: vals})
 			err = m.execute(_join.inner)
 
 		case wordVal.str == "[":

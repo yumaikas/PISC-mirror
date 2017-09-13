@@ -31,7 +31,7 @@ func loadVectorCore(m *Machine) error {
 func vecSetAt(m *Machine) error {
 	idx := int(m.PopValue().(Integer))
 	val := m.PopValue()
-	elems := *m.Values[len(m.Values)-1].(Vector).Elements
+	elems := m.Values[len(m.Values)-1].(*Vector).Elements
 	if idx > len(elems)-1 || idx < 0 {
 		return fmt.Errorf("index out of bounds: %v", idx)
 	}
@@ -41,7 +41,7 @@ func vecSetAt(m *Machine) error {
 
 func vecAt(m *Machine) error {
 	idx := int(m.PopValue().(Integer))
-	elems := *m.PopValue().(Vector).Elements
+	elems := m.PopValue().(*Vector).Elements
 	if idx > len(elems)-1 || idx < 0 {
 		return fmt.Errorf("index out of bounds: %v", idx)
 	}
@@ -50,16 +50,15 @@ func vecAt(m *Machine) error {
 }
 
 func makeVec(m *Machine) error {
-	elems := make([]StackEntry, 0)
-	vec := Vector{Elements: &elems}
+	vec := &Vector{Elements: make([]StackEntry, 0)}
 	m.PushValue(vec)
 	return nil
 }
 
 func vecEach(m *Machine) error {
 	quot := m.PopValue().(*Quotation)
-	vect := m.PopValue().(Vector)
-	for _, elem := range *vect.Elements {
+	vect := m.PopValue().(*Vector)
+	for _, elem := range vect.Elements {
 		m.PushValue(elem)
 		m.PushValue(quot)
 		err := m.ExecuteQuotation()
@@ -73,51 +72,49 @@ func vecEach(m *Machine) error {
 
 func vecPush(m *Machine) error {
 	toAppend := m.PopValue()
-	vec := m.PopValue().(Vector)
-	newElems := append(*vec.Elements, toAppend)
-	vec.Elements = &newElems
+	vec := m.PopValue().(*Vector)
+	newElems := append(vec.Elements, toAppend)
+	vec.Elements = newElems
 	return nil
 }
 
 func vecAppend(m *Machine) error {
 	toAppend := m.PopValue()
-	vec := m.PopValue().(Vector)
-	newElems := append(*vec.Elements, toAppend)
-	vec.Elements = &newElems
-	m.PushValue(arr)
+	vec := m.PopValue().(*Vector)
+	newElems := append(vec.Elements, toAppend)
+	vec.Elements = newElems
+	m.PushValue(vec)
 	return nil
 }
 
 func vecPrepend(m *Machine) error {
 	toPrepend := m.PopValue()
-	arr := m.PopValue().(Vector)
-	newElems := append([]StackEntry{toPrepend}, (*arr.Elements)...)
-	arr.Elements = &newElems
+	arr := m.PopValue().(*Vector)
+	newElems := append([]StackEntry{toPrepend}, (arr.Elements)...)
+	arr.Elements = newElems
 	m.PushValue(arr)
 	return nil
 }
 
 func vecPopback(m *Machine) error {
-	vec := m.PopValue().(Vector)
-	if len(*vec.Elements) < 1 {
+	vec := m.PopValue().(*Vector)
+	if len(vec.Elements) < 1 {
 		return fmt.Errorf("no elements in array")
 	}
-	val := (*vec.Elements)[len(*vec.Elements)-1]
-	newElems := (*vec.Elements)[:len(*vec.Elements)-1]
-	vec.Elements = &newElems
+	val := (vec.Elements)[len(vec.Elements)-1]
+	vec.Elements = vec.Elements[:len(vec.Elements)-1]
 	m.PushValue(vec)
 	m.PushValue(val)
 	return nil
 }
 
 func vecPopfront(m *Machine) error {
-	vec := m.PopValue().(Vector)
-	if len(*vec.Elements) < 1 {
+	vec := m.PopValue().(*Vector)
+	if len(vec.Elements) < 1 {
 		return fmt.Errorf("no elements in array")
 	}
-	val := (*vec.Elements)[0]
-	newElems := (*vec.Elements)[1:]
-	vec.Elements = &newElems
+	val := vec.Elements[0]
+	vec.Elements = vec.Elements[1:]
 	m.PushValue(vec)
 	m.PushValue(val)
 	return nil

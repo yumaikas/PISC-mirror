@@ -20,7 +20,7 @@ seed-rand-time
 	 	$currWord len 0 > :haveData
 	 	$isSpace $haveData and [ 
 	 		/* Add the word if it's had a chance to be longer than 0 */
-	 		$words $currWord vec-append :words 
+	 		$words $currWord vec-push
 	 		"" :currWord
 	 	] [ 
 	 		/* Add the char to the current word */
@@ -42,10 +42,7 @@ seed-rand-time
 	# ${ $key "|" $value "|" $trigrams $key dict-has-key } print
 	$trigrams $key dict-has-key? [
 		/* Add the element to the vector */
-		$trigrams $key dict-get :old
-		$old $value vec-append :new
-		/* And then put the vector back into the dictionary */
-		$trigrams $new $key dict-set
+		$trigrams $key dict-get $value vec-push
 	] [
 	 	$trigrams { $value } $key dict-set 
 	] if
@@ -77,7 +74,7 @@ seed-rand-time
 	dup :trigrams dict-rand-key " " str-split :text
 	$text last-pair :key
 	[ $trigrams $key dict-has-key? ] [
-	     $text $trigrams $key dict-get choice vec-append :text
+	     $text $trigrams $key dict-get choice vec-push
 	     $text last-pair :key
 	] while
 	$text " " str-join 

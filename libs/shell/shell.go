@@ -22,11 +22,11 @@ func _listFilesAt(m *pisc.Machine) error {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error: ", err)
 	}
-	arr := make(pisc.Array, len(files))
+	arr := make([]pisc.StackEntry, len(files))
 	for i, f := range files {
 		arr[i] = fileInfoToDict(f)
 	}
-	m.PushValue(arr)
+	m.PushValue(&pisc.Vector{Elements: arr})
 	return nil
 }
 
@@ -35,11 +35,11 @@ func _listFiles(m *pisc.Machine) error {
 	if err != nil {
 		fmt.Fprintln(os.Stderr, "Error: ", err)
 	}
-	arr := make(pisc.Array, len(files))
+	arr := make([]pisc.StackEntry, len(files))
 	for i, f := range files {
 		arr[i] = fileInfoToDict(f)
 	}
-	m.PushValue(arr)
+	m.PushValue(&pisc.Vector{Elements: arr})
 	return nil
 }
 
@@ -107,11 +107,13 @@ func fileInfoToDict(info os.FileInfo) pisc.Dict {
 	dict["mode"] = pisc.String(info.Mode().String())
 	dict["timestamp"] = pisc.String(strconv.FormatInt(info.ModTime().Unix(), 10))
 	dict["__type"] = pisc.String("inode")
-	dict["__ordering"] = pisc.Array{
-		pisc.String("name"),
-		pisc.String("mode"),
-		pisc.String("size"),
-		pisc.String("timestamp"),
+	dict["__ordering"] = &pisc.Vector{
+		Elements: []pisc.StackEntry{
+			pisc.String("name"),
+			pisc.String("mode"),
+			pisc.String("size"),
+			pisc.String("timestamp"),
+		},
 	}
 	return dict
 }

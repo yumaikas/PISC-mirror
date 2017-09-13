@@ -75,7 +75,7 @@ func _dictKeys(m *Machine) error {
 		keyArr[i] = String(k)
 		i++
 	}
-	m.PushValue(Vector{Elements: &keyArr})
+	m.PushValue(&Vector{Elements: keyArr})
 	return nil
 }
 

@@ -66,7 +66,7 @@ func (_msg ircMessage) getParams(m *Machine) error {
 	for i := 0; i < len(msg.Params); i++ {
 		params[i] = String(msg.Params[i])
 	}
-	m.PushValue(Vector{Elements: &params})
+	m.PushValue(&Vector{Elements: params})
 	return nil
 }
 

@@ -17,7 +17,7 @@
 	"34.2" [ 34.2 >string ] [ "34.2" ] assert
 	# TODO: consider finding a more self-representative 
 	# way of converting collections to strings
-	"{ 1 2 3 }" [ { 1 2 3 } >string ] [ "[1 2 3]" ] assert
+	"{ 1 2 3 }" [ { 1 2 3 } >string ] [ "{ 1 2 3 }" ] assert
 	"str>int" [ "123" str>int ] [ 123 ] assert
 ] $string-suite .addTest
 

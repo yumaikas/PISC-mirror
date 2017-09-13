@@ -12,7 +12,8 @@
 	"Vec-set-at" [ $a 1 1 vec-set-at ] [ { 1 1 } ] assert
 	"<vector>" [ <vector> ] [ { } ] assert
 	"vec-each" [ { 1 2 3 } [ ] vec-each ] [ 1 2 3 ] assert
-	"vec-append" [ { 1 2 } 3 vec-append ] [ { 1 2 3 } ] assert
+	"vec-append" [ { 1 2 } dup 3 vec-append ] [ { 1 2 3 } { 1 2 3 } ] assert
+	"vec-append" [ { 1 2 } dup 3 vec-push ] [ { 1 2 3 } ] assert
 	"vec-prepend" [ { 1 2 } 3 vec-prepend ] [ { 3 1 2 } ] assert
 	"vec-popback" [ { 1 2 3 } vec-popback ] [ { 1 2 } 3 ] assert
 	"vec-popfront" [ { 1 2 3 } vec-popfront ] [ { 2 3 } 1 ] assert
