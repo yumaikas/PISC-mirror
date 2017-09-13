@@ -68,14 +68,14 @@ func _dictGet(m *Machine) error {
 func _dictKeys(m *Machine) error {
 	dict := m.PopValue().(Dict)
 
-	keyArr := make(Array, dict.Length())
+	keyArr := make([]StackEntry, dict.Length())
 
 	var i int = 0
 	for k, _ := range dict {
 		keyArr[i] = String(k)
 		i++
 	}
-	m.PushValue(keyArr)
+	m.PushValue(Vector{Elements: &keyArr})
 	return nil
 }
 

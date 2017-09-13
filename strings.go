@@ -54,7 +54,7 @@ func _strToInt(m *Machine) error {
 // Potential TODO: Review for performance?
 func _strJoin(m *Machine) error {
 	sep := m.PopValue().(String).String()
-	elems := m.PopValue().(Array)
+	elems := *m.PopValue().(Vector).Elements
 	str := ""
 	for _, val := range elems[:len(elems)-1] {
 		str += val.String() + sep
@@ -68,11 +68,11 @@ func _strSplit(m *Machine) error {
 	sep := m.PopValue().(String).String()
 	str := m.PopValue().(String).String()
 	strs := strings.Split(str, sep)
-	toPush := make(Array, len(strs))
+	toPush := make([]StackEntry, len(strs))
 	for idx, val := range strs {
 		toPush[idx] = String(val)
 	}
-	m.PushValue(toPush)
+	m.PushValue(Vector{Elements: &toPush})
 	return nil
 }
 

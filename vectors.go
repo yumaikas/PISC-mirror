@@ -17,8 +17,11 @@ func loadVectorCore(m *Machine) error {
 	m.AddGoWord("vec-at", " ( vec idx -- elem ) ", GoWord(vecAt))
 	m.AddGoWord("<vector>", " ( -- vector )", GoWord(makeVec))
 	m.AddGoWord("vec-each", " ( vec quot -- .. ) ", GoWord(vecEach))
-	m.AddGoWord("vec-append", " ( vec elem -- newVect ) ", GoWord(vecAppend))
-	m.AddGoWord("vec-prepend", " ( vec elem -- newVect ) ", GoWord(vecPrepend))
+	m.AddGoWord("vec-append", " ( vec elem -- vec ) ", GoWord(vecAppend))
+	m.AddGoWord("vec-push", ` ( vec elem -- )
+		Mutates vector to contain elem`, GoWord(vecPush))
+	m.AddGoWord("vec-pushback", " ( vec elem -- ) ", GoWord(vecPush))
+	m.AddGoWord("vec-prepend", " ( vec elem -- vec ) ", GoWord(vecPrepend))
 	m.AddGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
 	m.AddGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
 	// Return success if we can load out PISC file as well.
@@ -28,33 +31,35 @@ func loadVectorCore(m *Machine) error {
 func vecSetAt(m *Machine) error {
 	idx := int(m.PopValue().(Integer))
 	val := m.PopValue()
-	arr := m.Values[len(m.Values)-1].(Array)
-	if idx > len(arr)-1 || idx < 0 {
+	elems := *m.Values[len(m.Values)-1].(Vector).Elements
+	if idx > len(elems)-1 || idx < 0 {
 		return fmt.Errorf("index out of bounds: %v", idx)
 	}
-	arr[idx] = val
+	elems[idx] = val
 	return nil
 }
 
 func vecAt(m *Machine) error {
 	idx := int(m.PopValue().(Integer))
-	arr := m.PopValue().(Array)
-	if idx > len(arr)-1 || idx < 0 {
+	elems := *m.PopValue().(Vector).Elements
+	if idx > len(elems)-1 || idx < 0 {
 		return fmt.Errorf("index out of bounds: %v", idx)
 	}
-	m.PushValue(arr[idx])
+	m.PushValue(elems[idx])
 	return nil
 }
 
 func makeVec(m *Machine) error {
-	m.PushValue(Array(make([]StackEntry, 0)))
+	elems := make([]StackEntry, 0)
+	vec := Vector{Elements: &elems}
+	m.PushValue(vec)
 	return nil
 }
 
 func vecEach(m *Machine) error {
 	quot := m.PopValue().(*Quotation)
-	vect := m.PopValue().(Array)
-	for _, elem := range vect {
+	vect := m.PopValue().(Vector)
+	for _, elem := range *vect.Elements {
 		m.PushValue(elem)
 		m.PushValue(quot)
 		err := m.ExecuteQuotation()
@@ -66,42 +71,54 @@ func vecEach(m *Machine) error {
 	return nil
 }
 
+func vecPush(m *Machine) error {
+	toAppend := m.PopValue()
+	vec := m.PopValue().(Vector)
+	newElems := append(*vec.Elements, toAppend)
+	vec.Elements = &newElems
+	return nil
+}
+
 func vecAppend(m *Machine) error {
 	toAppend := m.PopValue()
-	arr := m.PopValue().(Array)
-	arr = append(arr, toAppend)
+	vec := m.PopValue().(Vector)
+	newElems := append(*vec.Elements, toAppend)
+	vec.Elements = &newElems
 	m.PushValue(arr)
 	return nil
 }
 
 func vecPrepend(m *Machine) error {
 	toPrepend := m.PopValue()
-	arr := m.PopValue().(Array)
-	arr = append([]StackEntry{toPrepend}, arr...)
+	arr := m.PopValue().(Vector)
+	newElems := append([]StackEntry{toPrepend}, (*arr.Elements)...)
+	arr.Elements = &newElems
 	m.PushValue(arr)
 	return nil
 }
 
 func vecPopback(m *Machine) error {
-	arr := m.PopValue().(Array)
-	if len(arr) < 1 {
+	vec := m.PopValue().(Vector)
+	if len(*vec.Elements) < 1 {
 		return fmt.Errorf("no elements in array")
 	}
-	val := arr[len(arr)-1]
-	arr = arr[:len(arr)-1]
-	m.PushValue(arr)
+	val := (*vec.Elements)[len(*vec.Elements)-1]
+	newElems := (*vec.Elements)[:len(*vec.Elements)-1]
+	vec.Elements = &newElems
+	m.PushValue(vec)
 	m.PushValue(val)
 	return nil
 }
 
 func vecPopfront(m *Machine) error {
-	arr := m.PopValue().(Array)
-	if len(arr) < 1 {
+	vec := m.PopValue().(Vector)
+	if len(*vec.Elements) < 1 {
 		return fmt.Errorf("no elements in array")
 	}
-	val := arr[0]
-	arr = arr[1:]
-	m.PushValue(arr)
+	val := (*vec.Elements)[0]
+	newElems := (*vec.Elements)[1:]
+	vec.Elements = &newElems
+	m.PushValue(vec)
 	m.PushValue(val)
 	return nil
 }

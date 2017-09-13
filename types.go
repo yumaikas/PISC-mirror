@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"strconv"
+	"strings"
 )
 
 type StackEntry interface {
@@ -31,15 +32,15 @@ func runEq(m *Machine) error {
 	return nil
 }
 
-// Check if two arrays are
-func arrayRefEq(a, b Array) bool {
-	if len(a) != len(b) {
+// Check if two arrays are referentially equal
+func vectorRefEq(a, b Vector) bool {
+	if len(*a.Elements) != len(*b.Elements) {
 		return false
 	}
-	if len(a) == 0 {
+	if len(*a.Elements) == 0 {
 		return true
 	}
-	return &a[0] == &b[0]
+	return &(*a.Elements)[0] == &(*b.Elements)[0]
 }
 
 func mapRefEq(a, b Dict) bool {
@@ -72,7 +73,7 @@ func eq(a, b StackEntry) bool {
 	case "Symbol":
 		return a.(Symbol) == b.(Symbol)
 	case "Vector":
-		return arrayRefEq(a.(Array), b.(Array))
+		return vectorRefEq(a.(Vector), b.(Vector))
 	case "Dictionary":
 		return mapRefEq(a.(Dict), b.(Dict))
 	case "Quotation":
@@ -98,8 +99,10 @@ type Double float64
 // TODO: Find a way to support dicts with arbitrary keys, not just strings
 type Dict map[string]StackEntry
 
-// Array is the wrapper around slices of StackEntry
-type Array []StackEntry
+// Vectors are mutable pointers to slices.
+type Vector struct {
+	Elements *[]StackEntry
+}
 
 // String is the PISC wrapper around strings
 type String string
@@ -156,8 +159,8 @@ func (dict Dict) String() string {
 	var found bool
 	buf := bytes.NewBufferString("map[")
 	if key_order, found = dict["__ordering"]; found {
-		if keys, ok := key_order.(Array); ok {
-			for _, k := range keys {
+		if keys, ok := key_order.(Vector); ok {
+			for _, k := range *keys.Elements {
 				buf.WriteString(fmt.Sprint(k.String(), ":", dict[k.String()], " "))
 			}
 			buf.WriteString("]")
@@ -170,8 +173,13 @@ func (dict Dict) String() string {
 
 }
 
-func (a Array) String() string {
-	return fmt.Sprint([]StackEntry(a))
+func (v Vector) String() string {
+
+	elems := make([]string, len(*v.Elements))
+	for i, e := range *v.Elements {
+		elems[i] = e.String()
+	}
+	return "{ " + strings.Join(elems, " ") + " }"
 }
 
 func (g GoFunc) Type() string {
@@ -190,7 +198,7 @@ func (q *Quotation) Type() string {
 	return "Quotation"
 }
 
-func (a Array) Type() string {
+func (a Vector) Type() string {
 	return "Vector"
 }
 
@@ -214,8 +222,8 @@ func (dict Dict) Length() int {
 	return len(dict)
 }
 
-func (a Array) Length() int {
-	return len(a)
+func (v Vector) Length() int {
+	return len(*v.Elements)
 }
 
 func (s String) Length() int {
