@@ -84,6 +84,7 @@ esac
 cat <<EONOTE
 TODO: Consider using crit-bit trees for dictionaries
 TODO: Now that something close to a save-game has been implemented for final-frontier, start implementing the initial states and such
+TODO: Implement an interactive tutorial in the 'in Y minutes' style. 
 EONOTE
 
 exit 0
