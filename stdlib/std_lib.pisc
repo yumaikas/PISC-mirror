@@ -57,7 +57,6 @@ A few core words for PISC execution.
 /* : eq ( a b -- ? ) */
 : . ( a -- ) drop ;
 
-
 : inspect ( a -- a ) dup print ;
 
 : clear-stack ( -- ) [ stack-empty? not ] [ drop ] while ;

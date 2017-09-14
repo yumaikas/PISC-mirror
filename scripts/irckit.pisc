@@ -1,5 +1,5 @@
-: handle-ping ( conn message -- was-ping ) 
-	:msg :conn
+: handle-ping ( conn message -- was-ping )
+    :msg :conn
 	$msg "PING" str-contains :was-ping
 	$was-ping [
 		$msg " " str-split 1 vec-at :resp-key
@@ -10,7 +10,7 @@
 ;
 
 : <ping-responder> ( conn -- resp ) 
-	:conn
+    :conn
 	[ :msg
 		$msg .command "PRIVMSG" str-eq? [
 			$msg .params 0 vec-at :replyId

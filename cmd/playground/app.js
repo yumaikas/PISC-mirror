@@ -64,13 +64,20 @@ var app = (function(){
 		displayStack();
 	}
 
+    function cleanStackDisplay(str) {
+        return str.
+            replace(/>/g, "&gt;").
+            replace(/</g, "&lt;").
+            replace(/\n/g, "<br/>");
+    }
+
 	function displayStack() {
 		var stack = pisc_get_stack(),
 			builtHTML = "";
 		for (var i = 0; i < stack.length; i++) {
 			var dropNum = stack.length - i - 1;
 			builtHTML += 
-				"<tr><td class='col'>" + stack[i].String() + "</td>" + 
+				"<tr><td class='col'>" + cleanStackDisplay(stack[i].String()) + "</td>" + 
 					"<td class='col-alt'>&lt;" + stack[i].Type() + "&gt;</td>" +
 					'<td class="col"><a href="javascript:app.removeStackElem(' + dropNum + ')">Remove</a></td>' +
 				"</tr>";
