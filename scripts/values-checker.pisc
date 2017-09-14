@@ -1,0 +1,36 @@
+{
+	{ "Approachability" "Integrity" "Robustness" }
+	{ "Availability" "Maintainability" "Safety" }
+	{ "Compatibilty" "Measureability" "Security" }
+	{ "Composability" "Operability" "Simplicity" } 
+	{ "Debuggability" "Performance" "Stability" }
+	{ "Expressiveness" "Portability" "Thoroughness" }
+	{ "Extensibility" "Resiliency" "Transparency" }
+	{ "Interoperability" "Rigor" "Velocity" }
+} :data
+
+"valueschecker.html" open-file-writer :OUT
+
+[ $OUT .write-line ] :writeln
+[ "\n" str-concat writeln ] :NL
+
+: process-cell ( cell -- str ) :name ${ "<input type=\"checkbox\">" $name  } ;
+
+: process-row ( row -- str ) :row ${ $row [ "<td>" swap process-cell "</td>" ] vec-each } ;
+
+"<html>" NL
+"<body>" NL
+"<form>" NL
+
+"<table>" NL
+$data [
+	"<tr>" writeln
+	process-row writeln
+	"</tr>" writeln
+] vec-each
+"</table>" NL
+"</form>" NL
+"</body>" NL
+"</html>" writeln
+
+$OUT .close
