@@ -36,7 +36,7 @@ function generate {
 function webbuild {
 	older_than ./cmd/playground/playground.js *.go stdlib/*.pisc && {
 		cd "./cmd/playground"
-		gopherjs build
+		gopherjs build -m
 		cd ../..
 	} 
 }
