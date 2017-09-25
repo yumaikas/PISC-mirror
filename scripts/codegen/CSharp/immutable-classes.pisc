@@ -11,6 +11,12 @@ String Message
   args gen-ctor-call
 ;
 
+: str-first-lower ( string -- String ) 
+   :s 
+   $s 0 1 str-substr str-lower :l
+   $l $s 1 $s len str-substr str-concat
+;
+
 : str-first-upper ( string -- String ) 
    :s 
    $s 0 1 str-substr str-upper :u
@@ -24,7 +30,7 @@ String Message
 : process-props ( str -- props ) 
     str-trim "\n" str-split [
         ";" "" str-replace " " str-split
-        splat :n :t <dict> $n <<-name $t <<-type
+        splat :n :t <dict> $n str-first-upper <<-name $t <<-type
     ] vec-map 
 ;
 
@@ -38,7 +44,7 @@ String Message
 	    ")" NL 
 	    "{" NL
 	    # Gen assignments
-	    $props [ ->name :name TAB "this." $name str-first-upper " = " $name ";" NL ] vec-each 
+	    $props [ ->name :name TAB "this." $name str-first-lower " = " $name ";" NL ] vec-each 
 	    "}" NL
 	}
 ;
@@ -49,7 +55,7 @@ String Message
     	"class " $name " {" NL
     	# emit public get-only properties
     	$props [ :q $q ->type :t $q ->name :n
-			TAB "public " $t " " $n " { get { return " $n str-first-upper "; } } " NL
+			TAB "public " $t " " $n " { get { return " $n str-first-lower "; } } " NL
     	] vec-each 
 	    NL
 
@@ -58,7 +64,7 @@ String Message
 
 	    # emit private backing fields
 	    $props [ :q $q ->type :t $q ->name :n 
-	        TAB "private readonly " $t " " $n str-first-upper ";" NL
+	        TAB "private readonly " $t " " $n str-first-lower ";" NL
 	    ] vec-each
 	   "}"
     }
