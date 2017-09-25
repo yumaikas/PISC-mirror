@@ -1,4 +1,4 @@
-#Change this function to set properties
+# Change this function to set properties
 : *props* ( -- data )
 "
 DateTime Time
@@ -11,15 +11,21 @@ String Message
   args gen-ctor-call
 ;
 
-: NL ( -- nl ) "<br/>" ;
+: str-first-upper ( string -- String ) 
+   :s 
+   $s 0 1 str-substr str-upper :u
+   $u $s 1 $s len str-substr str-concat
+;
+
+: NL ( -- nl ) "\n" ;
 
 : TAB ( -- t ) "&nbsp;&nbsp;&nbsp;&nbsp;" ;
 
 : process-props ( str -- props ) 
-str-trim "\n" str-split [
-    ";" "" str-replace " " str-split
-    splat :n :t <dict> $n <<-name $t <<-type
-] vec-map 
+    str-trim "\n" str-split [
+        ";" "" str-replace " " str-split
+        splat :n :t <dict> $n <<-name $t <<-type
+    ] vec-map 
 ;
 
 : gen-ctor ( name exposed-props -- str ) 
@@ -32,7 +38,7 @@ str-trim "\n" str-split [
 	    ")" NL 
 	    "{" NL
 	    # Gen assignments
-	    $props [ ->name :name TAB "this._" $name " = " $name ";" NL ] vec-each 
+	    $props [ ->name :name TAB "this." $name str-first-upper " = " $name ";" NL ] vec-each 
 	    "}" NL
 	}
 ;
@@ -43,7 +49,7 @@ str-trim "\n" str-split [
     	"class " $name " {" NL
     	# emit public get-only properties
     	$props [ :q $q ->type :t $q ->name :n
-			TAB "public " $t " " $n " { get { return _" $n "; } } " NL
+			TAB "public " $t " " $n " { get { return " $n str-first-upper "; } } " NL
     	] vec-each 
 	    NL
 
@@ -52,7 +58,7 @@ str-trim "\n" str-split [
 
 	    # emit private backing fields
 	    $props [ :q $q ->type :t $q ->name :n 
-	        TAB "private readonly " $t " _" $n ";" NL
+	        TAB "private readonly " $t " " $n str-first-upper ";" NL
 	    ] vec-each
 	   "}"
     }
