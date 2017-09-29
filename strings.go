@@ -196,6 +196,7 @@ func _strLower(m *Machine) error {
 	m.PushValue(String(strings.ToLower(str)))
 	return nil
 }
+
 func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)

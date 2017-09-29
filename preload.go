@@ -139,7 +139,6 @@ var StandardModules = []Module{
 	ModVectorCore,
 	ModSymbolCore,
 	ModRandomCore,
-	ModMetaQuoation,
 	ModPISCCore,
 }
 

@@ -87,8 +87,11 @@ type Machine struct {
 
 	// Each time we are asked for a symbol, supply the value here, then increment
 	SymbolIncr int64
-	// Keep a default database around...
-	NumDispatches int64
+
+	// Budgeting information
+	NumDispatches  int64
+	IsBudgeted     bool
+	DispatchBudget int64
 
 	DebugTrace string
 }
@@ -245,7 +248,12 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 		if err != nil {
 			return err
 		}
+		// Hrm...
 		m.NumDispatches++
+		if m.IsBudgeted && m.NumDispatches >= m.DispatchBudget {
+			return fmt.Errorf("You tried to do too much!")
+		}
+		// I wonder if this will be too much?
 		var intVal int
 		var floatVal float64
 		switch {

@@ -38,8 +38,7 @@ String Message
 	:props :name
 	${ 
 	    # Gen args
-          "public " $name "(" NL 
-
+        "public " $name "(" NL 
 	    { $props [ :q ${ TAB $q ->type " " $q ->name } ] vec-each } ${ "," NL } str-join
 	    ")" NL 
 	    "{" NL

@@ -4,7 +4,7 @@
 /* Seed the random number generator to keep from getting the same result each run */
 seed-rand-time
 
-: char-any ( c chars -- ? )
+: char-is-any? ( c chars -- ? )
 	:chars :c
  	f :isAny 
 	$chars [ $c str-eq? $isAny or :isAny ] each-char
@@ -16,7 +16,7 @@ seed-rand-time
 	"" :currWord
 	$input [ :c
 		/* Add words if  */
-	 	$c " \t\n\r\"" char-any :isSpace
+	 	$c " \t\n\r\"" char-is-any? :isSpace
 	 	$currWord len 0 > :haveData
 	 	$isSpace $haveData and [ 
 	 		/* Add the word if it's had a chance to be longer than 0 */

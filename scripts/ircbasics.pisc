@@ -1,9 +1,9 @@
 
 : handle-ping ( conn message -- was-ping ) 
 	:msg :conn
-	$msg .params " " str-join "PING" str-contains? :was-ping
+	$msg .command "PING" str-eq? :was-ping
 	$was-ping [
-		$msg " " str-split 1 vec-at :resp-key
+		$msg .params 0 vec-at :resp-key
 		${ "PONG :" $resp-key } :resp 
 		$resp $conn .send-message
 	] when
@@ -18,16 +18,17 @@
 	/* Get the server MOTD and the like */
 	"PASS 0" $conn .send-message
 	"NICK piscbot" $conn .send-message
-	$conn dup .recieve-message handle-ping 
+	$conn dup .recieve-message handle-ping drop
 	"USER piscbot piscbot i :piscbot" $conn .send-message
-	$conn dup .recieve-message handle-ping
+	$conn dup .recieve-message handle-ping drop
 
 	t :reading-motd
 	[ $reading-motd ] [
-		$conn .recieve-message-str :msg
-		$msg println
+		$conn .recieve-message :msg
+		$conn $msg handle-ping :junk
+		$msg .raw-str println
 		/* Waiting for a MODE command so we know that MOTD has been finished */
-		$msg "MODE" str-contains? not :reading-motd
+		$msg .command "MODE" str-eq? not :reading-motd
 	] while
 
 	"JOIN #botwars" $conn .send-message

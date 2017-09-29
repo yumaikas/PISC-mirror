@@ -1,22 +1,12 @@
 : handle-ping ( conn message -- was-ping )
     :msg :conn
-	$msg "PING" str-contains :was-ping
+	$msg .command "PING" str-eq? :was-ping
 	$was-ping [
-		$msg " " str-split 1 vec-at :resp-key
+		$msg .params 0 vec-at :resp-key
 		${ "PONG :" $resp-key } :resp 
 		$resp $conn .send-message
 	] when
 	$was-ping
-;
-
-: <ping-responder> ( conn -- resp ) 
-    :conn
-	[ :msg
-		$msg .command "PRIVMSG" str-eq? [
-			$msg .params 0 vec-at :replyId
-			${ "PRIVMSG " $replyId " ping!" } $conn .send-message
-		] when
-	]
 ;
 
 : irc-conf-defaults ( conf -- filledConf ) 
@@ -82,7 +72,8 @@
 	[ $reading-motd ] [
 		get-message :msg
 		$msg println
-		$msg .params " " str-join "MODE" str-contains not :reading-motd
+		$conn $msg handle-ping
+		$msg .command "MODE" str-eq? not :reading-motd
 	] while
 
 	${ "JOIN " $chanlist } send
@@ -98,7 +89,6 @@
 	$conn .close
 ;
 
-
 : irc-conf-ping-freenode! ( -- ) 
 	<dict> dup :conf
 		"wiki-bot" <<-nick
@@ -106,3 +96,56 @@
 		"irc.freenode.com:6667" <<-address
 	irc-conf-defaults irc-evented-server!
 ;
+
+: is-ping ( msg -- ? ) 
+		$msg .command "PRIVMSG"
+		$msg .params 1 vec-at "!ping" str-contains?
+	and
+;
+
+: <ping-responder> ( conn -- resp ) 
+    :conn
+	[ :msg
+		$msg is-ping? [
+			$msg .params 0 vec-at :replyId
+			${ "PRIVMSG " $replyId " ping!" } $conn .send-message
+		] when
+	]
+;
+
+: is-eval? ( msg -- ? ) :msg
+		$msg .command "PRIVMSG"
+		$msg .params " " str-join "$pisc" str-contains?
+	and
+;
+
+# This is curried 3 ways
+: <evalbot-responder> (  vm  -- [ conn - responder ] ) 
+:vm [ :conn
+	[ :msg
+		$msg is-eval? [
+			$msg .params 
+				dup 0 vec-at :replyId
+					1 vec-at :eval-code
+			$eval-code $vm .eval :body
+			${ "PRIVMSG" $replyId " " $body } $conn .send-message
+		] when
+	]
+]
+
+;
+
+: irc-eval-ludumdare! ( -- ) 
+	<irc-vm> :vm
+	<dict> 
+		"piscbot" <<-nick
+		"0" <<-pass
+		"irc.afternet.org:6667" <<-address
+		{ "#botwars" "#botspam" } <<-chanlist
+		{ 
+			<ping-responder> 
+			$vm <evalbot-responder>  
+		} <<-responders
+		irc-conf-defaults irc-evented-server!
+;
+
