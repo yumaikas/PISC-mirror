@@ -1,7 +1,9 @@
 package main
 
-import "pisc"
-import "fmt"
+import (
+	"fmt"
+	"pisc"
+)
 
 func main() {
 	m := &pisc.Machine{

@@ -44,11 +44,12 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 : exit-game ( game -- ) save-game quit-game ;
 
 : main ( -- )
-	<dict> opening-menu :curr-state
-	<dict> :game
-	[ t ] [ $game $curr-state call :curr-state ] while
-	getkey
-	back-black println CLS 
+    <dict> opening-menu :curr-state
+    <dict> :game
+    [ t ] [ $game $curr-state call :curr-state ] while
+    getkey
+    back-black println CLS 
+    quit-game
 ;
 
 main

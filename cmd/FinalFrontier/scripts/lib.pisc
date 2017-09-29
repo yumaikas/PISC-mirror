@@ -1,62 +1,9 @@
-: color-code ( code -- color-esc ) :code ${ ESC "[" $code "m" } ;
-: CLS ( -- ) ${ ESC "[2J" } print ;
-: NL ( -- NL ) "\n" ;
-: NNL ( -- NL ) NL NL ;
 
-# Fore-colors
-: black ( -- esc-black ) "30" color-code ;
-: red ( -- esc-red ) "31" color-code ;
-: green ( -- esc-green ) "32" color-code ;
-: yellow ( -- esc-yellow ) "33" color-code ;
-: blue ( -- esc-blue ) "34" color-code ;
-: magenta ( -- esc-magenta ) "35" color-code ;
-: cyan ( -- esc-cyan ) "36" color-code ;
-: white ( -- esc-white ) "37" color-code ;
+term-mode "WINDOWS" eq [ 
+    "scripts\\term_win.pisc" game-script
+] when
 
-# back-colors
-: back-black ( -- esc-black ) "40" color-code ;
-: back-red ( -- esc-red ) "41" color-code ;
-: back-green ( -- esc-green ) "42" color-code ;
-: back-yellow ( -- esc-yellow ) "43" color-code ;
-: back-blue ( -- esc-blue ) "44" color-code ;
-: back-magenta ( -- esc-magenta ) "45" color-code ;
-: back-cyan ( -- esc-cyan ) "46" color-code ;
-: back-white ( -- esc-white ) "47" color-code ;
+term-mode "POSIX" eq [ 
+    "scripts\\term_posix.pisc" game-script
+] when
 
-: is-enter? ( k -- ? ) 13 = ;
-: is-arrow? ( k -- ? ) 224 = ;
-
-: is-up? ( k -- ? ) 72 = ;
-: is-down? ( k -- ? ) 80 = ;
-: is-right? ( k -- ? ) 77 = ;
-: is-left? ( k -- ? ) 75 = ;
-
-: is-y? ( k -- ? ) 121 = ;
-: is-n? ( k -- ? ) 110 = ;
-: is-yn? ( k -- ? )  [ is-y? ] [ is-n? ] bi or ;
-
-: wait-enter ( -- ) 
-	[ getkey is-enter? ] [ ] while
-;
-
-: <up-down-menu> ( num-opts -- obj ) 
-	:num
-	0 :m-idx
-	t :choosing
-	[ 
-		getkey :k
-		$k is-enter? [ f :choosing ] when 
-		$k is-arrow? [ 
-			getkey :dir
-			$dir is-up? [ --m-idx ] when
-			$dir is-down? [ ++m-idx ] when
-			$m-idx 4 mod :m-idx
-			$m-idx 0 < [ 3 :m-idx ] when
-		] when
-	] :check
-	<dict> 
-	[ $choosing ] <<-done?
-	[ $m-idx ] <<-chosen-idx
-	[ check ] <<-proc-key
-	[ $m-idx = [ back-white ] when ] <<-highlight
-;
