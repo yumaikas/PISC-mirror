@@ -1,5 +1,6 @@
 : color-code ( code -- color-esc ) :code ${ ESC "[" $code "m" } ;
-# Clear screen and move curor to top-left
+
+# Clear screen and move cursor to top-left
 : CLS ( -- ) ${ ESC "[2J" ESC "[;H" } print ;
 : NL ( -- NL ) "\r\n" ;
 : NNL ( -- NL ) NL NL ;

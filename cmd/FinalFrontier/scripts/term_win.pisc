@@ -1,6 +1,8 @@
 : color-code ( code -- color-esc ) :code ${ ESC "[" $code "m" } ;
-: CLS ( -- ) ${ ESC "[2J" } print ;
-: NL ( -- NL ) "\\n" ;
+
+# Clear screen and move cursor to top-left
+: CLS ( -- ) ${ ESC "[2J" ESC "[H" } print ;
+: NL ( -- NL ) "\r\n" ;
 : NNL ( -- NL ) NL NL ;
 
 # Fore-colors

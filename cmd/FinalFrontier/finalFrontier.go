@@ -43,5 +43,6 @@ func loadFinalFrontier(m *pisc.Machine) error {
 	m.AddGoWord("getkey", "( -- keyval )", getch)
 	m.AddGoWord("game-script", "( filename -- ? ) ", loadGameScript)
 	m.AddGoWord("quit-game", "( -- )", exit)
+    os_overload(m)
 	return nil
 }

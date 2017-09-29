@@ -115,10 +115,12 @@ func (s String) Type() string {
 
 
 # DEBUG
+/*
 "out.txt" import :d
 
 "out.txt" $d save-state
 
 "TODO: Add tests!!" println
 "TODO: Consider switching dicts to use critbit trees" println
+*/
 # GUBED

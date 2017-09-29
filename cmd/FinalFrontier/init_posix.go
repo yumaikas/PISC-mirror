@@ -26,6 +26,10 @@ func de_init_term() error {
 	return pty.Restore()
 }
 
+func os_overload(m *pisc.Machine) error {
+    return nil
+}
+
 func getch(m *pisc.Machine) error {
 	num, err := pty.Read(buf)
 

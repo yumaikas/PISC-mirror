@@ -25,7 +25,7 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 			"  " 1 MENU "Load Game" CHOICE NNL
 			"  " 2 MENU "Options" CHOICE NNL
 			"  " 3 MENU "Return to real life" CHOICE NNL
-			white "Up/Down to choose, Enter to confirm "
+			white "Up/Down to choose, Enter to confirm " NL
 		} print
 
 		$m .proc-key
