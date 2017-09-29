@@ -31,7 +31,8 @@
 		$msg .command "MODE" str-eq? not :reading-motd
 	] while
 
-	"JOIN #botwars" $conn .send-message
+	"JOIN #alakajam" $conn .send-message
+	"PRIVMSG #alakajam :!ping-bot to test me." $conn .send-message
 
 	[ t ] [
 		"Awaiting a message" println
@@ -39,8 +40,8 @@
 		${ $msg .command " " } print
 		$conn $msg handle-ping not [
 			${ "<" $msg .params "><" str-join ">" } println
-			$msg .params " " str-join "!ping" str-contains? [
-				"PRIVMSG #botwars :pong!" $conn .send-message
+			$msg .params " " str-join "!ping-bot" str-contains? [
+				"PRIVMSG #alakajam :pong-bot!" $conn .send-message
 			] when
 		] when
 	] while
