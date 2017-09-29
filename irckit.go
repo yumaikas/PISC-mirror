@@ -188,19 +188,20 @@ func (ircVM *Machine) ircRestart(m *Machine) error {
 	return nil
 }
 
-func saveEval(m *Machine, code string) (err error) {
+func safeEval(m *Machine, code string) (err error) {
 	defer func() {
 		pErr := recover()
 		if pErr != nil {
-			err = pErr
+			err = fmt.Errorf("Error while running irc eval %v", pErr)
 		}
 	}()
-	err = ircVM.ExecuteString(code, CodePosition{Source: "IRC Connection"})
+	err = m.ExecuteString(code, CodePosition{Source: "IRC Connection"})
+	return
 }
 
 func (ircVM *Machine) evalOnVM(m *Machine) error {
 	code := string(m.PopValue().(String))
-	err := saveEval(ircVM, code)
+	err := safeEval(ircVM, code)
 	// If there is an error, put it on the stack
 	if err != nil {
 		m.PushValue(&Vector{
