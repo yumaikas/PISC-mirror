@@ -19,6 +19,9 @@ function older_than() {
   return 1  # failure
 }
 
+# For now, force re-packing of bindata
+rm bindata.go
+
 older_than bindata.go strings/*.pisc && {
   echo "Packing scripts"
   go-bindata -pkg main -o bindata.go scripts/...
