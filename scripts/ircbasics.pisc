@@ -17,7 +17,7 @@
 
 	/* Get the server MOTD and the like */
 	"PASS 0" $conn .send-message
-	"NICK piscbot" $conn .send-message
+	"NICK pisc-bot" $conn .send-message
 	$conn dup .recieve-message handle-ping drop
 	"USER piscbot piscbot i :piscbot" $conn .send-message
 	$conn dup .recieve-message handle-ping drop
@@ -31,17 +31,21 @@
 		$msg .command "MODE" str-eq? not :reading-motd
 	] while
 
-	"JOIN #alakajam" $conn .send-message
-	"PRIVMSG #alakajam :!ping-bot to test me." $conn .send-message
+	"JOIN #botwars" $conn .send-message
+	# "PRIVMSG #alakajam :!ping-bot to test me." $conn .send-message
 
 	[ t ] [
 		"Awaiting a message" println
 		$conn .recieve-message :msg
-		${ $msg .command " " } print
+		${ $msg .command " " } println
 		$conn $msg handle-ping not [
 			${ "<" $msg .params "><" str-join ">" } println
-			$msg .params " " str-join "!ping-bot" str-contains? [
-				"PRIVMSG #alakajam :pong-bot!" $conn .send-message
+			$msg .params " " str-join :args
+			$args "!ping-bot" str-contains? [
+				"PRIVMSG #botwars :pong-bot!" $conn .send-message
+			] when
+			$args "!ping-leave" str-contains? [
+				"QUIT :Fare thee well!" $conn .send-message
 			] when
 		] when
 	] while
