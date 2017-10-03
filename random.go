@@ -14,7 +14,6 @@ var ModRandomCore = Module{
 }
 
 func loadRandy(m *Machine) error {
-
 	m.HelpDocs["seed-rand-time"] = "( -- ) Seeds the PSRNG with the current time"
 	m.PredefinedWords["seed-rand-time"] = NilWord(func(m *Machine) {
 		rand.Seed(time.Now().UTC().UnixNano())

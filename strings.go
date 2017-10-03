@@ -3,6 +3,7 @@ package pisc
 import (
 	"bufio"
 	//"regexp"
+	//"fmt"
 	"strconv"
 	"strings"
 )
@@ -51,11 +52,17 @@ func _strToInt(m *Machine) error {
 	}
 }
 
+var emptyStr = String("")
+
 // Potential TODO: Review for performance?
 func _strJoin(m *Machine) error {
 	sep := m.PopValue().(String).String()
 	elems := m.PopValue().(*Vector).Elements
 	str := ""
+	if len(elems) == 0 {
+		m.PushValue(emptyStr)
+		return nil
+	}
 	for _, val := range elems[:len(elems)-1] {
 		str += val.String() + sep
 	}

@@ -131,7 +131,15 @@ func noop(m *Machine) error {
 	return nil
 }
 
-func (m *Machine) ExecuteString(code string, pos CodePosition) error {
+func (m *Machine) ExecuteString(code string, pos CodePosition) (err error) {
+	/*
+		defer func() {
+			val := recover()
+			if val != nil {
+				err = fmt.Errorf("Fatal panic while running code: %v", val)
+			}
+		}()
+	*/
 	p, err := stringToQuotation(code, pos)
 	if err != nil {
 		return err

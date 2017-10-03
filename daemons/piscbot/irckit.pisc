@@ -115,7 +115,7 @@
 : clean-eval-output ( vec -- str )
     "|" str-join
     "\n" " " str-replace 
-    dup len 100 > [ 0 100 str-substr " (Truncated...)" str-concat ] when
+    dup len 250 > [ 0 250 str-substr " (Truncated...)" str-concat ] when
 ;
 
 : clean-eval-code ( str -- code ) 
@@ -200,13 +200,21 @@
     irc-evented-server!
 ;
 
+: prep-vm ( vm -- ) :vm
+    "vm-prep.pisc" get-str-at-path $vm .eval println 
+    "Prepped!" println
+;
+
 : irc-eval-freenode! ( -- ) 
 	<irc-vm> :vm
+    $vm prep-vm
 	<dict> 
 		"piscbot" <<-nick
 		"0" <<-pass
 		"irc.freenode.org:6667" <<-address
-		{ "#botwars" "#proglangdesign" "#lobsters" } <<-chanlist
+		{
+         # "#botwars" "#proglangdesign" "#lobsters"
+         "#pisc" } <<-chanlist
 		{ 
 			<ping-responder>
 			$vm <evalbot-responder>

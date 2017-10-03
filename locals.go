@@ -45,6 +45,7 @@ func loadLocalCore(m *Machine) error {
 			m.PushValue(val)
 			return nil
 		} else {
+			fmt.Printf("Can't find %v", varName)
 			return ErrLocalNotFound
 		}
 	})

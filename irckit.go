@@ -28,12 +28,12 @@ func (conn *ircConn) write(m *Machine) error {
 	str := m.PopValue().String()
 	msg := irc.ParseMessage(str)
 
-	fmt.Println(msg)
 	if msg == nil {
 		return InvalidIRCMessage
 	}
 
 	err := (*irc.Conn)(conn).Encode(msg)
+	go func() { fmt.Println(msg) }()
 	if err != nil {
 		return err
 	}
@@ -169,7 +169,6 @@ func buildIRCEvalVM() (*Machine, error) {
 }
 
 func (ircVM *Machine) ircRestart(m *Machine) error {
-
 	ircVM.ExecuteString("IRC_GLOBALS", CodePosition{Source: "irckit.go"})
 	vmGlobals := ircVM.PopValue().(Dict)
 
@@ -210,12 +209,6 @@ func (ircVM *Machine) evalOnVM(m *Machine) error {
 	} else {
 		m.PushValue(&Vector{Elements: ircVM.Values})
 	}
-	// Clean up the string
-	err = m.ExecuteString(`
-		"|" str-join 
-		"\n" " " str-replace :output
-		$output len 100 > [ ${ $output 0 100 str-substr " (Truncated...)" } ] [ $output ] if
-`, CodePosition{Source: "irckit.go"})
 
 	// Reset the intermediate VM state.
 	ircVM.Values = make([]StackEntry, 0)
@@ -236,9 +229,18 @@ func stackIRCEvalVM(m *Machine) error {
 	return nil
 }
 
-// TODO: Load IRCKit here, using IRCX library
 func loadIRCKit(m *Machine) error {
 	m.AddGoWord("irc-dial", "( addr-str -- conn )", ircDial)
 	m.AddGoWord("<irc-vm>", "( -- vm )", stackIRCEvalVM)
 	return nil
 }
+
+// IDEAS:
+/*
+
+:ON JOIN ( %{ .nick .channel } -- )
+    ->>nick :nick
+    ->channel :channel
+;
+
+*/

@@ -1,0 +1,29 @@
+
+IRC_GLOBALS 
+    {
+        "1/ For every set of rules, there are intended behaviors which are encoded in the rules -simpson"
+        "2/ And there are unintended behaviors which aries from interactions between rules and other entailments. Always -simpson"
+        "3/ When making rules, be aware that they can interact in ways you cannot anticipate -simpson"
+        "Antijokes are jokes. Antipatterns are patterns. Antipasto is not pasta. -simpson"
+        "Is advertizing a tax on the computer-illiterate? -simpson"
+        "New forms of interactivity are often addictive -yumaikas"
+
+     } 
+ <-quotes
+
+: d6 ( -- roll ) 1 6 range-rand ;
+: d12 ( -- roll ) 1 12 range-rand ;
+: d20 ( -- roll ) 1 20 range-rand ;
+: greet ( username -- greeting ) :n ${ "Hello, " $n "!" } ;
+: dice ( dice  -- total ) 
+    [
+         0 :tot [ $tot + :tot ] vec-each 
+         $tot
+    ] error? [ 
+        clear-stack "Usage: $pisc { numbers/d6/d12/d20 } dice "  
+    ] when 
+;
+
+: quote ( -- quote ) IRC_GLOBALS ->quotes choice ; 
+: add-quote ( quote -- ) IRC_GLOBALS ->quotes swap vec-push ;
+
