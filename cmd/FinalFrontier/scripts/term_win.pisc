@@ -37,28 +37,3 @@
 : is-n? ( k -- ? ) 110 = ;
 : is-yn? ( k -- ? )  [ is-y? ] [ is-n? ] bi or ;
 
-: wait-enter ( -- ) 
-	[ getkey is-enter? ] [ ] while
-;
-
-: <up-down-menu> ( num-opts -- obj ) 
-	:num
-	0 :m-idx
-	t :choosing
-	[ 
-		getkey :k
-		$k is-enter? [ f :choosing ] when 
-		$k is-arrow? [ 
-			getkey :dir
-			$dir is-up? [ --m-idx ] when
-			$dir is-down? [ ++m-idx ] when
-			$m-idx 4 mod :m-idx
-			$m-idx 0 < [ 3 :m-idx ] when
-		] when
-	] :check
-	<dict> 
-	[ $choosing ] <<-done?
-	[ $m-idx ] <<-chosen-idx
-	[ check ] <<-proc-key
-	[ $m-idx = [ back-white ] when ] <<-highlight
-;

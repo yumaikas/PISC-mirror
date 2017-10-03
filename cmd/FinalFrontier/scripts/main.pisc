@@ -6,6 +6,7 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 "scripts\\lib.pisc" game-script
 "scripts\\markets.pisc" game-script
 "scripts\\intro.pisc" game-script
+"scripts\\saving.pisc" game-script
 
 : opening-menu ( game -- next )
 	:game
@@ -38,9 +39,9 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 	} $m .chosen-idx vec-at 
 ;
 
-: load-game ( game --  ) :game CLS "TODO: Implement game-loads" println [ " " . ] ;
-: save-game ( game -- ) :game CLS "TODO: Implement game-saves" println [ " " . ] ;
-: options ( -- ) :game CLS "TODO: Implement game options " println [ " " . ] ;
+: load-game ( game --  ) :game CLS ${ "TODO: Implement game-loads" NL } println [ " " . ] ;
+: save-game ( game -- ) :game CLS ${ "TODO: Implement game-saves" NL } println [ " " . ] ;
+: options ( -- ) :game CLS ${ "TODO: Implement game options" NL } println [ " " . ] ;
 : exit-game ( game -- ) save-game quit-game ;
 
 : main ( -- )

@@ -1,4 +1,3 @@
-
 term-mode "WINDOWS" eq [ 
     "scripts\\term_win.pisc" game-script
 ] when
@@ -7,3 +6,28 @@ term-mode "POSIX" eq [
     "scripts\\term_posix.pisc" game-script
 ] when
 
+: wait-enter ( -- ) 
+	[ getkey is-enter? ] [ ] while
+;
+
+: <up-down-menu> ( num-opts -- obj ) 
+	:num
+	0 :m-idx
+	t :choosing
+	[ 
+		getkey :k
+		$k is-enter? [ f :choosing ] when 
+		$k is-arrow? [
+			getkey :dir
+			$dir is-up? [ --m-idx ] when
+			$dir is-down? [ ++m-idx ] when
+			$m-idx $num mod :m-idx
+			$m-idx 0 < [ $num 1 - :m-idx ] when
+		] when
+	] :check
+	<dict> 
+	[ $choosing ] <<-done?
+	[ $m-idx ] <<-chosen-idx
+	[ check ] <<-proc-key
+	[ $m-idx = [ back-white ] when ] <<-highlight
+;

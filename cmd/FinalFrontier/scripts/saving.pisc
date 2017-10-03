@@ -110,7 +110,7 @@ func (s String) Type() string {
 
 : write-int ( ctx int -- ) >string swap ->OUT .write-string ;
 : write-string ( ctx str -- ) quote-safe wrap-quotes swap ->OUT .write-string ; 
-: write-double ( ctx double --  )  >string swap ->OUT .write-string ;
+: write-double ( ctx double -- ) >string swap ->OUT .write-string ;
 : write-bool ( ctx bool --  ) [ :ctx ] dip [ "t" ] [ "f" ] if $ctx ->OUT .write-string ;
 
 
