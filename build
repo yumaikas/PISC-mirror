@@ -28,6 +28,7 @@ cd "$PISCDIR"
 function generate {
 	echo "Generating..." >&2
 	older_than bindata.go stdlib/*.pisc && {
+        # TODO: Put in a go get command for go-bindata
 		echo "Generating bindata" >&2 
 		go-bindata -pkg pisc stdlib/...
 	}
@@ -36,6 +37,7 @@ function generate {
 function webbuild {
 	older_than ./cmd/playground/playground.js *.go stdlib/*.pisc && {
 		cd "./cmd/playground"
+        # TODO: Put in a go get command for gopherjs
 		gopherjs build -m
 		cd ../..
 	} 
@@ -53,6 +55,7 @@ function upload {
 function interpinstall {
 	generate 
 	cd "./cmd/pisc"
+    go get
 	echo "Installing new PISC interpreter"
 	go install 
 	cd "../.."
