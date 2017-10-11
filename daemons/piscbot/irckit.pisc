@@ -52,7 +52,7 @@
 	"Before trying to connect" println
 	$conf ->address irc-dial :conn /* TODO: Figure out how to handle errors here, if at all */
 	[ $conn .send-message ] :send
-	[ $conn dup .recieve-message handle-ping ] :check-ping
+	[ $conn dup .recieve-message handle-ping drop ] :check-ping
 	[ $conn .recieve-message ] :get-message
 
 	$conf ->chanlist clean-chanlist :chanlist
@@ -72,7 +72,7 @@
 	[ $reading-motd ] [
 		get-message :msg
 		$msg .params " " str-join println
-		$conn $msg handle-ping
+		$conn $msg handle-ping drop
 		$msg .command "MODE" str-eq? not :reading-motd
 	] while
 
@@ -82,6 +82,8 @@
 		get-message :msg
 		$conn $msg handle-ping not [
 			# This is a sandboxing technique
+            log-stack
+            ${ "Stack-length: " stack-len } println
 			$responders [ :resp $msg $resp call ] vec-each 
 		] when
 	] while
@@ -91,7 +93,7 @@
 
 : is-ping? ( msg -- ? ) :msg
 		$msg .command "PRIVMSG" str-eq?
-		$msg .params len 1 > [ $msg .params 1 vec-at "!ping" str-contains? ] when
+		$msg .params len 1 > [ $msg .params 1 vec-at "!ping" str-contains? ] [ f ] if
 	and
 ;
 
@@ -100,7 +102,7 @@
         [ :msg
             $msg is-ping? [
                 $msg .params 0 vec-at :replyId
-                ${ "PRIVMSG " $replyId " ping!" } $conn .send-message
+                ${ "PRIVMSG " $replyId " pong!" } $conn .send-message
             ] when
         ]
     ]
@@ -185,24 +187,25 @@
 	irc-conf-defaults irc-evented-server!
 ;
 
+: prep-vm ( vm -- ) :vm
+    "vm-prep.pisc" get-str-at-path $vm .eval println 
+    "Prepped!" println
+;
+
 : irc-eval-ludumdare! ( -- ) 
 	<irc-vm> :vm
+    $vm prep-vm
 	<dict> 
 		"piscbot" <<-nick
 		"0" <<-pass
 		"irc.afternet.org:6667" <<-address
-		{ "#botwars" "#botspam" } <<-chanlist
+		{ "#botwars" "#botspam" "#ludumdare" "#alakajam" } <<-chanlist
 		{ 
 			<ping-responder>
 			$vm <evalbot-responder>
             <help-responder>
 		} <<-responders
     irc-evented-server!
-;
-
-: prep-vm ( vm -- ) :vm
-    "vm-prep.pisc" get-str-at-path $vm .eval println 
-    "Prepped!" println
 ;
 
 : irc-eval-freenode! ( -- ) 
@@ -212,9 +215,10 @@
 		"piscbot" <<-nick
 		"0" <<-pass
 		"irc.freenode.org:6667" <<-address
-		{
-         # "#botwars" "#proglangdesign" "#lobsters"
-         "#pisc" } <<-chanlist
+		{ 
+            "#botwars" "#proglangdesign" "#lobsters"
+            "#pisc"
+        } <<-chanlist
 		{ 
 			<ping-responder>
 			$vm <evalbot-responder>

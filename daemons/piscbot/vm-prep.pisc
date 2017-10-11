@@ -1,4 +1,3 @@
-
 IRC_GLOBALS 
     {
         "1/ For every set of rules, there are intended behaviors which are encoded in the rules -simpson"
@@ -7,7 +6,7 @@ IRC_GLOBALS
         "Antijokes are jokes. Antipatterns are patterns. Antipasto is not pasta. -simpson"
         "Is advertizing a tax on the computer-illiterate? -simpson"
         "New forms of interactivity are often addictive -yumaikas"
-
+        "THIS IS NOT ZORK -Aurel300"
      } 
  <-quotes
 
@@ -15,15 +14,17 @@ IRC_GLOBALS
 : d12 ( -- roll ) 1 12 range-rand ;
 : d20 ( -- roll ) 1 20 range-rand ;
 : greet ( username -- greeting ) :n ${ "Hello, " $n "!" } ;
-: dice ( dice  -- total ) 
-    [
-         0 :tot [ $tot + :tot ] vec-each 
-         $tot
-    ] error? [ 
-        clear-stack "Usage: $pisc { numbers/d6/d12/d20 } dice "  
-    ] when 
-;
+: dice ( dice  -- total ) 0 swap [ + ] vec-each ;
 
 : quote ( -- quote ) IRC_GLOBALS ->quotes choice ; 
 : add-quote ( quote -- ) IRC_GLOBALS ->quotes swap vec-push ;
 
+: create-game-for-me ( -- message ) "You are in a _forest_, which direction _(n/s/e/w)_ do you go? (navigate by joining _marks_ after game-, i.e game-forest-n)" ;
+
+: game-forest-n ( -- message ) "A clearing opens. You smell honeysuckle, see Queen Anne's lace and like what you see" ;
+: game-forest-w ( -- message ) "The sun is setting in the distance, casting an amber tint over the trees" ;
+: game-forest-e ( -- message ) "There's a _cave_ here, it seems to emit a faint azure glow." ;
+: game-forest-s ( -- message ) "Your _home_, nestled in a glade. There is a _garden_ near it" ;
+: game-home ( -- message ) "You see your journal and pen. The forest calls, however" ;
+: game-cave ( -- message ) "As you enter the cave, you become enraptured by blue. Transfixed on the glow, you are eaten by a Grue!" ;
+: game-garden ( -- message ) "The tomatoes and cabbages are nearing the harvest time." ;

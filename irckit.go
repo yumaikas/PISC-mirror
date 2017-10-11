@@ -1,11 +1,11 @@
 package pisc
 
 import (
+	"fmt"
 	"time"
 
 	"gopkg.in/sorcix/irc.v2"
 )
-import "fmt"
 
 var ModIRCKit = Module{
 	Author:    "Andrew Owen",
@@ -86,6 +86,9 @@ func (conn *ircConn) readMessage(m *Machine) error {
 		return err
 	}
 
+	buf := _msg.Bytes()
+
+	go func() { fmt.Println("READ:", string(buf)) }()
 	msg := (*ircMessage)(_msg)
 	msgDict := Dict{
 		"command":       GoFunc(msg.getMessageCommand),
@@ -106,6 +109,7 @@ func (conn *ircConn) readMessageString(m *Machine) error {
 		return err
 	}
 	str := String(msg.Bytes())
+	go func() { fmt.Println("READ:", string(str)) }()
 	m.PushValue(str)
 	return nil
 }

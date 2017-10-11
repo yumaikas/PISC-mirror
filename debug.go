@@ -28,6 +28,12 @@ func getNumGoWords(m *Machine) error {
 	return nil
 }
 
+func getStackLen(m *Machine) error {
+	l := len(m.Values)
+	m.PushValue(Integer(l))
+	return nil
+}
+
 func getNumPiscWords(m *Machine) error {
 	m.PushValue(Integer(len(m.DefinedWords)))
 	return nil
@@ -38,7 +44,25 @@ func getNumPrefixWords(m *Machine) error {
 	return nil
 }
 
+func logStack(m *Machine) error {
+	arr := make([]string, len(m.Values))
+	for i, v := range m.Values {
+		arr[i] = v.String()
+	}
+
+	fmt.Println(strings.Join(arr, "\n"))
+	return nil
+}
+
 func loadDebugCore(m *Machine) error {
+
+	m.AddGoWord("log-stack",
+		"( -- )",
+		logStack)
+
+	m.AddGoWord("stack-len",
+		"( -- stack-len )",
+		getStackLen)
 
 	m.AddGoWord("count-go-words",
 		"( -- num-go-words )",
