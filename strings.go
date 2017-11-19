@@ -2,6 +2,8 @@ package pisc
 
 import (
 	"bufio"
+	"unicode"
+	"unicode/utf8"
 	//"regexp"
 	//"fmt"
 	"strconv"
@@ -204,6 +206,75 @@ func _strLower(m *Machine) error {
 	return nil
 }
 
+// ( str -- reversed-str )
+func _strReverse(m *Machine) error {
+	str := m.PopValue().String()
+
+	// Code from: http://rosettacode.org/wiki/Reverse_a_string#Go
+	r := make([]rune, len(str))
+	start := len(str)
+	for _, c := range str {
+		if c != utf8.RuneError {
+			start--
+			r[start] = c
+		}
+	}
+	m.PushValue(String(string(r[start:])))
+	return nil
+}
+
+// ( str -- reversed-bytes )
+func _strReverseBytes(m *Machine) error {
+	str := m.PopValue().String()
+
+	// Code inspired by: http://rosettacode.org/wiki/Reverse_a_string#Go
+	r := make([]byte, len(str))
+	for i := 0; i < len(str); i++ {
+		r[i] = str[len(str)-1-i]
+	}
+
+	m.PushValue(String(string(r)))
+	return nil
+}
+
+// ( str -- reversed-Graphemes )
+func _strReverseGraphemes(m *Machine) error {
+	str := m.PopValue().String()
+
+	// Code inspired by: http://rosettacode.org/wiki/Reverse_a_string#Go
+	if str == "" {
+		m.PushValue(String(""))
+		return nil
+	}
+
+	source := []rune(str)
+	result := make([]rune, len(source))
+	start := len(result)
+
+	for i := 0; i < len(source); {
+		// Continue past invalid UTF-8
+		if source[i] == utf8.RuneError {
+			i++
+			continue
+		}
+
+		j := i + 1
+		for j < len(source) && (unicode.Is(unicode.Mn, source[j]) ||
+			unicode.Is(unicode.Me, source[j]) ||
+			unicode.Is(unicode.Mc, source[j])) {
+			j++
+		}
+
+		for k := j - 1; k >= i; k-- {
+			start--
+			result[start] = source[k]
+		}
+		i = j
+	}
+	m.PushValue(String(string(result[start:])))
+	return nil
+}
+
 func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
@@ -231,6 +302,10 @@ func loadStringCore(m *Machine) error {
 
 	m.AddGoWord("str-upper", " ( str -- upper-str ) ", _strUpper)
 	m.AddGoWord("str-lower", " ( str -- lower-str ) ", _strLower)
+
+	m.AddGoWord("str-reverse", " ( str -- reversed-runes ) ", _strReverse)
+	m.AddGoWord("str-reverse-bytes", " ( str -- reversed-bytes ) ", _strReverseBytes)
+	m.AddGoWord("str-reverse-graphemes", " ( str -- reversed-graphemes ) ", _strReverseGraphemes)
 
 	return m.ImportPISCAsset("stdlib/strings.pisc")
 }

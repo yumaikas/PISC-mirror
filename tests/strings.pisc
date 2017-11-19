@@ -86,4 +86,18 @@ ghi"
 	"str-lower" [ "ABC" str-lower ] [ "abc" ] assert
 ] $string-suite .addTest
 
+"Basic reversing of strings" [
+	"str-reverse" [ "fdsa" str-reverse ] [ "asdf" ] assert
+	"str-reverse-graphemes" [ "fdsa" str-reverse-graphemes ] [ "asdf" ] assert
+	"str-reverse-bytes" [ "fdsa" str-reverse-bytes ] [ "asdf" ] assert
+] $string-suite .addTest
+
+"Advanced reversing of strings" [
+"" println
+"TODO: Find a way to turn this into byte-level comparisons instead" println
+	# "str-reverse" [ "as⃝df̅" str-reverse ] [ " ̅fd⃝sa" ] assert
+	# "str-reverse-graphemes" [ "as⃝df̅" str-reverse-graphemes ] [ "f̅ds⃝a" ] assert
+	"str-reverse-bytes" [ "as⃝df̅" str-reverse-bytes ] [ "��fd���sa" ] assert
+] $string-suite .addTest
+
 $string-suite .runTests
