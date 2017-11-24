@@ -14,6 +14,12 @@ func NilWord(f func(*Machine)) GoWord {
 	})
 }
 
+func (m *Machine) AddGoWordWithStack(name, stackEffect, docstring string, impl GoWord) {
+	m.DefinedStackComments[name] = stackEffect
+	m.HelpDocs[name] = docstring
+	m.PredefinedWords[name] = impl
+}
+
 func (m *Machine) AddGoWord(name, docstring string, impl GoWord) {
 	m.HelpDocs[name] = docstring
 	m.PredefinedWords[name] = impl
@@ -146,22 +152,49 @@ func loadPISCCore(m *Machine) error {
 	if m.PredefinedWords == nil {
 		panic("Uninitialized stack machine!")
 	}
-	m.AddGoWord("t", "( -- t )", t)
-	m.AddGoWord("f", "( -- f )", f)
+	m.AddGoWordWithStack("t", "( -- t )", "The True constant", t)
+	m.AddGoWordWithStack("f", "( -- f )", "The False constant", f)
 	m.AddGoWord("dip", "( a quot -- ... a )", dip)
 	m.AddGoWord("stack-empty?", "( -- empty? )", isStackEmpty)
 	m.AddGoWord("typeof", "( a -- typeofa )", typeof)
-	m.AddGoWord("?", "( a b ? -- a/b )", condOperator)
-	m.AddGoWord("call", "( quot -- ... )", call)
+	m.AddGoWordWithStack("?",
+		"( a b ? -- a/b )",
+		"The contintional operator: Takes a, b and a boolean. \n"+
+			"Returns a if the boolean is true, b if it is false",
+		condOperator)
+	m.AddGoWordWithStack(
+		"call",
+		"( quot -- ... )",
+		"Call the quotation or callable that is on the stack",
+		call)
+
+	m.AddGoWordWithStack("len",
+		"( e -- lenOfE )",
+		"Check the length of a given collection or string using a Go-side Length interface ",
+		lenEntry)
+	m.AddGoWordWithStack("eq",
+		" ( a b -- same? ) ",
+		"Run shallow equality",
+		runEq)
+	// Discourage use of reflection based eq via long name
+	m.AddGoWordWithStack(
+		"deep-slow-reflect-eq",
+		"( a b -- same? )",
+		"Run a deep, refection based comparison. Slower than reflect-eq, but easier to use for vectors",
+		reflectEq)
+	m.AddGoWordWithStack(
+		"error",
+		"( message -- !! )",
+		"Create an error from msg",
+		errorFromEntry)
+	m.AddGoWord("module-loaded?",
+		"( module-name -- loaded? )", isModuleLoaded)
+
+	// These words are important for combinators,
+	// but aren't documented on the PISC side br
 	m.PredefinedWords["pick-dup"] = GoWord(pickDup)
 	m.PredefinedWords["pick-drop"] = GoWord(pickDrop)
 	m.PredefinedWords["pick-del"] = GoWord(pickDel)
-	m.AddGoWord("len", "( e -- lenOfE ) ", lenEntry)
-	m.AddGoWord("eq", " ( a b -- same? ) ", runEq)
-	// Discourage use of reflection based eq via long name
-	m.AddGoWord("deep-slow-reflect-eq", "( a b -- same? )", reflectEq)
-	m.AddGoWord("error", "( msg -- !! )", errorFromEntry)
-	m.AddGoWord("module-loaded?", "( module-name -- loaded? )", isModuleLoaded)
 
 	return m.ImportPISCAsset("stdlib/std_lib.pisc")
 }

@@ -107,15 +107,42 @@ func _dictEachKey(m *Machine) error {
 
 func loadDictWords(m *Machine) error {
 
-	m.AddGoWord("<dict>", "( -- dict ) Place an empty dictionary on the stack", _buildDict)
-	m.AddGoWord("dict-has-key?", "( dict key -- has-key? )", _dictHasKey)
-	m.AddGoWord("dict-set", "( dict value key -- )", _dictSet)
-	m.AddGoWord("dict-push", "( dict value key -- dict )", _dictPush)
+	m.AddGoWordWithStack("<dict>",
+		"( -- dict )",
+		"Place an empty dictionary on the stack",
+		_buildDict)
+	m.AddGoWordWithStack("dict-has-key?",
+		"( dict key -- has-key? )",
+		"Check to see if a dictionary has a given key",
+		_dictHasKey)
 
-	m.AddGoWord("dict-get", "( dict key -- value|error? )", _dictGet)
-	m.AddGoWord("dict-keys", "( dict -- { keys }) Puts all the keys for a dictionary in an array", _dictKeys)
-	m.AddGoWord("dict-get-rand", "( dict -- key value )", _dictGetRand)
-	m.AddGoWord("dict-each-key", "(dict quot -- .. )", _dictEachKey)
+	m.AddGoWordWithStack(
+		"dict-set",
+		"( dict value key -- )",
+		"Set the entry in dict at key to value",
+		_dictSet)
+	m.AddGoWordWithStack(
+		"dict-push",
+		"( dict value key -- dict )",
+		"Set the entry in dict at key to value, leaving the dict on the stack",
+		_dictPush)
+
+	m.AddGoWordWithStack("dict-get",
+		"( dict key -- value|error? )",
+		"Get the key, or error if it doesn't exist",
+		_dictGet)
+	m.AddGoWordWithStack("dict-keys",
+		"( dict -- { keys } )",
+		"Loads all the keys for a dictionary into an array",
+		_dictKeys)
+	m.AddGoWordWithStack("dict-get-rand",
+		"( dict -- key value )",
+		"Get a random key/value pair from this dictionary",
+		_dictGetRand)
+	m.AddGoWordWithStack("dict-each-key",
+		"(dict quot -- .. )",
+		"Run a function over each key in the dictionary",
+		_dictEachKey)
 
 	return m.ImportPISCAsset("stdlib/dicts.pisc")
 }
