@@ -1,15 +1,5 @@
 /* Dictionaries and their utilities */
 
-:DOC <dict> ( -- dict )  Place an empty dictionary on the stack  ;
-
-/* :DOC dict-get-many ( dict quot --  )  Get a value from the dictionary for each word in a quotation  ; */
-
-/* Does this dict have this key? */ 
-
-:DOC dict-set ( dict value key -- dict )  Set the key to the value, leaving the dict on the stack  ;
-
-:DOC dict-get ( dict key -- value )  Get the value from the dictionary  ;
-
 : dict-if-empty-stack ( .. -- dict? ) stack-empty? [ <dict> ] when ;
 : dict-if-not-dict ( .. -- dict ) dup typeof "Dictionary" str-neq? [ <dict> ] when ;
 : ensure-dictionary ( .. -- dict ) dict-if-empty-stack dict-if-not-dict ;
@@ -28,17 +18,9 @@
  :PRE $<- ( dict val key -- ) dup get-local swap dict-set ;
  :PRE $<<- ( dict val key -- dict ) [ [ dup ] dip ] dip dup get-local swap dict-set ;
 
-
-
-/* :PRE <-$ ( dict val key -- ) get-local dict-set ; */
-
 /*  Set an entry to true for each unicode character in this string */
  :PRE -% ( dict? key -- dict ) [ ensure-dictionary ] dip [ :dict ] dip [ $dict swap t swap dict-set ] each-char $dict ;
 
  :PRE ->? ( dict key -- dict ? ) dict-has-key? ;
 
  :PRE . ( dict key -- .. ) dict-get call ;
-
-/*
-: quot>dict ( quot -- dict ) get-locals call <dict> [ dict-set ] each-local drop-locals ;
-*/
