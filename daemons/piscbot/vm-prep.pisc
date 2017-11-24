@@ -18,7 +18,6 @@ IRC_GLOBALS
 
 : quote ( -- quote ) IRC_GLOBALS ->quotes choice ; 
 : add-quote ( quote -- ) IRC_GLOBALS ->quotes swap vec-push ;
-
 : create-game-for-me ( -- message ) "You are in a _forest_, which direction _(n/s/e/w)_ do you go? (navigate by joining _marks_ after game-, i.e game-forest-n)" ;
 
 : game-forest-n ( -- message ) "A clearing opens. You smell honeysuckle, see Queen Anne's lace and like what you see" ;

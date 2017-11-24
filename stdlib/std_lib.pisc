@@ -11,12 +11,6 @@ A few core words for PISC execution.
 
 /* The following calls are the current stack-shuffling primitives */
 
-:DOC pick-dup ( .. n -- .. item )  pick-dup duplicates the nth item back on the stack  ;
-
-:DOC pick-drop ( .. n -- ..` item )  pick-drop removes the item from the nth stack slot, placing it atop the stack  ;
-
-:DOC pick-del ( .. n --  ..`  )  pick-del deletes the nth stack entry back, removing it from the stack entirely  ;
-
 
 :DOC len ( lenable -- length )  Len is the go defined word that defers length checking to the go type system  ;
 
