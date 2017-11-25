@@ -56,10 +56,9 @@ func (s String) Type() string {
 	[ eq dup $success or :success ] :eqn
 	$type "Dictionary" eqn [ get-output $state write-dict ] when
 	$type "Vector" eqn [ get-output $state write-vec ] when
-	$success
-		[ "\n: . ( a -- ) drop ; " $OUT .write-line ]
+	$success not
 		[ ${ "Cannot write value of type: " $type } error ]
-	if
+	when	
 	$OUT .close
 ;
 

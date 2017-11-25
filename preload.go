@@ -2,6 +2,7 @@ package pisc
 
 import "fmt"
 import "reflect"
+import "strings"
 
 // GoWord a wrapper for functions that implement pieces of PISC
 type GoWord func(*Machine) error
@@ -14,10 +15,22 @@ func NilWord(f func(*Machine)) GoWord {
 	})
 }
 
+func docify(doc string) string {
+	return strings.Replace(doc, "<code>", "`", -1)
+}
+
 func (m *Machine) AddGoWordWithStack(name, stackEffect, docstring string, impl GoWord) {
 	m.DefinedStackComments[name] = stackEffect
-	m.HelpDocs[name] = docstring
+	m.HelpDocs[name] = docify(docstring)
 	m.PredefinedWords[name] = impl
+}
+
+func (m *Machine) AppendToHelpTopic(topic, content string) {
+	if help, found := m.HelpDocs[topic]; found {
+		m.HelpDocs[topic] = help + docify(content)
+		return
+	}
+	m.HelpDocs[topic] = docify(content)
 }
 
 func (m *Machine) AddGoWord(name, docstring string, impl GoWord) {
@@ -154,14 +167,28 @@ func loadPISCCore(m *Machine) error {
 	}
 	m.AddGoWordWithStack("t", "( -- t )", "The True constant", t)
 	m.AddGoWordWithStack("f", "( -- f )", "The False constant", f)
-	m.AddGoWord("dip", "( a quot -- ... a )", dip)
-	m.AddGoWord("stack-empty?", "( -- empty? )", isStackEmpty)
-	m.AddGoWord("typeof", "( a -- typeofa )", typeof)
+	m.AddGoWordWithStack(
+		"dip", "( a quot -- ... a )",
+		"Execute a quoation without the top of the stack, and then restore the element at the top",
+		dip)
+
+	m.AddGoWordWithStack(
+		"stack-empty?",
+		"( -- empty? )",
+		"Returns true if the stack is empty, false if isn't",
+		isStackEmpty)
+
+	m.AddGoWordWithStack(
+		"typeof",
+		"( a -- typeofa )",
+		"Get the type of the value at the top of the stack", typeof)
+
 	m.AddGoWordWithStack("?",
 		"( a b ? -- a/b )",
 		"The contintional operator: Takes a, b and a boolean. \n"+
 			"Returns a if the boolean is true, b if it is false",
 		condOperator)
+
 	m.AddGoWordWithStack(
 		"call",
 		"( quot -- ... )",
@@ -187,11 +214,14 @@ func loadPISCCore(m *Machine) error {
 		"( message -- !! )",
 		"Create an error from msg",
 		errorFromEntry)
-	m.AddGoWord("module-loaded?",
-		"( module-name -- loaded? )", isModuleLoaded)
+	m.AddGoWordWithStack(
+		"module-loaded?",
+		"( module-name -- loaded? )",
+		"Check to see if a module with the given name is loaded",
+		isModuleLoaded)
 
 	// These words are important for combinators,
-	// but aren't documented on the PISC side br
+	// but aren't documented on the PISC side
 	m.PredefinedWords["pick-dup"] = GoWord(pickDup)
 	m.PredefinedWords["pick-drop"] = GoWord(pickDrop)
 	m.PredefinedWords["pick-del"] = GoWord(pickDel)

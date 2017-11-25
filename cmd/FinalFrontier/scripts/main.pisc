@@ -39,9 +39,9 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 	} $m .chosen-idx vec-at 
 ;
 
-: load-game ( game --  ) :game CLS ${ "TODO: Implement game-loads" NL } println [ " " . ] ;
-: save-game ( game -- ) :game CLS ${ "TODO: Implement game-saves" NL } println [ " " . ] ;
-: options ( -- ) :game CLS ${ "TODO: Implement game options" NL } println [ " " . ] ;
+: load-game ( game --  ) :game CLS ${ "TODO: Implement game-loads" NL } println [ " " drop ] ;
+: save-game ( game -- ) :game CLS ${ "TODO: Implement game-saves" NL } println [ " " drop ] ;
+: options ( -- ) :game CLS ${ "TODO: Implement game options" NL } println [ " " drop ] ;
 : exit-game ( game -- ) save-game quit-game ;
 
 : main ( -- )

@@ -1,8 +1,4 @@
-/*
-
-A few core words for PISC execution.
-
-*/
+/* A few core words for PISC execution. */
 
 : println ( a --  ) >string priv_puts "\n" priv_puts ;
 
@@ -47,9 +43,7 @@ A few core words for PISC execution.
 /* When statement for when you don't need all of if */
 : when ( ? true -- res ) [ ] ? call ;
 
-
-/* : eq ( a b -- ? ) */
-: . ( a -- ) drop ;
+: ndrop ( n -- ) [ drop ] times ;
 
 : inspect ( a -- a ) dup print ;
 

@@ -54,76 +54,107 @@ func logStack(m *Machine) error {
 	return nil
 }
 
+func _showPrefixWords(m *Machine) error {
+	for name := range m.PrefixWords {
+		fmt.Println(name)
+	}
+	return nil
+}
+
+func _printDebugTrace(m *Machine) error {
+	fmt.Println(m.DebugTrace)
+	return nil
+}
+
+func _clearDebugTrace(m *Machine) error {
+	m.DebugTrace = ""
+	return nil
+}
+
+func _timeQuotation(m *Machine) error {
+	start := time.Now()
+	err := m.ExecuteQuotation()
+	elapsed := time.Since(start)
+	m.PushValue(String(fmt.Sprint("Code took ", elapsed)))
+	return err
+}
+
+func _cpuPPROF(m *Machine) error {
+	m.ExecuteString("swap", CodePosition{Source: "cpu-pprof GoWord"})
+	path := m.PopValue().String()
+	f, err := os.Create(path)
+	if err != nil {
+		log.Fatal("Unable to create profiling file")
+		return err
+	}
+	if err := pprof.StartCPUProfile(f); err != nil {
+		log.Fatal("Unable to start CPU profile")
+		return err
+	}
+	m.ExecuteQuotation()
+	pprof.StopCPUProfile()
+	return nil
+}
+
 func loadDebugCore(m *Machine) error {
 
-	m.AddGoWord("log-stack",
+	m.AddGoWordWithStack("log-stack",
 		"( -- )",
+		"Log the current state of the stack",
 		logStack)
 
-	m.AddGoWord("stack-len",
+	m.AddGoWordWithStack("stack-len",
 		"( -- stack-len )",
+		"Get the length of the stack.",
 		getStackLen)
 
-	m.AddGoWord("count-go-words",
+	m.AddGoWordWithStack("count-go-words",
 		"( -- num-go-words )",
+		"Get the number of words in the machine that are defined in Go",
 		getNumGoWords)
 
-	m.AddGoWord("count-pisc-words",
+	m.AddGoWordWithStack("count-pisc-words",
 		"( -- num-pisc-words )",
+		"Get the number of words in this machine that are defined in PISC",
 		getNumPiscWords)
 
-	m.AddGoWord("count-prefix-words",
-		"( -- num-go-words )",
+	m.AddGoWordWithStack("count-prefix-words",
+		"( -- num-prefix-words )",
+		"Get the number of words that are defined as Prefixes",
 		getNumPrefixWords)
 
 	// ( -- )
-	m.PredefinedWords["show-prefix-words"] = NilWord(func(m *Machine) {
-		for name := range m.PrefixWords {
-			fmt.Println(name)
-		}
-	})
+	m.AddGoWordWithStack(
+		"show-prefix-words",
+		"( -- )",
+		"Logs a list of prefix words to stdout",
+		_showPrefixWords)
+
 	// ( quot -- .. time )
-	m.AddGoWord("time", "( quot -- .. time )", GoWord(func(m *Machine) error {
-		words := &CodeQuotation{
-			Idx:   0,
-			Words: []*word{&word{str: "call"}},
-		}
-		start := time.Now()
-		err := m.execute(words)
-		elapsed := time.Since(start)
-		m.PushValue(String(fmt.Sprint("Code took ", elapsed)))
-		return err
-	}))
+	m.AddGoWordWithStack(
+		"time",
+		"( quot -- .. time )",
+		"Times how long it takes to execute a quotation, leaving a string atop the stack describing the time",
+		_timeQuotation)
 
-	m.AddGoWord("print-debug-trace", "( -- )", func(m *Machine) error {
-		fmt.Println(m.DebugTrace)
-		return nil
-	})
+	m.AddGoWordWithStack(
+		"print-debug-trace",
+		"( -- )",
+		"Prints the extant debug trace",
+		_printDebugTrace)
 
-	m.AddGoWord("clear-debug-trace", "( -- )", func(m *Machine) error {
-		m.DebugTrace = ""
-		return nil
-	})
+	m.AddGoWordWithStack(
+		"clear-debug-trace",
+		"( -- )",
+		"Clears the debug trace",
+		_clearDebugTrace)
 
-	// ( filepath Quotation -- )
-	m.PredefinedWords["cpu-pprof"] = GoWord(func(m *Machine) error {
-		m.ExecuteString("swap", CodePosition{Source: "cpu-pprof GoWord"})
-		path := m.PopValue().String()
-		f, err := os.Create(path)
-		if err != nil {
-			log.Fatal("Unable to create profiling file")
-			return err
-		}
-		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("Unable to start CPU profile")
-			return err
-		}
-		m.ExecuteQuotation()
-		pprof.StopCPUProfile()
-		return nil
-	})
+	m.AddGoWordWithStack(
+		"cpu-pprof",
+		"( path quot -- )",
+		"Runs the quotation in a PPROF session, saving the data to the file at path",
+		_cpuPPROF)
 
-	// ( -- )
 	m.PredefinedWords["dump-defined-words"] = GoWord(func(m *Machine) error {
 		// var words = make(Array, 0)
 		for name, seq := range m.PrefixWords {

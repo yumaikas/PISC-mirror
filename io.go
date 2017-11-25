@@ -24,85 +24,138 @@ func getch(m *Machine) error {
 	m.PushValue(Integer(char))
 	return nil
 }
+// m.AddGoWord("getkey", "( -- keyval )", GoWord(getch))
 */
 
+func _emitESC(m *Machine) error {
+	m.PushValue(String("\x1B"))
+	return nil
+}
+
+func _getStrAtPath(m *Machine) error {
+	fileName := m.PopValue().(String)
+	data, err := ioutil.ReadFile(string(fileName))
+	if err != nil {
+		return err
+	}
+	m.PushValue(String(string(data)))
+	return nil
+}
+
+func _saveStrToPath(m *Machine) error {
+	fileName := m.PopValue().(String)
+	data := m.PopValue().String()
+	return ioutil.WriteFile(string(fileName), []byte(data), os.FileMode(0644))
+}
+
+func _openFileWriter(m *Machine) error {
+	fileName := m.PopValue().(String)
+	goFile, err := os.Create(string(fileName))
+	if err != nil {
+		return err
+	}
+	// err = goFile.Chmod(os.ModePerm | 0644)
+	if err != nil {
+		return err
+	}
+	fileWriter := bufio.NewWriter(goFile)
+	var file = Dict(make(map[string]StackEntry))
+	file["close"] = GoFunc(func(m *Machine) error {
+		return goFile.Close()
+	})
+	file["write-line"] = GoFunc(func(m *Machine) error {
+		str := m.PopValue().String()
+		_, err := fileWriter.WriteString(str + "\n")
+		fileWriter.Flush()
+		return err
+	})
+
+	file["write-string"] = GoFunc(func(m *Machine) error {
+		str := m.PopValue().String()
+		_, err := fileWriter.WriteString(str)
+		fileWriter.Flush()
+		return err
+	})
+	m.PushValue(file)
+
+	return m.ImportPISCAsset("stdlib/io.pisc")
+}
+
+func _openFileReader(m *Machine) error {
+	var fileName = m.PopValue().(String)
+	// var file = Dict(make(map[string]StackEntry))
+	goFile, err := os.Open(string(fileName))
+	if err != nil {
+		return err
+	}
+	var reader = bufio.NewReader(goFile)
+	file := MakeReader(reader)
+	file["close"] = GoFunc(func(m *Machine) error {
+		return goFile.Close()
+	})
+	m.PushValue(file)
+	return nil
+}
+
 func loadIOCore(m *Machine) error {
-	m.AddGoWord("import", "( file-path -- )", GoWord(importPISC))
-	// m.AddGoWord("getkey", "( -- keyval )", GoWord(getch))
-	m.AddGoWord("ESC",
-		"( -- ESC-char ) Emits the terminal escape char, for use in terminal escape codes",
-		GoWord(func(m *Machine) error {
-			m.PushValue(String("\x1B"))
-			return nil
-		}))
+	NL := "\n"
+	m.AddGoWordWithStack(
+		"import",
+		"( file-path -- )",
+		"Loads the PISC file at the given path",
+		importPISC)
+
+	m.AddGoWordWithStack("ESC",
+		"( -- ESC-char )",
+		"Emits the terminal escape char, for use in terminal escape codes",
+		_emitESC)
+
 	// TODO: Consider deleting this later, if it isn't used.
-	m.AddGoWord("import-asset", "( file-path -- )", GoWord(importAssetPISC))
+	m.AddGoWordWithStack(
+		"import-asset",
+		"( file-path -- ? )",
+		"Load the packed script (mostly used for the standard library)",
+		importAssetPISC)
 
-	m.AddGoWord("get-str-at-path", "( path -- contents )", GoWord(func(m *Machine) error {
-		fileName := m.PopValue().(String)
-		data, err := ioutil.ReadFile(string(fileName))
-		if err != nil {
-			return err
-		}
-		m.PushValue(String(string(data)))
-		return nil
-	}))
+	m.AddGoWordWithStack(
+		"get-str-at-path",
+		"( path -- contents )",
+		"Load the contents at path into a string",
+		_getStrAtPath)
 
-	m.AddGoWord("save-str-to-path", "( str path -- )", GoWord(func(m *Machine) error {
-		fileName := m.PopValue().(String)
-		data := m.PopValue().String()
-		return ioutil.WriteFile(string(fileName), []byte(data), os.FileMode(0644))
-	}))
+	m.AddGoWordWithStack(
+		"save-str-to-path",
+		"( str path -- )",
+		"Save the value in str to the file at path",
+		_saveStrToPath)
 
-	m.PredefinedWords["open-file-writer"] = GoWord(func(m *Machine) error {
-		fileName := m.PopValue().(String)
-		goFile, err := os.Create(string(fileName))
-		if err != nil {
-			return err
-		}
-		// err = goFile.Chmod(os.ModePerm | 0644)
-		if err != nil {
-			return err
-		}
-		fileWriter := bufio.NewWriter(goFile)
-		var file = Dict(make(map[string]StackEntry))
-		file["close"] = GoFunc(func(m *Machine) error {
-			return goFile.Close()
-		})
-		file["write-line"] = GoFunc(func(m *Machine) error {
-			str := m.PopValue().String()
-			_, err := fileWriter.WriteString(str + "\n")
-			fileWriter.Flush()
-			return err
-		})
+	m.AppendToHelpTopic("readers",
+		`Readers can currently be made from strings or files
 
-		file["write-string"] = GoFunc(func(m *Machine) error {
-			str := m.PopValue().String()
-			_, err := fileWriter.WriteString(str)
-			fileWriter.Flush()
-			return err
-		})
-		m.PushValue(file)
+They support the following calls (assuming a reader in $reader)
 
-		return m.ImportPISCAsset("stdlib/io.pisc")
+- <code>$reader .read-byte<code> reads a single byte, and puts it atop the stack
+- <code>$reader .read-rune<code> reads a single UTF-8 rune
+- <code>$reader .read-line<code> reads a single line into a string
 
-	})
+`)
+	m.AddGoWordWithStack(
+		"open-file-writer",
+		"( path -- file-writer )",
+		"Opens a file-writer that that writes to the supplied path, if can be made"+NL+
+			"A file-writer supports 3 calls: "+NL+
+			`<code>"str" $writer .write-line<code>, which writes "str\n" to the file`+NL+
+			`- <code>"str" $writer .write-string<code>, which writes "str" to the file`+NL+
+			`- <code>"str" $writer .write-string<code>, which writes "str" to the file`+NL,
+		_openFileWriter)
 
-	m.PredefinedWords["open-file-reader"] = GoWord(func(m *Machine) error {
-		var fileName = m.PopValue().(String)
-		// var file = Dict(make(map[string]StackEntry))
-		goFile, err := os.Open(string(fileName))
-		if err != nil {
-			return err
-		}
-		var reader = bufio.NewReader(goFile)
-		file := MakeReader(reader)
-		file["close"] = GoFunc(func(m *Machine) error {
-			return goFile.Close()
-		})
-		m.PushValue(file)
-		return nil
-	})
+	m.AddGoWordWithStack(
+		"open-file-reader",
+		"( path -- file-reader )",
+		"Opens a file-readr that reads from the file at the supplied path, if a file exists at the given path"+NL+
+			"Support the standard @reader calls, as well as <code>.close<code>"+NL+
+			"See also @readers",
+		_openFileReader)
 
 	m.PredefinedWords["priv_puts"] = NilWord(func(m *Machine) {
 		data := m.PopValue().(String)
