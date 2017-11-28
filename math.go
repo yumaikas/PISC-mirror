@@ -26,6 +26,19 @@ type number interface {
 	LessThan(number) Boolean
 }
 
+func _toDouble(m *Machine) error {
+	a := m.PopValue()
+	if i, ok := a.(Integer); ok {
+		m.PushValue(Double(float64(i)))
+		return nil
+	}
+	if d, ok := a.(Double); ok {
+		m.PushValue(Double(d))
+		return nil
+	}
+	return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
+}
+
 func (m *Machine) loadHigherMathWords() error {
 
 	m.AddGoWord("+", "( a b -- c )  addition", executeAdd)
@@ -45,32 +58,31 @@ func (m *Machine) loadHigherMathWords() error {
 	// Why do we duplicate the work here?
 	// Because we want both the >double word and the
 	// math1arg words
-	m.PredefinedWords[">double"] = GoWord(func(m *Machine) error {
-		a := m.PopValue()
-		if i, ok := a.(Integer); ok {
-			m.PushValue(Double(float64(i)))
-			return nil
-		}
-		if d, ok := a.(Double); ok {
-			m.PushValue(Double(d))
-			return nil
-		}
-		return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
-	})
+
+	m.AddGoWordWithStack(
+		">double",
+		"( d? -- d! )",
+		"Either converts the number to a double, or throws an error",
+		_toDouble)
 
 	var math1Arg = func(name string, mathyFunc func(float64) float64) {
-		m.PredefinedWords[name] = GoWord(func(m *Machine) error {
-			a := m.PopValue()
-			if i, ok := a.(Integer); ok {
-				m.PushValue(Double(mathyFunc(float64(i))))
-				return nil
-			}
-			if d, ok := a.(Double); ok {
-				m.PushValue(Double(mathyFunc(float64(d))))
-				return nil
-			}
-			return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
-		})
+
+		m.AddGoWordWithStack(
+			name,
+			"( x -- 'x )",
+			fmt.Sprint("Wrapper for Go implementation of ", name),
+			func(m *Machine) error {
+				a := m.PopValue()
+				if i, ok := a.(Integer); ok {
+					m.PushValue(Double(mathyFunc(float64(i))))
+					return nil
+				}
+				if d, ok := a.(Double); ok {
+					m.PushValue(Double(mathyFunc(float64(d))))
+					return nil
+				}
+				return fmt.Errorf("Unexpected type %s cannot be coverted to double", a.Type())
+			})
 	}
 
 	math1Arg("acos", math.Acos)

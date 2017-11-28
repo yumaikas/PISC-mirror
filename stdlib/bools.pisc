@@ -2,9 +2,5 @@
 bools.pisc
 */
 
-:DOC and ( x y -- ? )  Boolean and  ;
-:DOC or ( x y -- ? )  Boolean or  ;
-:DOC not ( x -- !x )  Boolean not  ;
+# I guess this is empty now?
 
-:DOC t ( -- t )  t and f respectively push true and false onto the stack  ;
-:DOC f ( -- f )  t and f respectively push true and false onto the stack  ;

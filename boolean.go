@@ -8,20 +8,31 @@ var ModBoolCore = Module{
 	Load:      loadBoolCore,
 }
 
+func _and(m *Machine) error {
+	a := m.PopValue().(Boolean)
+	b := m.PopValue().(Boolean)
+	m.PushValue(Boolean(a && b))
+	return nil
+}
+
+func _or(m *Machine) error {
+	a := m.PopValue().(Boolean)
+	b := m.PopValue().(Boolean)
+	m.PushValue(Boolean(a || b))
+	return nil
+}
+
+func _not(m *Machine) error {
+	a := m.PopValue().(Boolean)
+	m.PushValue(Boolean(!a))
+	return nil
+}
+
 func loadBoolCore(m *Machine) error {
-	m.PredefinedWords["and"] = NilWord(func(m *Machine) {
-		a := m.PopValue().(Boolean)
-		b := m.PopValue().(Boolean)
-		m.PushValue(Boolean(a && b))
-	})
-	m.PredefinedWords["or"] = NilWord(func(m *Machine) {
-		a := m.PopValue().(Boolean)
-		b := m.PopValue().(Boolean)
-		m.PushValue(Boolean(a || b))
-	})
-	m.PredefinedWords["not"] = NilWord(func(m *Machine) {
-		a := m.PopValue().(Boolean)
-		m.PushValue(Boolean(!a))
-	})
+	m.AppendToHelpTopic("Bools", "PISC boolean expressions are generally not short-circuited without using quotations")
+	m.AddGoWordWithStack("and", "( a b -- a&b )", "Boolean And", _and)
+	m.AddGoWordWithStack("or", "( a b -- a||b )", "Boolean OR", _and)
+	m.AddGoWordWithStack("not", "( a  -- not-a )", "Boolean NOT", _and)
+
 	return m.ImportPISCAsset("stdlib/bools.pisc")
 }

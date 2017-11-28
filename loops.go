@@ -44,9 +44,17 @@ func _doWhile(m *Machine) error {
 }
 
 func loadLoopCore(m *Machine) error {
-	m.AddGoWord("times", "( times quot -- ... ) ", _doTimes)
+	m.AddGoWordWithStack(
+		"times",
+		"( n quot -- ... )",
+		"Call quot n times",
+		_doTimes)
 	// ( pred body -- .. )
-	m.AddGoWord("while", "( pred quot -- ... )", _doWhile)
+	m.AddGoWordWithStack(
+		"while",
+		"( pred quot -- ... )",
+		"Call quot while pred leave true at the top of the stack",
+		_doWhile)
 
 	return m.ImportPISCAsset("stdlib/loops.pisc")
 }

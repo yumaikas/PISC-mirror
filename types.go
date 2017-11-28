@@ -156,7 +156,14 @@ func (q *Quotation) String() string {
 
 func (dict Dict) String() string {
 	var key_order StackEntry
+	// var strMethod StackEntry
 	var found bool
+	/* TODO: Figure this out later
+	if strMethod, found = dict["tostring"]; found {
+		if toCall, ok := strMethod.(*CodeQuotation) {
+		}
+	}
+	*/
 	buf := bytes.NewBufferString("map[")
 	if key_order, found = dict["__ordering"]; found {
 		if keys, ok := key_order.(*Vector); ok {

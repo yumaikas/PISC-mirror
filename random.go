@@ -13,21 +13,31 @@ var ModRandomCore = Module{
 	Load:      loadRandy,
 }
 
+func _seedRandomTime(m *Machine) error {
+	rand.Seed(time.Now().UTC().UnixNano())
+	return nil
+}
+
+func _getRandInt(m *Machine) error {
+	m.PushValue(Integer(rand.Int()))
+	return nil
+}
+
+func _rangeRandomInt(m *Machine) error {
+	max := m.PopValue().(Integer)
+	min := m.PopValue().(Integer)
+	m.PushValue(min + Integer(rand.Intn(int(max-min))))
+	return nil
+}
+
 func loadRandy(m *Machine) error {
-	m.HelpDocs["seed-rand-time"] = "( -- ) Seeds the PSRNG with the current time"
-	m.PredefinedWords["seed-rand-time"] = NilWord(func(m *Machine) {
-		rand.Seed(time.Now().UTC().UnixNano())
-	})
 
-	m.PredefinedWords["rand-int"] = NilWord(func(m *Machine) {
-		m.PushValue(Integer(rand.Int()))
-	})
+	m.AddGoWordWithStack("seed-rand-time", "( -- )", "Seeds the PSRNG with the current time", _seedRandomTime)
+	m.AddGoWordWithStack("rand-int", "( -- random-int )", "Get a random positive int", _getRandInt)
+	m.AddGoWordWithStack(
+		"rand-int",
+		"( min max -- random-int )",
+		"Get a random positive int between min and max", _rangeRandomInt)
 
-	m.HelpDocs["range-rand"] = "( min max -- value ) Take a min and max, give a random integer"
-	m.PredefinedWords["range-rand"] = NilWord(func(m *Machine) {
-		max := m.PopValue().(Integer)
-		min := m.PopValue().(Integer)
-		m.PushValue(min + Integer(rand.Intn(int(max-min))))
-	})
 	return m.ImportPISCAsset("stdlib/random.pisc")
 }

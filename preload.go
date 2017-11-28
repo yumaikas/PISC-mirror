@@ -222,9 +222,22 @@ func loadPISCCore(m *Machine) error {
 
 	// These words are important for combinators,
 	// but aren't documented on the PISC side
-	m.PredefinedWords["pick-dup"] = GoWord(pickDup)
-	m.PredefinedWords["pick-drop"] = GoWord(pickDrop)
-	m.PredefinedWords["pick-del"] = GoWord(pickDel)
+	m.AddGoWordWithStack(
+		"pick-dup",
+		"( ..x.. n -- ..x.. x )",
+		"Duplicates a vale that is n entries from the top, or errors if there are less than n entries in the stack",
+		pickDup)
 
+	m.AddGoWordWithStack(
+		"pick-drop",
+		"( ..x.. n -- x )",
+		"Removes a vale that is n entries from the top, putting it atop the stack. Raises an error if there are less than n entries in the stack",
+		pickDrop)
+
+	m.AddGoWordWithStack(
+		"pick-del",
+		"( ..x.. n -- )",
+		"Deletes the value that is n entries from the top. Raises an error if there are less than n entries in the stack",
+		pickDel)
 	return m.ImportPISCAsset("stdlib/std_lib.pisc")
 }

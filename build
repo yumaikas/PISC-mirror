@@ -85,6 +85,7 @@ case "$1" in
 esac
 
 cat <<EONOTE
+TODO: Definitely consider switching fmt.Println to pass through priv_puts in as *many* places as make sense.
 TODO: Consider using crit-bit trees for dictionaries
 TODO: Now that something close to a save-game has been implemented for final-frontier, start implementing the initial states and such
 TODO: Implement an interactive tutorial in the 'in Y minutes' style. 

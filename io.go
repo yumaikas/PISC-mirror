@@ -24,7 +24,7 @@ func getch(m *Machine) error {
 	m.PushValue(Integer(char))
 	return nil
 }
-// m.AddGoWord("getkey", "( -- keyval )", GoWord(getch))
+// m.AddGoWord*Change?*("getkey", "( -- keyval )", GoWord(getch))
 */
 
 func _emitESC(m *Machine) error {
@@ -97,6 +97,12 @@ func _openFileReader(m *Machine) error {
 	return nil
 }
 
+func _priv_puts(m *Machine) error {
+	data := m.PopValue().(String)
+	fmt.Print(string(data))
+	return nil
+}
+
 func loadIOCore(m *Machine) error {
 	NL := "\n"
 	m.AddGoWordWithStack(
@@ -157,10 +163,7 @@ They support the following calls (assuming a reader in $reader)
 			"See also @readers",
 		_openFileReader)
 
-	m.PredefinedWords["priv_puts"] = NilWord(func(m *Machine) {
-		data := m.PopValue().(String)
-		fmt.Print(string(data))
-	})
+	m.AddGoWordWithStack("priv_puts", "( str -- )", "Prints str to STDOUT", _priv_puts)
 	return nil
 }
 

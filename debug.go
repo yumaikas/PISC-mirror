@@ -96,6 +96,20 @@ func _cpuPPROF(m *Machine) error {
 	return nil
 }
 
+func _dumpDefinedWords(m *Machine) error {
+
+	// var words = make(Array, 0)
+	for name, seq := range m.PrefixWords {
+		fmt.Println(":PRE", name, m.DefinedStackComments[name], DumpToString(seq), ";")
+	}
+	for name, seq := range m.DefinedWords {
+		fmt.Println(":DOC", name, m.DefinedStackComments[name], m.HelpDocs[name], ";")
+		fmt.Println(":", name, m.DefinedStackComments[name], DumpToString(seq), ";")
+	}
+	return nil
+	return nil
+}
+
 func loadDebugCore(m *Machine) error {
 
 	m.AddGoWordWithStack("log-stack",
@@ -155,17 +169,11 @@ func loadDebugCore(m *Machine) error {
 		"Runs the quotation in a PPROF session, saving the data to the file at path",
 		_cpuPPROF)
 
-	m.PredefinedWords["dump-defined-words"] = GoWord(func(m *Machine) error {
-		// var words = make(Array, 0)
-		for name, seq := range m.PrefixWords {
-			fmt.Println(":PRE", name, m.DefinedStackComments[name], DumpToString(seq), ";")
-		}
-		for name, seq := range m.DefinedWords {
-			fmt.Println(":DOC", name, m.DefinedStackComments[name], m.HelpDocs[name], ";")
-			fmt.Println(":", name, m.DefinedStackComments[name], DumpToString(seq), ";")
-		}
-		return nil
-	})
+	m.AddGoWordWithStack(
+		"dump-defined-words",
+		"( -- )",
+		"Dump all of the currently defined words to STDOUT", _dumpDefinedWords)
+
 	return m.ImportPISCAsset("stdlib/debug.pisc")
 }
 

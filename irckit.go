@@ -15,6 +15,8 @@ var ModIRCKit = Module{
 	Load:      loadIRCKit,
 }
 
+var NL = "\n"
+
 type ircConn irc.Conn
 type ircMessage irc.Message
 
@@ -133,6 +135,17 @@ func ircDial(m *Machine) error {
 	return nil
 }
 
+func attachIRC_GLOBALS(m *Machine, globals Dict) {
+	m.AddGoWordWithStack(
+		"IRC_GLOBALS",
+		" ( -- dict ) ",
+		"Puts the IRC_GLOBALS dict on the stack, allowing you to save and store information out of it.",
+		func(inner_m *Machine) error {
+			inner_m.PushValue(globals)
+			return nil
+		})
+}
+
 func buildIRCEvalVM() (*Machine, error) {
 	ircVM := &Machine{
 		Values:               make([]StackEntry, 0),
@@ -160,11 +173,7 @@ func buildIRCEvalVM() (*Machine, error) {
 	}
 
 	vmGlobals := make(Dict)
-	ircVM.AddGoWord("IRC_GLOBALS", " ( -- dict ) ", func(inner_m *Machine) error {
-		inner_m.PushValue(vmGlobals)
-		return nil
-	})
-
+	attachIRC_GLOBALS(ircVM, vmGlobals)
 	err = ircVM.ExecuteString("seed-rand-time", CodePosition{Source: "irckit.go"})
 	if err != nil {
 		return nil, err
@@ -174,19 +183,19 @@ func buildIRCEvalVM() (*Machine, error) {
 
 func (ircVM *Machine) ircRestart(m *Machine) error {
 	ircVM.ExecuteString("IRC_GLOBALS", CodePosition{Source: "irckit.go"})
-	vmGlobals := ircVM.PopValue().(Dict)
+	vmGlobals, ok := ircVM.PopValue().(Dict)
+	if !ok {
+		//
+		fmt.Println("Somehow IRC_GLOBALS got corrupted, so it's getting reset")
+		vmGlobals = make(Dict)
+	}
 
 	vm, err := buildIRCEvalVM()
 	if err != nil {
 		time.Sleep(time.Minute * 1)
 		return err
 	}
-
-	vm.AddGoWord("IRC_GLOBALS", " ( -- dict ) ", func(inner_m *Machine) error {
-		inner_m.PushValue(vmGlobals)
-		return nil
-	})
-
+	attachIRC_GLOBALS(vm, vmGlobals)
 	ircVM = vm
 	return nil
 }
@@ -234,8 +243,38 @@ func stackIRCEvalVM(m *Machine) error {
 }
 
 func loadIRCKit(m *Machine) error {
-	m.AddGoWord("irc-dial", "( addr-str -- conn )", ircDial)
-	m.AddGoWord("<irc-vm>", "( -- vm )", stackIRCEvalVM)
+	m.AppendToHelpTopic("irc-message",
+		"An irc-message is a dict which supports the following calls (assuming a irc-message in $msg)"+NL+
+			"`$msg .command`. ( -- command-str ) Retrives the command for the message, for example, PRIVMSG or JOIN"+NL+
+			"`$msg .name`. Gets the nick or server name that sent the message"+NL+
+			"`$msg .is-userlike`. ( -- userlike? ) Returns a boolean indicating if the name looks like a username"+NL+
+			"`$msg .is-serverlike`. ( -- serverlike? ) Returns a boolean indicating if the name looks like a server name"+NL+
+			"`$msg .params`. ( -- params-vec ) Returns a boolean indicating if the name looks like a server name"+NL+
+			"`$msg .raw-str. ( -- str ) Gets the raw string of bytes that formed the underlying IRC message`"+NL+
+			"")
+	m.AddGoWordWithStack(
+		"irc-dial",
+		"( addr-str -- conn )",
+		"Returns a an irc connnection, which supports the folloing calls (assuming a var $conn):`"+NL+
+			"`$conn .close` ( -- ) which closes the underlying connnection"+NL+NL+
+
+			"`\"/PRIVMSG #channel message\" $conn .send-message` ( message-str -- ) which takes an IRC command in string form,"+
+			"parses it, and attemps to send it on the connection behind `$conn`"+NL+
+			"`$conn .recieve-message-str` ( -- message-str ) which waits for a message on the connection, and then pulls the string form of that message out and puts it on the stack"+NL+
+			"`$conn .recieve-message` ( -- message-dict ) which waits for a message on `$conn`, and then puts an @irc-message object on the stack"+NL+
+			"",
+		ircDial)
+	m.AddGoWordWithStack(
+		"<irc-vm>",
+		"( -- vm )",
+		"Builds a PISC vm that has been harded for IRC. AN IRC VM supports the following calls:"+NL+
+			"`$vm .eval` ( code -- result-vec ) Takes code, evaluates on $vm, and pushes a vector that contains the results "+
+			"of running the code. Example:  "+NL+
+			"`\"1 2 +\" $vm .eval` => `{ 3 }`"+NL+
+			"`$vm .restart` "+NL+
+			""+NL+
+			"",
+		stackIRCEvalVM)
 	return nil
 }
 
