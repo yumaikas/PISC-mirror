@@ -3,6 +3,7 @@ package pisc
 import (
 	"fmt"
 	"io"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -81,6 +82,9 @@ func (c *CodeList) nextWord() (*word, error) {
 		return &word{str: ""}, io.EOF
 	}
 	for _, v := range c.Code[c.Idx:] {
+		if currentWord == "${" || currentWord == "{" || currentWord == "}" || currentWord == "[" || currentWord == "]" {
+			return &word{str: currentWord}, nil
+		}
 		width := utf8.RuneLen(v)
 		c.Idx += width
 		c.Offset += width
@@ -89,6 +93,24 @@ func (c *CodeList) nextWord() (*word, error) {
 			currentLine = ""
 			c.LineNumber++
 			c.Offset = 0
+		}
+
+		if !(inString || inLineComment) {
+			if v == '{' && strings.HasSuffix(currentWord, "$") && currentWord != "$" {
+				// Unread both the { and the $,
+				c.Idx -= width + len("$")
+				c.Offset -= width + len("$")
+				return &word{str: currentWord[:len(currentWord)-len("$")]}, nil
+			}
+			if v == '{' && strings.HasSuffix(currentWord, "$") && currentWord == "$" {
+				return &word{str: "${"}, nil
+			}
+			if (v == '[' || v == '{' || v == '}' || v == ']') && len(currentWord) != 0 {
+				// Unread the {, }, [ or ], and return the word up to this point
+				c.Idx -= width
+				c.Offset -= width
+				return &word{str: currentWord}, nil
+			}
 		}
 		currentLine += string(v)
 		if inLineComment {
