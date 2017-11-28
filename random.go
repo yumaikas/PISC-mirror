@@ -35,7 +35,7 @@ func loadRandy(m *Machine) error {
 	m.AddGoWordWithStack("seed-rand-time", "( -- )", "Seeds the PSRNG with the current time", _seedRandomTime)
 	m.AddGoWordWithStack("rand-int", "( -- random-int )", "Get a random positive int", _getRandInt)
 	m.AddGoWordWithStack(
-		"rand-int",
+		"range-rand",
 		"( min max -- random-int )",
 		"Get a random positive int between min and max", _rangeRandomInt)
 
