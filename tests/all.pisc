@@ -5,8 +5,9 @@
 	"test_root.pisc" file-not?
 	"all.pisc" file-not? and
 	"boltdb.pisc" file-not? and
-	$fname ".pisc" str-ends? and [ 
-	       ${ "./tests/" $fname } import
-		2 [ "" print ] times
-	]  when
+	$fname ".pisc" str-ends? and /* */ [ 
+       ${ "./tests/" $fname } import
+       $fname println
+	   2 [ "" print ] times
+	] when
 ] vec-each

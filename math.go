@@ -41,13 +41,46 @@ func _toDouble(m *Machine) error {
 
 func (m *Machine) loadHigherMathWords() error {
 
-	m.AddGoWord("+", "( a b -- c )  addition", executeAdd)
-	m.AddGoWord("-", " ( a b -- c ) subtraction ", executeSubtract)
-	m.AddGoWord("*", " ( a b -- c ) multiplication ", executeMultiply)
-	m.AddGoWord("/", " ( a b -- c ) division ", executeDivide)
-	m.AddGoWord("mod", " ( a b -- c ) modulus ", executeModulus)
-	m.AddGoWord("<", " ( a b -- c ) numeric less than ", executeLessThan)
-	m.AddGoWord("zero?", " ( a -- isZero? ) returns if a is zero or not ", isZeroPred)
+	m.AppendToHelpTopic("operators",
+		"The basic math operators (+,-,*,/) all work in a similar fasion:"+NL+
+			"1) Check the top two stack entries to see if they are numbers"+NL+
+			"2) Do any necessary promotion (right now just Int->Double)"+NL+
+			"3) Perform the operation"+NL)
+	m.AddGoWordWithStack(
+		"+",
+		"( a b -- c )  addition",
+		"The addition @operator",
+		executeAdd)
+	m.AddGoWordWithStack(
+		"-",
+		"( a b -- c )",
+		"The subtraction @operator",
+		executeSubtract)
+	m.AddGoWordWithStack(
+		"*",
+		"( a b -- c )",
+		"The multiplication @operator",
+		executeMultiply)
+	m.AddGoWordWithStack(
+		"/",
+		"( a b -- c )",
+		"The division @operator",
+		executeDivide)
+	m.AddGoWordWithStack(
+		"mod",
+		"( a b -- c )",
+		"Computes a mod b, only for integers",
+		executeModulus)
+	m.AddGoWordWithStack(
+		"<",
+		"( a b -- c ) numeric less than ",
+		"Numeric less-than. Coerces to doubles if needed.",
+		executeLessThan)
+	m.AddGoWordWithStack(
+		"zero?",
+		"( a -- isZero? )",
+		"Returns true if a is zero.",
+		isZeroPred)
 
 	// For now, PISC words are late-bound, so we can get away with this.
 	err := m.ImportPISCAsset("stdlib/math.pisc")

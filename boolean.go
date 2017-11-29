@@ -31,8 +31,8 @@ func _not(m *Machine) error {
 func loadBoolCore(m *Machine) error {
 	m.AppendToHelpTopic("Bools", "PISC boolean expressions are generally not short-circuited without using quotations")
 	m.AddGoWordWithStack("and", "( a b -- a&b )", "Boolean And", _and)
-	m.AddGoWordWithStack("or", "( a b -- a||b )", "Boolean OR", _and)
-	m.AddGoWordWithStack("not", "( a  -- not-a )", "Boolean NOT", _and)
+	m.AddGoWordWithStack("or", "( a b -- a||b )", "Boolean OR", _or)
+	m.AddGoWordWithStack("not", "( a  -- not-a )", "Boolean NOT", _not)
 
 	return m.ImportPISCAsset("stdlib/bools.pisc")
 }
