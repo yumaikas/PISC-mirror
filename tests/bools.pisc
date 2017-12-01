@@ -1,0 +1,30 @@
+# This is the test section
+"tests/test_root.pisc" import
+
+"Booleans and spacing" <test-suite> :bools-suite
+
+/* Little shortcut */
+[$bools-suite .addTest] :test
+
+"Not" [
+	"Not t" [t not] [f] assert
+	"Not f"[f not][t]assert
+ ] test
+
+"And" [
+	"And t t" [t t and][t] assert
+	"And t f" [t f and][f] assert 
+	"And f t" [f t and][f] assert 
+	"And f f" [f f and][f] assert 
+] test
+
+"Or" [
+	{["Or t t" [ t t or ][ t ] assert]
+	["Or t f" [ t f or ][ t ] assert] 
+	["Or f t" [ f t or ][ t ] assert] 
+	["Or f f" [ f f or ][ f ] assert]}
+        [call] vec-each
+] test
+
+$bools-suite .runTests
+
