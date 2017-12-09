@@ -413,20 +413,20 @@ func AssetNames() []string {
 
 // _bindata is a table, holding each asset generator, mapped to its name.
 var _bindata = map[string]func() (*asset, error){
-	"stdlib/bools.pisc": stdlibBoolsPisc,
-	"stdlib/debug.pisc": stdlibDebugPisc,
-	"stdlib/dicts.pisc": stdlibDictsPisc,
-	"stdlib/io.pisc": stdlibIoPisc,
-	"stdlib/locals.pisc": stdlibLocalsPisc,
-	"stdlib/loops.pisc": stdlibLoopsPisc,
-	"stdlib/math.pisc": stdlibMathPisc,
-	"stdlib/random.pisc": stdlibRandomPisc,
-	"stdlib/shell.pisc": stdlibShellPisc,
+	"stdlib/bools.pisc":   stdlibBoolsPisc,
+	"stdlib/debug.pisc":   stdlibDebugPisc,
+	"stdlib/dicts.pisc":   stdlibDictsPisc,
+	"stdlib/io.pisc":      stdlibIoPisc,
+	"stdlib/locals.pisc":  stdlibLocalsPisc,
+	"stdlib/loops.pisc":   stdlibLoopsPisc,
+	"stdlib/math.pisc":    stdlibMathPisc,
+	"stdlib/random.pisc":  stdlibRandomPisc,
+	"stdlib/shell.pisc":   stdlibShellPisc,
 	"stdlib/std_lib.pisc": stdlibStd_libPisc,
 	"stdlib/strings.pisc": stdlibStringsPisc,
 	"stdlib/symbols.pisc": stdlibSymbolsPisc,
 	"stdlib/vectors.pisc": stdlibVectorsPisc,
-	"stdlib/with.pisc": stdlibWithPisc,
+	"stdlib/with.pisc":    stdlibWithPisc,
 }
 
 // AssetDir returns the file names below a certain
@@ -468,22 +468,23 @@ type bintree struct {
 	Func     func() (*asset, error)
 	Children map[string]*bintree
 }
+
 var _bintree = &bintree{nil, map[string]*bintree{
 	"stdlib": &bintree{nil, map[string]*bintree{
-		"bools.pisc": &bintree{stdlibBoolsPisc, map[string]*bintree{}},
-		"debug.pisc": &bintree{stdlibDebugPisc, map[string]*bintree{}},
-		"dicts.pisc": &bintree{stdlibDictsPisc, map[string]*bintree{}},
-		"io.pisc": &bintree{stdlibIoPisc, map[string]*bintree{}},
-		"locals.pisc": &bintree{stdlibLocalsPisc, map[string]*bintree{}},
-		"loops.pisc": &bintree{stdlibLoopsPisc, map[string]*bintree{}},
-		"math.pisc": &bintree{stdlibMathPisc, map[string]*bintree{}},
-		"random.pisc": &bintree{stdlibRandomPisc, map[string]*bintree{}},
-		"shell.pisc": &bintree{stdlibShellPisc, map[string]*bintree{}},
+		"bools.pisc":   &bintree{stdlibBoolsPisc, map[string]*bintree{}},
+		"debug.pisc":   &bintree{stdlibDebugPisc, map[string]*bintree{}},
+		"dicts.pisc":   &bintree{stdlibDictsPisc, map[string]*bintree{}},
+		"io.pisc":      &bintree{stdlibIoPisc, map[string]*bintree{}},
+		"locals.pisc":  &bintree{stdlibLocalsPisc, map[string]*bintree{}},
+		"loops.pisc":   &bintree{stdlibLoopsPisc, map[string]*bintree{}},
+		"math.pisc":    &bintree{stdlibMathPisc, map[string]*bintree{}},
+		"random.pisc":  &bintree{stdlibRandomPisc, map[string]*bintree{}},
+		"shell.pisc":   &bintree{stdlibShellPisc, map[string]*bintree{}},
 		"std_lib.pisc": &bintree{stdlibStd_libPisc, map[string]*bintree{}},
 		"strings.pisc": &bintree{stdlibStringsPisc, map[string]*bintree{}},
 		"symbols.pisc": &bintree{stdlibSymbolsPisc, map[string]*bintree{}},
 		"vectors.pisc": &bintree{stdlibVectorsPisc, map[string]*bintree{}},
-		"with.pisc": &bintree{stdlibWithPisc, map[string]*bintree{}},
+		"with.pisc":    &bintree{stdlibWithPisc, map[string]*bintree{}},
 	}},
 }}
 
@@ -533,4 +534,3 @@ func _filePath(dir, name string) string {
 	cannonicalName := strings.Replace(name, "\\", "/", -1)
 	return filepath.Join(append([]string{dir}, strings.Split(cannonicalName, "/")...)...)
 }
-

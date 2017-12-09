@@ -216,8 +216,9 @@
 		"0" <<-pass
 		"irc.freenode.org:6667" <<-address
 		{ 
-            "#botwars" "#proglangdesign" "#lobsters"
+            "#botwars" "#proglangdesign" 
             "#pisc"
+            # "#lobsters"
         } <<-chanlist
 		{ 
 			<ping-responder>
