@@ -3,6 +3,9 @@
 : dict-if-empty-stack ( .. -- dict? ) stack-empty? [ <dict> ] when ;
 : dict-if-not-dict ( .. -- dict ) dup typeof "Dictionary" str-neq? [ <dict> ] when ;
 : ensure-dictionary ( .. -- dict ) dict-if-empty-stack dict-if-not-dict ;
+: get-or-default ( dict key default -- value ) :default :key :dict
+        $dict $key dict-has-key? [ $dict $key dict-get ][ $default ] if
+;
 
 /* Fetch from dictionary */
  :PRE -> ( dict key -- val ) dict-get ;
@@ -15,8 +18,13 @@
  :PRE ->$ ( dict key -- ) get-local dict-get ;
  :PRE ->>$ ( dict key -- dict ) [ dup ] dip get-local dict-get swap ;
 
- :PRE $<- ( dict val key -- ) dup get-local swap dict-set ;
- :PRE $<<- ( dict val key -- dict ) [ [ dup ] dip ] dip dup get-local swap dict-set ;
+ :PRE <-$ ( dict varname -- ) get-local dict-set ;
+ :PRE <<-$ ( dict varname -- ) get-local dict-push ;
+
+ :PRE $<- ( dict val key -- ) 
+    "$<- has been deprecated. use $var <-$var instead" error /* dup get-local swap dict-set */ ;
+ :PRE $<<- ( dict val key -- dict ) 
+    "$<<- has been deprecated. use $var <<-$var instead" error /* [ [ dup ] dip ] dip dup get-local swap dict-set */ ;
 
 /*  Set an entry to true for each unicode character in this string */
  :PRE -% ( dict? key -- dict ) [ ensure-dictionary ] dip [ :dict ] dip [ $dict swap t swap dict-set ] each-char $dict ;

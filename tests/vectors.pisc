@@ -31,4 +31,14 @@
 	"vec-map" [ { 1 2 3 4 5 6 } [ 2 * ] vec-map ] [ { 2 4 6 8 10 12 } ] assert
 ] test
 
+"Vector nth functions"  [
+    { 1 2 3 4 5 6 } :vec
+    "1st" [ $vec 1st ][ 1 ] assert
+    "2nd" [ $vec 2nd ][ 2 ] assert
+    "3rd" [ $vec 3rd ][ 3 ] assert
+    "4th" [ $vec 4th ][ 4 ] assert
+    "5th" [ $vec 5th ][ 5 ] assert
+    "6th" [ $vec 6th ][ 6 ] assert
+] test
+
 $vec-suite .runTests

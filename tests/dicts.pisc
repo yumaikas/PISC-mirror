@@ -2,6 +2,7 @@
 "tests/test_root.pisc" import
 
 "Dictionary and lexical closure" <test-suite> :dict-suite
+[$dict-suite .addTest] :test
 
 "Basic functions" [
 	get-locals  /* Make sure we don't pollute global scope */
@@ -27,7 +28,13 @@
 	"Getting the keys returns all the keys" 
 		[ $subject dict-keys len ] [ 2 ] assert
 	drop-locals
-] $dict-suite .addTest
+] test
+
+"get-or-default" [ 
+    <dict> 45 <<-key :d
+    "get-or-default miss" [ $d "other-key" 2 get-or-default ][ 2 ] assert
+    "get-or-default hit" [ $d "key" 2 get-or-default ][ 45 ] assert
+] test
 
 "Prefix tests" [ 
 	get-locals
@@ -50,6 +57,10 @@
 
 	"Testing <<- and ->>" [ $triangle ->>a ->>b ->c ] [ 4 5 3 ] assert
 
+    "a" :a
+    "b" :b
+    "Testing <-$ and ->>$" [ $triangle 24 <<-$a -3 <-$b][ ] assert
+    "Testing ->$ and ->>$" [ $triangle ->>$a ->$b][ 24 -3 ] assert
 
 	<dict> dup :self
 		0 <<-count
@@ -64,6 +75,6 @@
 
 
 	drop-locals
-] $dict-suite .addTest
+] test
 
 $dict-suite .runTests

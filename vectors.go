@@ -24,6 +24,7 @@ func loadVectorCore(m *Machine) error {
 	m.AddGoWord("vec-prepend", " ( vec elem -- vec ) ", GoWord(vecPrepend))
 	m.AddGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
 	m.AddGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
+	// TODO: vec-slice ( vec begin end -- sliced-vec )
 	// Return success if we can load out PISC file as well.
 	return m.ImportPISCAsset("stdlib/vectors.pisc")
 }

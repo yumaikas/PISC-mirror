@@ -19,7 +19,7 @@
 	 	"" println 
 	 	${ "Testing that " $msg " failed: " $a1 " is not " $a2 } println
  	 ] [
-	 	"." print
+            "." print
  	 ] if 
  	# Indicate that we passed the assert
 ;

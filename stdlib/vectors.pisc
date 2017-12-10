@@ -7,6 +7,14 @@
 
 : 2vector ( a b -- vec ) <vector> 2 [ swap vec-prepend ] times ;
 
+: 1st ( vec -- elem ) 0 vec-at ;
+: 2nd ( vec -- elem ) 1 vec-at ;
+: 3rd ( vec -- elem ) 2 vec-at ;
+: 4th ( vec -- elem ) 3 vec-at ;
+: 5th ( vec -- elem ) 4 vec-at ;
+: 6th ( vec -- elem ) 5 vec-at ;
+# Don't add more here unless there is a *very* good reason
+
 :DOC each2 ( v1 v2 quot -- v3 ) Applies a quotation to each elementwise pair in v1 and v2, to result in v3 ;
 : each2 ( v1 v2 quot [ a b -- ab ] v3 ) 
 	:quot :v2 :v1
