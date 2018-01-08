@@ -277,7 +277,6 @@ func _strReverseGraphemes(m *Machine) error {
 
 func loadStringCore(m *Machine) error {
 
-	m.AddGoWord("str-concat", "( str-a str-b -- str-ab )", _concat)
 	m.AddGoWordWithStack(
 		"str-concat",
 		"( str-a str-b -- str-ab )",

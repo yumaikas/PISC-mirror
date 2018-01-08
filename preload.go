@@ -33,11 +33,6 @@ func (m *Machine) AppendToHelpTopic(topic, content string) {
 	m.HelpDocs[topic] = docify(content)
 }
 
-func (m *Machine) AddGoWord(name, docstring string, impl GoWord) {
-	m.HelpDocs[name] = docstring
-	m.PredefinedWords[name] = impl
-}
-
 func t(m *Machine) error {
 	m.PushValue(Boolean(true))
 	return nil

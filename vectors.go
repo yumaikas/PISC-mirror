@@ -13,17 +13,47 @@ var ModVectorCore = Module{
 }
 
 func loadVectorCore(m *Machine) error {
-	m.AddGoWord("vec-set-at", " ( vec val idx -- vec ) ", GoWord(vecSetAt))
-	m.AddGoWord("vec-at", " ( vec idx -- elem ) ", GoWord(vecAt))
-	m.AddGoWord("<vector>", " ( -- vector )", GoWord(makeVec))
-	m.AddGoWord("vec-each", " ( vec quot -- .. ) ", GoWord(vecEach))
-	m.AddGoWord("vec-append", " ( vec elem -- vec ) ", GoWord(vecAppend))
-	m.AddGoWord("vec-push", ` ( vec elem -- )
-		Mutates vector to contain elem`, GoWord(vecPush))
-	m.AddGoWord("vec-pushback", " ( vec elem -- ) ", GoWord(vecPush))
-	m.AddGoWord("vec-prepend", " ( vec elem -- vec ) ", GoWord(vecPrepend))
-	m.AddGoWord("vec-popback", " ( vec -- vec elem ) ", GoWord(vecPopback))
-	m.AddGoWord("vec-popfront", " ( vec -- vec elem ) ", GoWord(vecPopfront))
+	m.AddGoWordWithStack("vec-set-at",
+		" ( vec val idx -- vec ) ",
+		"Set the element of vec at idx to val",
+		vecSetAt)
+	m.AddGoWordWithStack("vec-at",
+		" ( vec idx -- elem ) ",
+		"Get the element at idx in vec",
+		vecAt)
+	m.AddGoWordWithStack("<vector>",
+		" ( -- vector )",
+		"Construct an empty vector",
+		makeVec)
+	m.AddGoWordWithStack("vec-each",
+		" ( vec quot -- .. ) ",
+		"Execute quot for each element in vec",
+		vecEach)
+	m.AddGoWordWithStack("vec-append",
+		" ( vec elem -- vec ) ",
+		"Push elem to the end of vec, leaving vec on the stack",
+		vecAppend)
+	m.AddGoWordWithStack("vec-push",
+		" ( vec elem -- )",
+		"Push elem to the end of vec, taking vec off the stack",
+		vecPush)
+	// TODO: Consider removing vec-pushback
+	m.AddGoWordWithStack("vec-pushback",
+		" ( vec elem -- ) ",
+		"Same as vec-push",
+		vecPush)
+	m.AddGoWordWithStack("vec-prepend",
+		" ( vec elem -- vec ) ",
+		"Push elem to the front of vec, leaving vec on the stack",
+		vecPrepend)
+	m.AddGoWordWithStack("vec-popback",
+		" ( vec -- vec elem ) ",
+		"Pop elem of the end of vec, leaving both on the stack",
+		vecPopback)
+	m.AddGoWordWithStack("vec-popfront",
+		" ( vec -- vec elem ) ",
+		"Pop elem off the front of vec, leaving both on the stack",
+		vecPopfront)
 	// TODO: vec-slice ( vec begin end -- sliced-vec )
 	// Return success if we can load out PISC file as well.
 	return m.ImportPISCAsset("stdlib/vectors.pisc")

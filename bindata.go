@@ -96,7 +96,7 @@ func stdlibBoolsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/bools.pisc", size: 48, mode: os.FileMode(436), modTime: time.Unix(1511943077, 0)}
+	info := bindataFileInfo{name: "stdlib/bools.pisc", size: 48, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -116,7 +116,7 @@ func stdlibDebugPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/debug.pisc", size: 241, mode: os.FileMode(436), modTime: time.Unix(1500942096, 0)}
+	info := bindataFileInfo{name: "stdlib/debug.pisc", size: 241, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -136,7 +136,7 @@ func stdlibDictsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/dicts.pisc", size: 1509, mode: os.FileMode(436), modTime: time.Unix(1512944015, 0)}
+	info := bindataFileInfo{name: "stdlib/dicts.pisc", size: 1509, mode: os.FileMode(384), modTime: time.Unix(1515368982, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -156,7 +156,7 @@ func stdlibIoPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/io.pisc", size: 1480, mode: os.FileMode(436), modTime: time.Unix(1491353691, 0)}
+	info := bindataFileInfo{name: "stdlib/io.pisc", size: 1480, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -176,7 +176,7 @@ func stdlibLocalsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/locals.pisc", size: 881, mode: os.FileMode(436), modTime: time.Unix(1504845781, 0)}
+	info := bindataFileInfo{name: "stdlib/locals.pisc", size: 881, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -196,7 +196,7 @@ func stdlibLoopsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/loops.pisc", size: 142, mode: os.FileMode(436), modTime: time.Unix(1491353691, 0)}
+	info := bindataFileInfo{name: "stdlib/loops.pisc", size: 142, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -216,7 +216,7 @@ func stdlibMathPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/math.pisc", size: 1984, mode: os.FileMode(436), modTime: time.Unix(1500942096, 0)}
+	info := bindataFileInfo{name: "stdlib/math.pisc", size: 1984, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -236,7 +236,7 @@ func stdlibRandomPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/random.pisc", size: 59, mode: os.FileMode(436), modTime: time.Unix(1491353691, 0)}
+	info := bindataFileInfo{name: "stdlib/random.pisc", size: 59, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -256,7 +256,7 @@ func stdlibShellPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/shell.pisc", size: 1155, mode: os.FileMode(436), modTime: time.Unix(1504845781, 0)}
+	info := bindataFileInfo{name: "stdlib/shell.pisc", size: 1155, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -276,7 +276,7 @@ func stdlibStd_libPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/std_lib.pisc", size: 1686, mode: os.FileMode(436), modTime: time.Unix(1511844549, 0)}
+	info := bindataFileInfo{name: "stdlib/std_lib.pisc", size: 1686, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -296,7 +296,7 @@ func stdlibStringsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/strings.pisc", size: 1009, mode: os.FileMode(436), modTime: time.Unix(1500942096, 0)}
+	info := bindataFileInfo{name: "stdlib/strings.pisc", size: 1009, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -316,7 +316,7 @@ func stdlibSymbolsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/symbols.pisc", size: 222, mode: os.FileMode(436), modTime: time.Unix(1491353691, 0)}
+	info := bindataFileInfo{name: "stdlib/symbols.pisc", size: 222, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -336,7 +336,7 @@ func stdlibVectorsPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/vectors.pisc", size: 1862, mode: os.FileMode(436), modTime: time.Unix(1512805598, 0)}
+	info := bindataFileInfo{name: "stdlib/vectors.pisc", size: 1862, mode: os.FileMode(384), modTime: time.Unix(1515368982, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -356,7 +356,7 @@ func stdlibWithPisc() (*asset, error) {
 		return nil, err
 	}
 
-	info := bindataFileInfo{name: "stdlib/with.pisc", size: 381, mode: os.FileMode(436), modTime: time.Unix(1491353691, 0)}
+	info := bindataFileInfo{name: "stdlib/with.pisc", size: 381, mode: os.FileMode(384), modTime: time.Unix(1511936614, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }

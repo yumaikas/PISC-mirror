@@ -1,4 +1,5 @@
-#! /bin/bash
+#! /data/data/com.termux/files/usr/bin/bash
+# /bin/bash
 
 set -uo pipefail
 export PISCDIR="$(pwd)"
