@@ -14,7 +14,7 @@ import (
 	"pisc"
 	// "pisc/libs/boltdb"
 	// piscHTTP "pisc/libs/http"
-	"pisc/libs/shell"
+	// "pisc/libs/shell"
 
 	"gopkg.in/readline.v1"
 	cli "gopkg.in/urfave/cli.v1"
@@ -42,6 +42,10 @@ func main() {
 				Usage: "Tells PISC to enable boltdb integration",
 			},
 		*/
+   		cli.BoolFlag{
+   			Name: "verbose",
+   			Usage: "Enable to show dispatch counts",
+   		},
 		cli.StringFlag{
 			Name:  "file, f",
 			Usage: "Execute a file as a bit of pisc, runs before -i or -c",
@@ -130,7 +134,8 @@ func benchmark(m *pisc.Machine) {
 
 func LoadForCLI(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
-		pisc.ModIOCore, pisc.ModDebugCore, shell.ModShellUtils,
+		pisc.ModIOCore, pisc.ModDebugCore,
+		// shell.ModShellUtils,
 	// piscHTTP.ModHTTPRequests
 	)...)
 }
@@ -150,6 +155,7 @@ func LoadForChatbot(m *pisc.Machine) error {
 
 func handleFlags(ctx *cli.Context) {
 	m := initMachine()
+	verbose := ctx.IsSet("verbose")
 	// Execute this before benchmarking since we aren't yet benchmarking file loads
 	if ctx.IsSet("benchmark") {
 		benchmark(m)
@@ -178,7 +184,7 @@ func handleFlags(ctx *cli.Context) {
 			log.Fatal("Error while loading modules")
 		}
 		// }
-		m.LogAndResetDispatchCount(os.Stderr)
+		m.LogAndResetDispatchCount(os.Stderr, verbose)
 	}
 	if ctx.IsSet("file") {
 		path := ctx.String("file")
@@ -222,7 +228,7 @@ func handleFlags(ctx *cli.Context) {
 			log.Println(err)
 			log.Fatal("Error running file")
 		}
-		m.LogAndResetDispatchCount(os.Stderr)
+		m.LogAndResetDispatchCount(os.Stderr, verbose)
 	}
 	if ctx.IsSet("command") {
 		line := ctx.String("command")
@@ -230,14 +236,14 @@ func handleFlags(ctx *cli.Context) {
 		if err != nil {
 			log.Fatal("Error in command: ", err)
 		}
-		m.LogAndResetDispatchCount(os.Stderr)
+		m.LogAndResetDispatchCount(os.Stderr, verbose)
 	}
 	if ctx.IsSet("interactive") {
-		loadInteractive(m)
+		loadInteractive(m, verbose)
 	}
 }
 
-func loadInteractive(m *pisc.Machine) {
+func loadInteractive(m *pisc.Machine, verbose bool) {
 
 	// given_files := flag.Bool("f", false, "Sets the rest of the arguments to list of files")
 	// Run command stuff here.
@@ -284,7 +290,7 @@ Code`)
 			fmt.Fprintln(os.Stderr, "Error:", err.Error())
 			return
 		}
-		m.LogAndResetDispatchCount(os.Stderr)
+		m.LogAndResetDispatchCount(os.Stderr, verbose)
 		fmt.Println("Data Stack:")
 		for _, val := range m.Values {
 			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))

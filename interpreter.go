@@ -96,8 +96,10 @@ type Machine struct {
 	DebugTrace string
 }
 
-func (m *Machine) LogAndResetDispatchCount(w io.Writer) {
-	fmt.Fprintln(w, m.NumDispatches, "dispatches have occured")
+func (m *Machine) LogAndResetDispatchCount(w io.Writer, shouldLog bool) {
+	if shouldLog {
+		fmt.Fprintln(w, m.NumDispatches, "dispatches have occured")
+	}
 	m.NumDispatches = 0
 }
 
