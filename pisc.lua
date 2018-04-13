@@ -45,19 +45,28 @@ local CodeQuotation = {
 	},
 }
 
-function default_ctor(__type)
-	local value = {}
-	for k,v in pairs(__type.Spec) do
-		if v == "number" then
-			value[k] = 0.0
-		elseif v == "string" then
-			value[k] = ""
-		elseif v == "boolean" then
-			value[k] = false
-		elseif v == "table" then
-			value[k] = {}
-		else 
-			assert(false, "Type "..v.." isn't a supported defaultable type")
+function  _ctor(_type, overrides)
+	function default_ctor(__type)
+		local value = {}
+		for k,v in pairs(__type.Spec) do
+			if v == "number" then
+				value[k] = 0.0
+			elseif v == "string" then
+				value[k] = ""
+			elseif v == "boolean" then
+				value[k] = false
+			elseif v == "table" then
+				value[k] = {}
+			else 
+				assert(false, "Type "..v.." isn't a supported defaultable type")
+			end
+		end
+		return value
+	end
+	local value = default_ctor(_type)
+	if overrides then
+		for k,v in pairs(overrides) do
+			value[k] = v
 		end
 	end
 	return value
@@ -74,7 +83,7 @@ end
 
 function make_lexer(code, position) 
 	assert(_type(position, CodePosition))
-	local basis = { Idx = 0, Code = code, Position = position }
+	local basis = _ctor(CodeList, {Code = code, CodePosition = position} )
 	assert(_type(basis, CodeList))
 
 	basis.nextWord = function (self)
@@ -83,11 +92,11 @@ function make_lexer(code, position)
 		local inLineComment = false
 		currentLine = ""
 
-		if self.Idx >= #self.Code then
+		if self.Idx > #self.Code then
 			return {str = currentWord}, EOF
 		end
 
-		for v in self.Code:sub(c.Idx):gmatch(".") do
+		for v in self.Code:sub(self.Idx):gmatch(".") do
 			-- Emit these words as they are found
 			if currentWord == "${"
 				or currentWord == "{"
@@ -98,12 +107,12 @@ function make_lexer(code, position)
 			end
 
 			self.Idx = self.Idx + #v
-			self.Offset = self.Offset + #v
+			self.CodePosition.Offset = self.CodePosition.Offset + #v
 
 			if v == "\n" then
 				currentLine = ""
-				self.LineNumber = self.LineNumber + 1
-				self.Offset = 0
+				self.CodePosition.LineNumber = self.CodePosition.LineNumber + 1
+				self.CodePosition.Offset = 0
 			end
 
 			-- This is the logic for handling [] and {} being able to be adjacent to other words.
@@ -119,8 +128,8 @@ function make_lexer(code, position)
 				end
 				if (v == "[" or v == "{" or v == "}" or v == "]") and #currentWord > 0 then
 					-- Unread the {,},[,]
-					c.Idx = c.Idx - #v
-					c.Offset = c.Offset - #v
+					self.Idx = self.Idx - #v
+					self.CodePosition.Offset = self.CodePosition.Offset - #v
 					return {str = currentWord}, nil
 				end
 			end
@@ -142,7 +151,7 @@ function make_lexer(code, position)
 					return nil, 
 						"Invalid escape sequence: "..v
 						.." current word: "..currentWord
-						.." line: "..c.LineNumber
+						.." line: "..self.CodePosition.LineNumber
 				end
 			end
 
@@ -177,11 +186,12 @@ function make_lexer(code, position)
 		end
 		return {str = currentWord}, nil
 	end
+	return basis
 end
 
 function stringToQuotation(code, position) -- Quotation, error
 	local basis = make_lexer(code, position)
-	local quot = default_ctor(CodeQuotation)
+	local quot = _ctor(CodeQuotation)
 
 	local error
 	local word
@@ -196,7 +206,7 @@ function stringToQuotation(code, position) -- Quotation, error
  			return nil, err
  		end
  		table.insert(quot.Words, word)
- 		table.insert(quot.CodePositions, basis.CodePosition)
+ 		table.insert(quot.CodePositions, _ctor(CodePosition, basis.CodePosition))
  	end
  	return quot, nil
 end
@@ -227,10 +237,8 @@ function table_print (tt, indent, done)
 end
 
 function lex_string(code)
-	local pos = default_ctor(CodePosition)
-	table_print(pos)
-	pos.Source = "lex_string"
-	return stringToQuotation(code, default_ctor(CodePosition))
+	local pos = _ctor(CodePosition, {Source = "lex_string"})
+	return stringToQuotation(code, _ctor(CodePosition))
 end
 
-print(lex_string("1 2 3"))
+table_print(lex_string('1 2 3 \n\n[ "foo" "bar" ] '))
