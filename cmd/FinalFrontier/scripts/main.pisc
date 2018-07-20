@@ -13,13 +13,14 @@ IDEAS: Maybe find some way to integrate long time travel into the culture of spa
 	4 <up-down-menu> :m
 	$m ->highlight :MENU
  	[ back-black ] :CHOICE
+    CLS # Clear the screen before presenting the menu
  	CHOICE print
 
  	[ $m .done? ]
  	[
-		CLS
-		NNL
 		${
+            TOPLEFT
+            NNL
 			cyan "Final Frontier" NNL
 			red 
 			"  " 0 MENU "New Game" CHOICE NNL

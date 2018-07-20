@@ -29,16 +29,16 @@ older_than bindata.go strings/*.pisc && {
 
 case "$1" in
   build)
-  older_than game.exe *.go && {
-    go build -o game.exe
+  older_than FinalFrontier *.go && {
+    go build -o FinalFrontier
   }
   ;;
   run)
-  older_than game.exe main.go finalFrontier.go && {
-    rm game.exe
-    go build -o game.exe
+  older_than FinalFrontier main.go finalFrontier.go && {
+    rm FinalFrontier
+    go build -o FinalFronter
   }
-  ./game.exe
+  ./FinalFrontier
   ;;
 esac
   

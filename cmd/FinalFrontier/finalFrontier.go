@@ -39,10 +39,10 @@ var ModFinalFrontier = pisc.Module{
 
 func loadFinalFrontier(m *pisc.Machine) error {
 	init_term()
-	m.AddGoWord("term-mode", "( -- mode )", getTermMode)
-	m.AddGoWord("getkey", "( -- keyval )", getch)
-	m.AddGoWord("game-script", "( filename -- ? ) ", loadGameScript)
-	m.AddGoWord("quit-game", "( -- )", exit)
-    os_overload(m)
+	m.AddGoWordWithStack("term-mode", "( -- mode:str )", "Get the current game mode", getTermMode)
+	m.AddGoWordWithStack("getkey", "( -- keyval:str )", "Wait for a key to be pressed, return its value", getch)
+	m.AddGoWordWithStack("game-script", "( filename:str -- ? ) ", "Execute a game script", loadGameScript)
+	m.AddGoWordWithStack("quit-game", "( -- )", "Exit the game.", exit)
+	os_overload(m)
 	return nil
 }

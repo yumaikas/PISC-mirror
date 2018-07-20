@@ -40,12 +40,12 @@ func doSmallHTTPReq(m *pisc.Machine) error {
 		return err
 	}
 	if headers, ok := opts["header"]; ok {
-		headersVec, ok := headers.(pisc.Array)
+		headersVec, ok := headers.(pisc.Vector)
 		if !ok {
 			return httpErr("Headers, if present, need to be an array of string pairs")
 		}
 		for _, val := range headersVec {
-			inner := val.(pisc.Array)
+			inner := val.(pisc.Vector)
 			req.Header.Add(inner[0].String(), inner[1].String())
 		}
 	}
@@ -81,7 +81,12 @@ func doSmallHTTPReq(m *pisc.Machine) error {
 }
 
 func loadHTTPClient(m *pisc.Machine) error {
-	m.AddGoWord("do-http-req", "( verb url options[ ->headers? ->body? ] -- reply[.status-code, .reply-reader, .content-str, ] ) ", doSmallHTTPReq)
-	// Todo: look into adding a full
+	m.AddGoWordWithStack(
+		"do-http-req",
+		"( verb:str url:str options:dict[ ->headers? ->body? ] -- reply:dict[.status-code, .reply-reader, .content-str, ] ) ",
+		`Use an HTTP verb, a URL, and a set of options to make an http request, 
+		recieving the reply with a status code, reply reader, and a call for the content as a string`,
+		doSmallHTTPReq)
+	// Todo: look into adding a full suite of HTTP tools
 	return nil
 }

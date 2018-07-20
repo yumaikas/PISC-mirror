@@ -28,7 +28,8 @@ func getTextOfInput(m *pisc.Machine) error {
 }
 
 func loadModPlayground(m *pisc.Machine) error {
-	m.AddGoWord("create-paste-input", "( name -- )", addTextInput)
-	m.AddGoWord("get-paste-text", "( name -- text )", getTextOfInput)
+	m.AddGoWordWithStack("create-paste-input", "( name:str -- )", "Create a paste input with the supplied name", addTextInput)
+	m.AddGoWordWithStack("get-paste-text", "( name:str -- text )", "Get the paste text from the input with the supplied name", getTextOfInput)
+	// TODO: Add in xhr/http bindings to make this able to drive APIs from the browser
 	return nil
 }

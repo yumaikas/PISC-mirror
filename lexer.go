@@ -8,11 +8,11 @@ import (
 )
 
 /*
-The plan is to hav the Source field indicate
-where this code came from. Potential values are currently
-stdin:
-file:
-db:
+	The plan is to hav the Source field indicate
+	where this code came from. Potential values are currently
+	stdin:
+	file:
+	db:
 */
 type CodePosition struct {
 	LineNumber int

@@ -27,7 +27,7 @@ func de_init_term() error {
 }
 
 func os_overload(m *pisc.Machine) error {
-    return nil
+	return nil
 }
 
 func getch(m *pisc.Machine) error {
@@ -36,7 +36,7 @@ func getch(m *pisc.Machine) error {
 	if err != nil {
 		return err
 	}
-	if num != 1 {
+	if num < 1 {
 		return fmt.Errorf("Didn't read at least 1 byte from the pty!")
 	}
 

@@ -88,13 +88,13 @@ func _cd(m *pisc.Machine) error {
 }
 
 func loadShellWords(m *pisc.Machine) error {
-	m.AddGoWord("list-files-at", "( path -- files )", _listFilesAt)
-	m.AddGoWord("list-files", "( -- files ) ", _listFiles)
-	m.AddGoWord("stat", "( filepath -- info )", _stat)
-	m.AddGoWord("pwd", "( -- workingdir )", _pwd)
-	m.AddGoWord("env-get", " ( key -- envVal ) ", _envGet)
-	m.AddGoWord("env-set", " ( key value -- ) ", _envSet)
-	m.AddGoWord("cd", "( new-dir -- ) ", _cd)
+	m.AddGoWordWithStack("list-files-at", "( path:str -- files:vec )", "List files in supplied path", _listFilesAt)
+	m.AddGoWordWithStack("list-files", "( -- files:vector ) ", "List files in current working directory", _listFiles)
+	m.AddGoWordWithStack("stat", "( filepath:str -- info:dict )", "Stat a file", _stat)
+	m.AddGoWordWithStack("pwd", "( -- workingdir:str )", "Get the current working directory", _pwd)
+	m.AddGoWordWithStack("env-get", " ( key:str -- envVal:str ) ", "Fetch an environment value", _envGet)
+	m.AddGoWordWithStack("env-set", " ( key:str value:str -- ) ", "Set an environment value", _envSet)
+	m.AddGoWordWithStack("cd", "( new-dir:str -- ) ", "Change directories to new-dir", _cd)
 
 	return m.ImportPISCAsset("stdlib/shell.pisc")
 }

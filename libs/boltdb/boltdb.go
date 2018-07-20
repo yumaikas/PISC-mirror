@@ -117,6 +117,10 @@ func initKVStore(m *pisc.Machine) error {
 }
 
 func loadBoltDB(m *pisc.Machine) error {
-	m.AddGoWord("<open-kv-at-path>", "( path -- kvstore )", initKVStore)
+	m.AddGoWordWithStack(
+		"<open-kv-at-path>",
+		"( path:str -- kvstore:dict )",
+		"Open a BoltDB key/value store at the given location",
+		initKVStore)
 	return nil
 }
