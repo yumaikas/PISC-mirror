@@ -109,6 +109,16 @@ func lenEntry(m *Machine) error {
 	return nil
 }
 
+func tryRunCode(m *Machine) error {
+	/*
+		err := m.Execute("call")
+		if err != nil {
+
+		}
+	*/
+	return nil
+}
+
 func errorFromEntry(m *Machine) error {
 	msg := m.PopValue().String()
 	return fmt.Errorf(msg)

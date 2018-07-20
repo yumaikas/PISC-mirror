@@ -136,6 +136,7 @@ func LoadForCLI(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
 		pisc.ModIOCore, pisc.ModDebugCore,
 		// shell.ModShellUtils,
+		pisc.ModMinnowDB,
 	// piscHTTP.ModHTTPRequests
 	)...)
 }
@@ -150,7 +151,9 @@ func LoadForDB(m *pisc.Machine) error {
 func LoadForChatbot(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
 		// boltdb.ModBoltDB,
-		pisc.ModIRCKit)...)
+		pisc.ModIRCKit,
+		pisc.ModMinnowDB,
+	)...)
 }
 
 func handleFlags(ctx *cli.Context) {
