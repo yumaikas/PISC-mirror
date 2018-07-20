@@ -28,6 +28,7 @@ func main() {
 		pisc.StandardModules,
 		pisc.ModDebugCore,
 		pisc.ModIOCore,
+		pisc.ModHelpCode,
 		ModPlayground)...)
 
 	printStack := func(this *js.Object, arguments []*js.Object) interface{} {

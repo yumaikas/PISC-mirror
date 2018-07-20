@@ -9,11 +9,10 @@ var ModLoopCore = Module{
 }
 
 func _doTimes(m *Machine) error {
-	toExec := m.PopValue().(*Quotation)
+	toExec := m.PopValue().(*Quotation).toCode()
 	nOfTimes := m.PopValue().(Integer)
 	for i := int(0); i < int(nOfTimes); i++ {
-		m.PushValue(toExec)
-		err := m.ExecuteQuotation()
+		err := m.execute(toExec)
 		if err != nil {
 			return err
 		}

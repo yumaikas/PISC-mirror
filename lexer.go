@@ -73,6 +73,7 @@ func stringToQuotation(code string, pos CodePosition) (*CodeQuotation, error) {
 }
 
 func (c *CodeList) nextWord() (*word, error) {
+	// TODO: Add support for lexing out /*, to save the re-parsing of it
 	currentWord := ""
 	skipChar := false
 	inString := false

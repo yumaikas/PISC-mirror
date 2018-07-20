@@ -1,0 +1,23 @@
+
+: show-docs ( -- ) 
+    /* Print relevant docs to stdout */
+    [ :mod
+        ${ 
+            $mod ->name 
+            " (By " $mod ->author 
+            ", under " $mod ->license 
+            ")"
+        } println
+        $mod ->doc println
+    ] 
+    [ :func
+        ${ "\t" $func ->name "\t" $func ->stack-effect } println
+    ] 
+    iterate-help-info
+;
+
+: format-docs ( options -- ouput ) 
+/* Not implemented */
+"" drop
+; 
+

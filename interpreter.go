@@ -29,6 +29,10 @@ type word struct {
 	impl GoWord
 }
 
+var CommentImpl GoWord = func(m *Machine) error {
+	return nil
+}
+
 // Module The type for a function that extends PISC via adding words
 type Module struct {
 	Author    string
@@ -40,13 +44,18 @@ type Module struct {
 
 // LoadModules Load a bunch of modules into this instance of the VM
 func (m *Machine) LoadModules(modules ...Module) error {
+	if m.ModuleFunctions == nil {
+		m.ModuleFunctions = make(map[string][]string)
+	}
 	for _, mod := range modules {
+		m._loadingModuleNames = make([]string, 0)
 		err := mod.Load(m)
 		// Append the name
-		m.LoadedModules = append(m.LoadedModules, mod.Name)
+		m.LoadedModules = append(m.LoadedModules, mod)
 		if err != nil {
 			return fmt.Errorf("Error loading %s, %s", mod.Name, err.Error())
 		}
+		m.ModuleFunctions[mod.Name] = m._loadingModuleNames
 	}
 	return nil
 }
@@ -69,7 +78,9 @@ type Machine struct {
 	Values []StackEntry
 
 	// Keep a list of loaded modules names here, for doing some detection
-	LoadedModules []string
+	LoadedModules []Module
+	// Keep a list of all the functions grouped by which module defined them
+	ModuleFunctions map[string][]string
 
 	// This is reallocated when locals are used
 	Locals []map[string]StackEntry
@@ -81,9 +92,8 @@ type Machine struct {
 	PredefinedWords map[string]GoWord
 	// TODO: try to work this out later.
 	DefinedStackComments map[string]string
-	// The top of the stack it the end of the []StackEntry slice.
-	// Every so many entries, we may need to re-allocate the stack....
-	HelpDocs map[string]string
+	HelpDocs             map[string]string
+	_loadingModuleNames  []string
 
 	// Each time we are asked for a symbol, supply the value here, then increment
 	SymbolIncr int64
@@ -273,6 +283,9 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			return ExitingProgram
 
 		case wordVal.str == "/*":
+			// Can't remove this case until it's supported at a lexer level,
+			// But the current setup of having the function definitions parse this out
+			// should help comments cost less
 			commentWordLen := 0
 			for err == nil {
 				wordVal, err = p.nextWord()
@@ -629,7 +642,48 @@ func (m *Machine) readWordBody(name word, c codeSequence) ([]*word, []CodePositi
 	wordDef := make([]*word, 0)
 	wordInfo := make([]CodePosition, 0)
 	hasLocal := false
+	doc := ""
+	wasEndOfFunction := false
+	// Read in doc comment for word
 	for err == nil {
+		wordVal, err := c.nextWord()
+		if err != nil {
+			return nil, nil, err
+		}
+		if wordVal.str == "/*" {
+			for err == nil {
+				commentVal, err := c.nextWord()
+				if err != nil {
+					return nil, nil, err
+				}
+				if commentVal.str == "*/" {
+					break
+				}
+				doc = doc + " " + commentVal.str
+			}
+			continue
+		}
+		if len(wordVal.str) > 1 && wordVal.str[0] == '#' {
+			doc = doc + wordVal.str[1:len(wordVal.str)-1]
+			continue
+		}
+		// Stop reading the doc comment as soon as we hit a non-comment word/line
+		m.HelpDocs[name.str] = doc
+
+		// Copied from below to keep word from getting lost from definition
+		if isLocalWordPrefix(*wordVal) {
+			hasLocal = true
+		}
+		if wordVal.str == ";" {
+			wasEndOfFunction = true
+			break
+		}
+		wordDef = append(wordDef, wordVal)
+		wordInfo = append(wordInfo, c.getCodePosition())
+		// End copied
+	}
+
+	for err == nil && !wasEndOfFunction {
 		wordVal, err := c.nextWord()
 		if err != nil {
 			return nil, nil, err
@@ -637,6 +691,25 @@ func (m *Machine) readWordBody(name word, c codeSequence) ([]*word, []CodePositi
 		if isLocalWordPrefix(*wordVal) {
 			hasLocal = true
 		}
+		if wordVal.str == "/*" {
+			doc = ""
+			for err == nil {
+				commentVal, err := c.nextWord()
+				if err != nil {
+					return nil, nil, err
+				}
+				if commentVal.str == "*/" {
+					break
+				}
+				doc = doc + " " + commentVal.str
+			}
+			wordVal.str = "/*" + doc + "*/"
+			wordVal.impl = CommentImpl // Blank out the implementation of comments
+			wordDef = append(wordDef, wordVal)
+			wordInfo = append(wordInfo, c.getCodePosition())
+			continue
+		}
+
 		if wordVal.str == ";" {
 			break
 		}
@@ -737,6 +810,8 @@ func (m *Machine) readWordDefinition(c codeSequence) error {
 		Words:         wordDef,
 		CodePositions: positions,
 	}
+	// May have to wait on this....
+	m._loadingModuleNames = append(m._loadingModuleNames, name.str)
 	return nil
 }
 

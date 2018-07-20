@@ -85,12 +85,13 @@ case "$1" in
 	;;
 esac
 
+# TODO: Definitely consider switching fmt.Println to pass through priv_puts in as *many* places as make sense.
+# TODO: Consider using crit-bit trees for dictionaries
+# TODO: Implement an interactive tutorial in the 'in Y minutes' style. 
+# TODO: consider packing the scripts under scripts/ for general use, possibly with a switch for unpacking them
+# TODO: Now that something close to a save-game has been implemented for final-frontier, start implementing the initial states and such
 cat <<EONOTE
-TODO: Definitely consider switching fmt.Println to pass through priv_puts in as *many* places as make sense.
-TODO: Consider using crit-bit trees for dictionaries
-TODO: Now that something close to a save-game has been implemented for final-frontier, start implementing the initial states and such
-TODO: Implement an interactive tutorial in the 'in Y minutes' style. 
-TODO: consider packing the scripts under scripts/ for general use, possibly with a switch for unpacking them
+Review TODOs in build script
 EONOTE
 
 exit 0

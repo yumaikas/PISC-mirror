@@ -14,7 +14,7 @@ import (
 	"pisc"
 	// "pisc/libs/boltdb"
 	// piscHTTP "pisc/libs/http"
-	// "pisc/libs/shell"
+	"pisc/libs/shell"
 
 	"gopkg.in/readline.v1"
 	cli "gopkg.in/urfave/cli.v1"
@@ -42,10 +42,10 @@ func main() {
 				Usage: "Tells PISC to enable boltdb integration",
 			},
 		*/
-   		cli.BoolFlag{
-   			Name: "verbose",
-   			Usage: "Enable to show dispatch counts",
-   		},
+		cli.BoolFlag{
+			Name:  "verbose",
+			Usage: "Enable to show dispatch counts",
+		},
 		cli.StringFlag{
 			Name:  "file, f",
 			Usage: "Execute a file as a bit of pisc, runs before -i or -c",
@@ -135,7 +135,7 @@ func benchmark(m *pisc.Machine) {
 func LoadForCLI(m *pisc.Machine) error {
 	return m.LoadModules(append(pisc.StandardModules,
 		pisc.ModIOCore, pisc.ModDebugCore,
-		// shell.ModShellUtils,
+		shell.ModShellUtils,
 		pisc.ModMinnowDB,
 	// piscHTTP.ModHTTPRequests
 	)...)
@@ -296,6 +296,10 @@ Code`)
 		m.LogAndResetDispatchCount(os.Stderr, verbose)
 		fmt.Println("Data Stack:")
 		for _, val := range m.Values {
+			if val == nil {
+				fmt.Println("<nil>")
+				continue
+			}
 			fmt.Println(val.String(), fmt.Sprint("<", val.Type(), ">"))
 		}
 	}

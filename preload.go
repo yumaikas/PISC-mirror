@@ -23,6 +23,7 @@ func (m *Machine) AddGoWordWithStack(name, stackEffect, docstring string, impl G
 	m.DefinedStackComments[name] = stackEffect
 	m.HelpDocs[name] = docify(docstring)
 	m.PredefinedWords[name] = impl
+	m._loadingModuleNames = append(m._loadingModuleNames, name)
 }
 
 func (m *Machine) AppendToHelpTopic(topic, content string) {
@@ -134,7 +135,7 @@ func reflectEq(m *Machine) error {
 func isModuleLoaded(m *Machine) error {
 	modName := m.PopValue().String()
 	for _, mod := range m.LoadedModules {
-		if modName == mod {
+		if modName == mod.Name {
 			m.PushValue(Boolean(true))
 			return nil
 		}

@@ -29,6 +29,38 @@ func _help(m *Machine) error {
 	}
 }
 
+func _iterateHelpinfo(m *Machine) error {
+	perFunction := m.PopValue().(*Quotation).toCode()
+	perModule := m.PopValue().(*Quotation).toCode()
+	for _, module := range m.LoadedModules {
+		perModuleArgs := Dict{
+			"name":    String(module.Name),
+			"count":   Integer(len(m.ModuleFunctions[module.Name])),
+			"author":  String(module.Author),
+			"license": String(module.License),
+			"doc":     String(module.DocString),
+		}
+		m.PushValue(perModuleArgs)
+		modErr := m.execute(perModule)
+		if modErr != nil {
+			return modErr
+		}
+		for _, funcName := range m.ModuleFunctions[module.Name] {
+			perFuncArgs := Dict{
+				"name":         String(funcName),
+				"stack-effect": String(m.DefinedStackComments[funcName]),
+				"doc":          String(m.HelpDocs[funcName]),
+			}
+			m.PushValue(perFuncArgs)
+			funcErr := m.execute(perFunction)
+			if funcErr != nil {
+				return funcErr
+			}
+		}
+	}
+	return nil
+}
+
 // TODO: Pull from more Sources of docs, like word defs, not just
 // :DOC directive
 func loadHelpCore(m *Machine) error {
@@ -36,9 +68,15 @@ func loadHelpCore(m *Machine) error {
 
 	m.AddGoWordWithStack(
 		"help",
-		"( search-terim -- )",
+		"( search-term:str -- )",
 		"Search the docs for the given search term, printing out any entries that match",
 		_help)
-	return nil
+	m.AddGoWordWithStack(
+		"iterate-help-info",
+		"( per-module:func[ attrs:dict[ count:int name:str author:str license:str doc:str ] - ] per-function:func[ attrs:dict[ name stack doc ] ] -- ? )",
+		"Iterate over all of the installed functions, running the callbacks provided as needed",
+		_iterateHelpinfo,
+	)
+	return m.ImportPISCAsset("stdlib/help.pisc")
 
 }
