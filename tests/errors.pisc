@@ -1,0 +1,19 @@
+"tests/test_root.pisc" import
+
+"Testing error handling" <test-suite> :error-suite
+[$error-suite .addTest] :test
+
+"Testing catch" [ 
+    "No thrown error" [ [ ] {} catch ] [ f ] assert
+    "Simple error" [ [ "Testing errors" {"test"} error ] {"test"} catch f neq ] [ t ] assert
+
+] test
+
+"Testing augmented asserts" [
+    "Test that an error isn't thrown" [ ] assert-no-error
+    "tags" [ "testing errors" {"test"} error ] {"test"} assert-error-tags
+] test
+
+$error-suite .runTests
+
+

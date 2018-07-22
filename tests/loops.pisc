@@ -1,0 +1,14 @@
+"tests/test_root.pisc" import
+
+
+"Testing loops work correctly" <test-suite> :loops-suite
+[$loops-suite .addTest] :test 
+
+"Vec-each" [
+    "Continue" [ {1 2 3 } [ continue drop ] vec-each ]  [1 2 3] assert
+    "Break" [ { 1 2 3 } [ break drop ] vec-each ] [ 1 ] assert
+    "Nested continue"
+        [ {1 2 3} [ t [ continue ] when drop ] vec-each ] [1 2 3] assert
+] test
+
+$loops-suite .runTests

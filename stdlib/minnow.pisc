@@ -1,0 +1,127 @@
+# This can write each non-functional type
+: serial-mapping ( -- mapping )
+	<dict>
+		[ write-dict ] <<-Dictionary
+		[ write-vec ] <<-Vector
+		[ write-int ] <<-Integer
+		[ write-double ] <<-Double
+		[ write-string ] <<-String
+		[ write-bool ] <<-Boolean
+	:t-table
+
+	[ :v 
+	  $t-table $v typeof dict-has-key?
+		[ $t-table $v typeof dict-get ]
+		[ ${ "Type " $v typeof " cannot be saved." } error ]
+	  if
+	] 
+;
+
+: save-state ( OUT state -- state ) :state :path
+	$state typeof :type
+	f :success
+	[ 
+        $path open-file-writer :OUT
+		": . ( dict value key -- dict ) dict-push ;" $OUT .write-line
+		<dict> 
+			$OUT <<-OUT
+			0 <<-tab
+	] :get-writer-ctx
+	[ eq dup $success or :success ] :eqn
+	$type "Dictionary" eqn [ get-writer-ctx $state write-dict ] when
+	$type "Vector" eqn [ get-writer-ctx $state write-vec ] when
+	$success not
+		[ ${ "Cannot write value of type: " $type } error ]
+	when	
+	$OUT .close
+;
+
+# Replace " with \" in the string, to keep it from breaking up
+: quote-safe ( str -- str ) "\\" "\\\\" str-replace "\"" "\\\"" str-replace ;
+: wrap-quotes ( str -- str ) "\"" swap str-concat "\"" str-concat ;
+
+: write-dict ( ctx dict -- ) 
+	:pairs dup :ctx ->OUT :OUT
+	# Increase the tab-indent
+	$ctx dup ->tab 1 + <-tab 
+
+	serial-mapping :dispatch
+	[ $OUT .write-string ] :output
+	[ "\t" $ctx ->tab str-repeat output ] :TAB
+
+	"\n" output
+	TAB "<dict>" output
+
+	$pairs [ :k $pairs ->$k :v
+		$v dispatch :write
+		"\n" output TAB "\t" output
+		$ctx $v write 
+		" " output
+		$k quote-safe wrap-quotes output
+		" ." output 
+	] dict-each-key
+	$ctx dup ->tab 1 - <-tab 
+;
+	
+: write-vec ( ctx vec -- )
+	:elems dup :ctx ->OUT :OUT
+	$ctx dup ->tab 1 + <-tab 
+	[ "\t" $ctx ->tab str-repeat output ] :TAB
+	serial-mapping :dispatch
+	# Increase the tab-indent
+	[ $OUT .write-string ] :output
+
+	"{" output 
+	$elems [ :e
+		" " output
+		$ctx $e $e dispatch call 
+	] vec-each
+	" }" output
+	$ctx dup ->tab 1 - <-tab 
+;
+ 
+
+: write-int ( ctx int -- ) >string swap ->OUT .write-string ;
+: write-string ( ctx str -- ) quote-safe wrap-quotes swap ->OUT .write-string ; 
+: write-double ( ctx double -- ) >string swap ->OUT .write-string ;
+: write-bool ( ctx bool --  ) [ :ctx ] dip [ "t" ] [ "f" ] if $ctx ->OUT .write-string ;
+
+: copy-file-simple ( src dest -- ) swap
+     get-str-at-path save-str-to-path
+ ;
+
+# TODO: do file mod-date checks here on gets, so that this file can be persisted across pisc sessions
+: <persisted-dict> ( path -- dict ) 
+    :path
+    ${ $path ".bak" } :backup
+    $path import :state # Pick up the state from before
+    <dict> dup :export # Export
+    # ( key value -- )
+    [ :v :k 
+       $state $v $k dict-push 
+       $export .save 
+    ] <<-put
+    [  
+       $path $backup copy-file-simple
+       $path $state save-state
+    ] <<-save
+    # ( key -- value )
+    [ :k
+      $state ->$k 
+    ] <<-get
+    [ :k
+       $state $k dict-has-key?
+    ] <<-has-key?
+;
+
+
+
+
+
+
+
+
+
+
+
+

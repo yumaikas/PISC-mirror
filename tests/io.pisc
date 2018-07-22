@@ -1,0 +1,41 @@
+# Testing IO
+"tests/test_root.pisc" import
+
+"Testing write-iolist" <test-suite> :iolist-suite
+
+[$iolist-suite .addTest] :test
+
+"Simple cases" [
+    "tests/simple-case.txt" open-file-writer :out
+    
+    "Writing a string" [
+         "This is a string" $out write-iolist 
+         $out .close
+    ] assert-no-error
+    
+    "Reading the results back" 
+        [ "tests/simple-case.txt" get-str-at-path  ] 
+        [ "This is a string" ] 
+    assert
+    
+] test
+
+"More sophisticated" [
+    "Writing an array of strings " [ 
+        "tests/arrays.txt" open-file-writer :out
+         { "Elem1" "Elem2" "Elem3" } $out write-iolist
+         $out .close
+     ] assert-no-error
+    "Reading results" [ "tests/arrays.txt" get-str-at-path ] [ "Elem1Elem2Elem3"  ] assert
+] test
+
+"Testing Nesting" [
+    "writing nested iolist" [ 
+        "tests/nesting.txt" open-file-writer :out
+        { "test" { "of" } { "things" } "." } $out write-iolist
+    ] assert-no-error
+    "reading results" [ "tests/nesting.txt" get-str-at-path ] [ "testofthings." ] assert
+]
+
+
+$iolist-suite .runTests
