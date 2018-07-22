@@ -16,6 +16,36 @@
     iterate-help-info
 ;
 
+: html-body ( content -- ) 
+    :content
+    {
+"
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset=\"utf-8\">
+</head>
+    
+
+<body>
+"
+$content
+        
+"</body>
+</html>"
+    }
+;
+
+: write-str-array ( content:str writer:dict [ .write .write-line ] -- ) 
+    
+; 
+
+: docs-to-html ( directory:str -- )
+
+ 
+
+;
+
 : format-docs ( options -- ouput ) 
 /* Not implemented */
 "" drop

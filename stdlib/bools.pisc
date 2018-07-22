@@ -4,3 +4,5 @@ bools.pisc
 
 # I guess this is empty now?
 
+: neq ( a b -- not-equal ) eq not ;
+

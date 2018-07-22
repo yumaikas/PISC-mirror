@@ -1,7 +1,7 @@
 " syntax/pisc.vim
 
 " PISC only has a few 'keywords', so we'll match them here.
-syntax keyword piscKeyWords if when while :PRE :DOC 
+syntax keyword piscKeyWords if when while break continue :PRE :DOC 
 
 
 " : name 

@@ -30,8 +30,8 @@ func _help(m *Machine) error {
 }
 
 func _iterateHelpinfo(m *Machine) error {
-	perFunction := m.PopValue().(*Quotation).toCode()
-	perModule := m.PopValue().(*Quotation).toCode()
+	perFunction := m.PopValue().(*Quotation)
+	perModule := m.PopValue().(*Quotation)
 	for _, module := range m.LoadedModules {
 		perModuleArgs := Dict{
 			"name":    String(module.Name),
@@ -41,7 +41,7 @@ func _iterateHelpinfo(m *Machine) error {
 			"doc":     String(module.DocString),
 		}
 		m.PushValue(perModuleArgs)
-		modErr := m.execute(perModule)
+		modErr := m.CallQuote(perModule)
 		if modErr != nil {
 			return modErr
 		}
@@ -52,7 +52,7 @@ func _iterateHelpinfo(m *Machine) error {
 				"doc":          String(m.HelpDocs[funcName]),
 			}
 			m.PushValue(perFuncArgs)
-			funcErr := m.execute(perFunction)
+			funcErr := m.CallQuote(perFunction)
 			if funcErr != nil {
 				return funcErr
 			}

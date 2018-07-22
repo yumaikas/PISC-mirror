@@ -1,19 +1,9 @@
 /* Tests for various bits of PISC */
 
-:DOC assert ( message quot1 quot2 -- ) 
-	Use eq to assert that both quotations result in the same test result
-;
-/*
-: assert ( message quot1 quot2 -- ) :q2 :q1 :msg
- 	{ q1 } { q2 } eq not [ $msg error ] when
-;
-*/
-
-:DOC assert-deep-slow ( message quot1 quot2 -- ) 
-	Use deep-slow-reflect-eq to assert both quotoations result in the same test result 
-;
-
 : assert ( message quot1 quot2 -- ) 
+/*
+Use deep-slow-reflect-eq to assert both quotoations result in the same test result 
+*/
 	:q2 :q1 :msg 
  	{ q1 } dup :a1 { q2 } dup :a2 deep-slow-reflect-eq not [ 
 	 	"" println 
@@ -23,6 +13,29 @@
  	 ] if 
  	# Indicate that we passed the assert
 ;
+
+: assert-no-error ( message quot -- )
+    # Assert that no catchable error was thrown
+    :q :msg
+    {  
+       $q catch-all-the-errors dup f neq 
+         [ :err ${ "Testing that " $msg " failed: " $err } println ] 
+         [ "." print drop ]
+       if 
+    } drop # 
+;
+
+: assert-error-tags ( message quot tags -- )
+    :tags :q :msg
+    { [ 
+        $q $tags catch f eq [ "Testing that " $msg " failed, because an expected error was not thrown" println  ] when   
+      ] catch-all-the-errors dup f neq 
+         [ :err ${ "Testing that " $msg " failed: " $err } println ] 
+         [ "." print drop ]
+        if
+   } drop
+;
+
 
 
 : run-single-test ( name quot -- test ) 

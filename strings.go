@@ -22,7 +22,114 @@ var ModStringsCore = Module{
 type stringPattern struct {
 }
 
-// TODO: Start replacing anonymous functions with named functions so that profiling is a little clearer
+func loadStringCore(m *Machine) error {
+
+	m.AddGoWordWithStack(
+		"str-concat",
+		"( str-a str-b -- str-ab )",
+		"Concatenate str-a and str-b, allocating a new string",
+		_concat)
+	m.AddGoWordWithStack(">string",
+		"( anyVal -- str )",
+		"Cast the top value of the stack to a string.",
+		_toString)
+	m.AddGoWordWithStack("str>int",
+		"( str -- int! )",
+		"Attempt to parse a string from the top of the stack into an int.",
+		_strToInt)
+	m.AddGoWordWithStack(
+		"str-join",
+		"( vec sep -- str )",
+		"Casts each element of vec to a string, and then joins them with sep in the middle",
+		_strJoin)
+
+	m.AddGoWordWithStack(
+		"str-ends?",
+		"( str endstr -- endswith? )",
+		"Checks to see if str ends with endstr",
+		_strEndsWith)
+	m.AddGoWordWithStack(
+		"str-eq?",
+		"( a b -- eq? )",
+		"Compares two strings for equality.",
+		_strEq)
+	m.AddGoWordWithStack(
+		"str-substr",
+		"( str start end -- substr )",
+		"Takes a substring of str over the range [start:end]",
+		_strSubstr)
+	m.AddGoWordWithStack("str-idx-of",
+		"( str sub -- idx )",
+		"Find the index of the first instance of sub in str",
+		_strIdxOf)
+	m.AddGoWordWithStack("str-split",
+		"( str sep -- vec )",
+		"Split str into a vector of strings, based on sep",
+		_strSplit)
+	m.AddGoWordWithStack("str-starts?",
+		"( str prefix -- startswith? )",
+		"Check to see if str starts with prefix.",
+		_strStartsWith)
+
+	m.AddGoWordWithStack("str-empty?",
+		"( str -- empty? )",
+		"Returns true if the string has a length of 0 or less",
+		_strEmpty)
+	m.AddGoWordWithStack("str>rune-reader",
+		"( str -- reader )",
+		"Creates a rune-reader from str",
+		_strToRuneReader)
+	m.AddGoWordWithStack("each-char",
+		"( str quot -- .. )",
+		"Executes quot for each character in str",
+		_eachChar)
+
+	m.AddGoWordWithStack("str-replace",
+		"( str pat replace -- .. )",
+		"Returns a new string based on str with `pat` swapped for `replace`",
+		_strReplace)
+	m.AddGoWordWithStack("str-contains?",
+		"( str cont -- contained? )",
+		"Returns true if `cont` is in str, false otherwise",
+		_strContains)
+	m.AddGoWordWithStack("str-count",
+		"( str sep -- count )",
+		"Counts the number of instances of sep in str",
+		_strCount)
+
+	m.AddGoWordWithStack("str-repeat",
+		"( str repeat-count -- 'str )",
+		"Returns a new string that is str repeated `repeat-count` times",
+		_strRepeat)
+	m.AddGoWordWithStack("str-trim",
+		"( str -- 'str )",
+		"Trims whitespace off the front and back of `str`",
+		_strTrim)
+
+	m.AddGoWordWithStack("str-upper",
+		" ( str -- upper-str ) ",
+		"Returns an upper-cased copy of str",
+		_strUpper)
+	m.AddGoWordWithStack("str-lower",
+		" ( str -- lower-str ) ",
+		"Returns an lower-cased copy of str",
+		_strLower)
+
+	m.AddGoWordWithStack("str-reverse",
+		" ( str -- reversed-runes ) ",
+		"Splits a string into runes, and then reverses the runes into a new string",
+		_strReverse)
+	m.AddGoWordWithStack("str-reverse-bytes",
+		" ( str -- reversed-bytes ) ",
+		"Splits a string into bytes, and then reverses the bytes into a new string",
+		_strReverseBytes)
+	m.AddGoWordWithStack("str-reverse-graphemes",
+		" ( str -- reversed-graphemes ) ",
+		"Reverses str by grapheme clusters",
+		_strReverseGraphemes)
+
+	return m.ImportPISCAsset("stdlib/strings.pisc")
+}
 
 // TODO: Add more words to support strings here, we need a way to handle a lot more cases, like
 // replacement, substringing, joining and so on.
@@ -109,13 +216,18 @@ func _strToRuneReader(m *Machine) error {
 }
 
 func _eachChar(m *Machine) error {
-	quot := m.PopValue().(*Quotation).toCode()
+	quot := m.PopValue().(*Quotation)
 	str := m.PopValue().(String).String()
 	var err error
 	for _, r := range str {
 		m.PushValue(String(string(r)))
-		quot.Idx = 0
-		err = m.execute(quot)
+		err = m.CallQuote(quot)
+		if IsLoopError(err) && LoopShouldEnd(err) {
+			return nil
+		}
+		if IsLoopError(err) && !LoopShouldEnd(err) {
+			continue
+		}
 		if err != nil {
 			break
 		}
@@ -273,113 +385,4 @@ func _strReverseGraphemes(m *Machine) error {
 	}
 	m.PushValue(String(string(result[start:])))
 	return nil
-}
-
-func loadStringCore(m *Machine) error {
-
-	m.AddGoWordWithStack(
-		"str-concat",
-		"( str-a str-b -- str-ab )",
-		"Concatenate str-a and str-b, allocating a new string",
-		_concat)
-	m.AddGoWordWithStack(">string",
-		"( anyVal -- str )",
-		"Cast the top value of the stack to a string.",
-		_toString)
-	m.AddGoWordWithStack("str>int",
-		"( str -- int! )",
-		"Attempt to parse a string from the top of the stack into an int.",
-		_strToInt)
-	m.AddGoWordWithStack(
-		"str-join",
-		"( vec sep -- str )",
-		"Casts each element of vec to a string, and then joins them with sep in the middle",
-		_strJoin)
-
-	m.AddGoWordWithStack(
-		"str-ends?",
-		"( str endstr -- endswith? )",
-		"Checks to see if str ends with endstr",
-		_strEndsWith)
-	m.AddGoWordWithStack(
-		"str-eq?",
-		"( a b -- eq? )",
-		"Compares two strings for equality.",
-		_strEq)
-	m.AddGoWordWithStack(
-		"str-substr",
-		"( str start end -- substr )",
-		"Takes a substring of str over the range [start:end]",
-		_strSubstr)
-	m.AddGoWordWithStack("str-idx-of",
-		"( str sub -- idx )",
-		"Find the index of the first instance of sub in str",
-		_strIdxOf)
-	m.AddGoWordWithStack("str-split",
-		"( str sep -- vec )",
-		"Split str into a vector of strings, based on sep",
-		_strSplit)
-	m.AddGoWordWithStack("str-starts?",
-		"( str prefix -- startswith? )",
-		"Check to see if str starts with prefix.",
-		_strStartsWith)
-
-	m.AddGoWordWithStack("str-empty?",
-		"( str -- empty? )",
-		"Returns true if the string has a length of 0 or less",
-		_strEmpty)
-	m.AddGoWordWithStack("str>rune-reader",
-		"( str -- reader )",
-		"Creates a rune-reader from str",
-		_strToRuneReader)
-	m.AddGoWordWithStack("each-char",
-		"( str quot -- .. )",
-		"Executes quot for each character in str",
-		_eachChar)
-
-	m.AddGoWordWithStack("str-replace",
-		"( str pat replace -- .. )",
-		"Returns a new string based on str with `pat` swapped for `replace`",
-		_strReplace)
-	m.AddGoWordWithStack("str-contains?",
-		"( str cont -- contained? )",
-		"Returns true if `cont` is in str, false otherwise",
-		_strContains)
-	m.AddGoWordWithStack("str-count",
-		"( str sep -- count )",
-		"Counts the number of instances of sep in str",
-		_strCount)
-
-	m.AddGoWordWithStack("str-repeat",
-		"( str repeat-count -- 'str )",
-		"Returns a new string that is str repeated `repeat-count` times",
-		_strRepeat)
-	m.AddGoWordWithStack("str-trim",
-		"( str -- 'str )",
-		"Trims whitespace off the front and back of `str`",
-		_strTrim)
-
-	m.AddGoWordWithStack("str-upper",
-		" ( str -- upper-str ) ",
-		"Returns an upper-cased copy of str",
-		_strUpper)
-	m.AddGoWordWithStack("str-lower",
-		" ( str -- lower-str ) ",
-		"Returns an lower-cased copy of str",
-		_strLower)
-
-	m.AddGoWordWithStack("str-reverse",
-		" ( str -- reversed-runes ) ",
-		"Splits a string into runes, and then reverses the runes into a new string",
-		_strReverse)
-	m.AddGoWordWithStack("str-reverse-bytes",
-		" ( str -- reversed-bytes ) ",
-		"Splits a string into bytes, and then reverses the bytes into a new string",
-		_strReverseBytes)
-	m.AddGoWordWithStack("str-reverse-graphemes",
-		" ( str -- reversed-graphemes ) ",
-		"Reverses str by grapheme clusters",
-		_strReverseGraphemes)
-
-	return m.ImportPISCAsset("stdlib/strings.pisc")
 }

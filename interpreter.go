@@ -104,6 +104,9 @@ type Machine struct {
 	DispatchBudget int64
 
 	DebugTrace string
+
+	// Current code location
+	CurrentPosition CodePosition
 }
 
 func (m *Machine) LogAndResetDispatchCount(w io.Writer, shouldLog bool) {
@@ -156,7 +159,7 @@ func (m *Machine) ExecuteString(code string, pos CodePosition) (err error) {
 	if err != nil {
 		return err
 	}
-	return m.execute(p)
+	return m.execute(p) // Correctly built
 }
 
 var (
@@ -268,6 +271,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 		if err != nil {
 			return err
 		}
+		m.CurrentPosition = p.getCodePosition()
 		// Hrm...
 		m.NumDispatches++
 		if m.IsBudgeted && m.NumDispatches >= m.DispatchBudget {
@@ -323,11 +327,12 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			// err = m.readPatternDefinition
 		case wordVal.str == ":DOC":
 			err = m.readWordDocumentation(p)
-		case wordVal.str == "error":
-			pos := p.getCodePosition()
-			str := m.PopValue().String()
-			output := fmt.Sprint(pos.Source, " ", pos.LineNumber+1, ":", pos.Offset, ": ", str)
-			return fmt.Errorf("%s", output)
+		/*case wordVal.str == "error":
+		pos := p.getCodePosition()
+		str := m.PopValue().String()
+		output := fmt.Sprint(pos.Source, " ", pos.LineNumber+1, ":", pos.Offset, ": ", str)
+		return fmt.Errorf("%s", output)
+		*/
 
 		case wordVal.str == "}":
 			panic("Unbalanced }!")
@@ -427,7 +432,7 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 			copy(vals, m.Values[currIdx:len(m.Values)])
 			m.Values = m.Values[:currIdx]
 			m.PushValue(&Vector{Elements: vals})
-			err = m.execute(_join.inner)
+			err = m.execute(_join.inner) // Correctly built
 
 		case wordVal.str == "[":
 			// Begin Quotation
@@ -525,6 +530,9 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 				return p.wrapError(err)
 			}
 		}
+		if isControlFlowError(err) {
+			return err
+		}
 		if err != nil {
 			// TODO: add some ways to debug here....
 			fmt.Fprintln(os.Stderr, "Execution stopped during word:  ", wordVal, " error: ", err)
@@ -534,10 +542,15 @@ func (m *Machine) do_execute(p *CodeQuotation) (retErr error) {
 	return nil
 }
 
-var ErrNoLocals = fmt.Errorf("No locals to try !")
+func isControlFlowError(err error) bool {
+	return IsLoopError(err)
+}
+
+var ErrNoLocals = fmt.Errorf("No locals to try!")
 var LocalFuncRun = fmt.Errorf("Nothing was wrong")
 var WordNotFound = fmt.Errorf("word was undefined")
 
+/*
 func (c *Quotation) execute(m *Machine) error {
 
 	var old_idx = c.inner.Idx
@@ -550,17 +563,13 @@ func (c *Quotation) execute(m *Machine) error {
 	c.inner.Idx = old_idx
 	return err
 }
+*/
 
 func (m *Machine) tryLocalWord(w *word) error {
-	// TODO: In progress
 	if len(m.Locals) > 0 {
 		if localFunc, found := m.Locals[len(m.Locals)-1][w.str]; found {
 			if fn, ok := localFunc.(*Quotation); ok {
-				// Push the locals on
-				m.Locals = append(m.Locals, fn.locals)
-				err := fn.execute(m)
-				// Take the local off
-				m.Locals = m.Locals[:len(m.Locals)-1]
+				err := m.CallQuote(fn)
 				if err != nil {
 					return err
 				}
@@ -589,8 +598,7 @@ func (m *Machine) readWordBody(name word, c codeSequence) ([]*word, []CodePositi
 		fmt.Fprintln(os.Stderr, "ERRR0!")
 		return nil, nil, WordDefParenExpectedError
 	}
-	// TODO: come back and clean this up.
-	if err != nil || err2 != nil {
+	if err2 != nil {
 		return nil, nil, fmt.Errorf("Errors %s | %s", err.Error(), err2.Error())
 	}
 
@@ -815,16 +823,19 @@ func (m *Machine) readWordDefinition(c codeSequence) error {
 	return nil
 }
 
+func (m *Machine) CallQuote(q *Quotation) error {
+	m.Locals = append(m.Locals, q.locals)
+	err := m.execute(q.toCode())
+	m.Locals = m.Locals[:len(m.Locals)-1]
+	// Works if the err is nil or
+	return err
+}
+
 // Used for call word.
 func (m *Machine) ExecuteQuotation() error {
 	quoteVal := m.PopValue()
 	if q, ok := quoteVal.(*Quotation); ok {
-		// q.inner = q.inner.cloneCode()
-		m.Locals = append(m.Locals, q.locals)
-		err := m.execute(q.toCode())
-		m.Locals = m.Locals[:len(m.Locals)-1]
-		// Works if the err is nil or
-		return err
+		return m.CallQuote(q)
 	} else if q, ok := quoteVal.(GoFunc); ok {
 		return q(m)
 

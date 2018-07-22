@@ -234,7 +234,7 @@ func importPISC(m *Machine) error {
 	if err != nil {
 		return err
 	}
-	err = m.execute(code)
+	err = m.execute(code) // Correctly built
 	if err != nil {
 		return err
 	}
@@ -251,7 +251,7 @@ func (m *Machine) ImportPISCAsset(assetkey string) error {
 	if err != nil {
 		return err
 	}
-	err = m.execute(code)
+	err = m.execute(code) // Correctly built
 	if err != nil {
 		return err
 	}

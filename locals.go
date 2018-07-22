@@ -41,7 +41,7 @@ func _getLocal(m *Machine) error {
 		m.PushValue(val)
 		return nil
 	} else {
-		fmt.Printf("Can't find %v", varName)
+		fmt.Printf("ERROR: Can't find %v\n", varName)
 		return ErrLocalNotFound
 	}
 }
@@ -58,12 +58,16 @@ func _dropLocals(m *Machine) error {
 
 func _eachLocal(m *Machine) error {
 	quot := m.PopValue().(*Quotation)
-	code := quot.toCode()
 	for key, val := range m.Locals[len(m.Locals)-1] {
 		m.PushValue(val)
 		m.PushValue(String(key))
-		code.Idx = 0
-		err := m.execute(code)
+		err := m.CallQuote(quot)
+		if IsLoopError(err) && LoopShouldEnd(err) {
+			return nil
+		}
+		if IsLoopError(err) && !LoopShouldEnd(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}

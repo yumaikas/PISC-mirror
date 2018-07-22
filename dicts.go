@@ -97,7 +97,13 @@ func _dictEachKey(m *Machine) error {
 
 	for k, _ := range dict {
 		m.PushValue(String(k))
-		err := m.execute(quot.inner)
+		err := m.CallQuote(quot)
+		if IsLoopError(err) && LoopShouldEnd(err) {
+			return nil
+		}
+		if IsLoopError(err) && !LoopShouldEnd(err) {
+			continue
+		}
 		if err != nil {
 			return err
 		}

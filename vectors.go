@@ -93,6 +93,12 @@ func vecEach(m *Machine) error {
 		m.PushValue(elem)
 		m.PushValue(quot)
 		err := m.ExecuteQuotation()
+		if IsLoopError(err) && LoopShouldEnd(err) {
+			return nil
+		}
+		if IsLoopError(err) && !LoopShouldEnd(err) {
+			continue
+		}
 		if err != nil {
 			fmt.Println("ERROR HAPPENED")
 			return err

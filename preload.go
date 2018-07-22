@@ -63,9 +63,9 @@ func typeof(m *Machine) error {
 }
 
 func dip(m *Machine) error {
-	quot := m.PopValue().(*Quotation).toCode()
+	quot := m.PopValue().(*Quotation)
 	a := m.PopValue()
-	err := m.execute(quot)
+	err := m.CallQuote(quot)
 	if err != nil {
 		return err
 	}
@@ -110,16 +110,6 @@ func lenEntry(m *Machine) error {
 	return nil
 }
 
-func tryRunCode(m *Machine) error {
-	/*
-		err := m.Execute("call")
-		if err != nil {
-
-		}
-	*/
-	return nil
-}
-
 func errorFromEntry(m *Machine) error {
 	msg := m.PopValue().String()
 	return fmt.Errorf(msg)
@@ -154,6 +144,7 @@ var ModPISCCore = Module{
 
 // These are the standard libraries that are currently trusted to not cause problems in general
 var StandardModules = []Module{
+	ModErrorsCore,
 	ModLoopCore,
 	ModLocalsCore,
 	ModDictionaryCore,
@@ -215,11 +206,13 @@ func loadPISCCore(m *Machine) error {
 		"( a b -- same? )",
 		"Run a deep, refection based comparison. Slower than reflect-eq, but easier to use for vectors",
 		reflectEq)
-	m.AddGoWordWithStack(
-		"error",
-		"( message -- !! )",
-		"Create an error from msg",
-		errorFromEntry)
+	/*
+		m.AddGoWordWithStack(
+			"error",
+			"( message -- !! )",
+			"Create an error from msg",
+			errorFromEntry)
+	*/
 	m.AddGoWordWithStack(
 		"module-loaded?",
 		"( module-name -- loaded? )",

@@ -24,7 +24,7 @@ Returns true if the end of the file has been reached, false otherwise
 
 :DOC open-file-writer ( path -- writer ) Writers are simpler than readers, as they can only write lines or strings ;
 	
-:DOC write-string ( str -- ) Write str to the attached writer ;
+:DOC .write-string ( str IO -- ) Write str to the attached writer ;
 
 :DOC write-line ( str -- ) Write str to the attached writer, appending \n to the end ;
 
@@ -44,3 +44,24 @@ Returns true if the end of the file has been reached, false otherwise
 	:quot
 	open-file-reader dup $quot with .close
 ;
+
+
+: write-iolist ( content:arr|str writer:dict[ .write .write-line ] -- ) 
+/* 
+Take an array of arrays and strings, and write it to the supplied writer 
+
+Loosely modeled after Erlang's notion of iolists, though not likely to be nearly as efficient yet
+*/
+:OUT :content
+$content typeof "String" eq [ $content $OUT .write-string ]
+[
+    $content [ :elem
+        $elem typeof :type
+        $type "String" eq [ $elem $OUT .write-string continue ] when
+        $type "Vector" eq [ $elem $OUT write-iolist continue ] when 
+        ${"Unsupported iolist type: " $type "."} {"io"} error
+    ] vec-each
+] if
+
+; 
+
