@@ -3,10 +3,11 @@ package pisc
 // "strings"
 
 var ModDictionaryCore = Module{
-	Author:  "Andrew Owen",
-	Name:    "DictionaryCore",
-	License: "MIT", // TODO: Clarify here
-	Load:    loadDictMod,
+	Author:    "Andrew Owen",
+	Name:      "DictionaryCore",
+	License:   "MIT", // TODO: Clarify here
+	Load:      loadDictMod,
+	DocString: "Words for manipulating dictionaries",
 	// Possible: indicate PISC files to be loaded?
 }
 

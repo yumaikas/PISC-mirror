@@ -9,7 +9,7 @@ var ModLocalsCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "LocalsCore",
 	License:   "MIT",
-	DocString: "TODO: Fill this in",
+	DocString: "Words for manipulating local variables",
 	Load:      loadLocalCore,
 }
 

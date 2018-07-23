@@ -1,6 +1,6 @@
 /* The IO libraries of PISC */
 
-/* This doc isn't for a specific word */
+/* This doc isn't for a specific word 
 :DOC IO ( -- ) 
 # Readers
 
@@ -31,6 +31,7 @@ Returns true if the end of the file has been reached, false otherwise
 :DOC filepath>string ( fileName -- strContents )  A utility function for reading small files into strings. Do not use on large files  ;
 
 :DOC priv_puts ( str -- )  priv_puts is the underlying word used for printing values  ;
+*/
 
 : with-output ( path quot -- .. )
 	:quot

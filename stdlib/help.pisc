@@ -25,9 +25,20 @@
 <head>
   <meta charset=\"utf-8\">
 </head>
-    
-
 <body>
+<style>
+body { 
+    max-width: 800px;
+    width: 80%;
+}
+body,input,textarea {
+       font-family: Iosevka, monospace;
+       background: #191e2a;
+       color: #21EF9F;
+}
+a { color: aqua; }
+a:visited { color: darkcyan; }
+</style>
 "
 $content
         
@@ -36,18 +47,81 @@ $content
     }
 ;
 
-: write-str-array ( content:str writer:dict [ .write .write-line ] -- ) 
-    
-; 
-
-: docs-to-html ( directory:str -- )
-
- 
-
+: html-escape ( unescaped -- partially-escaped ) 
+    ">" "&gt;" str-replace
+    "<" "&lt;" str-replace
 ;
 
-: format-docs ( options -- ouput ) 
-/* Not implemented */
-"" drop
-; 
+: func-html ( func:dict -- html:vector ) 
+    :func
+    {
+    "<div class=\"func-entry\">"
+    "<h3 id=\"" $func ->name  "\">" $func ->name html-escape
+    " <code>" $func ->stack-effect "</code>"
+    "</h3>"
+    "<div class=\"func-docs\">" $func ->doc "<div>"
+    "</div>"
+    }
+;
+
+: mod-html ( mod:dict func-html:vector -- html:vector ) 
+    :body :mod
+    {
+    "<h2><a href=\"index.html\">" $mod ->name "</a></h2>"
+    "<div id=\"author\">By " $mod ->author "</div>"
+    "<div id=\"author\">Released under the " $mod ->license " license</div>"
+    "<h3>Notes:</h3>"
+    "<div id=\"module-top-docs\">" $mod ->doc "</div>"
+    "<hr/>"
+    $body
+    } html-body
+;
+
+: index-html ( modules:dict -- html:vector ) :modules
+    {
+        "<h2>Position Independent Source Code Documentation</h2>"
+        "<div>(very) Work in progress documentation</div>"
+        "<ul>"
+        $modules [ :m $m ->name :name
+            "<li><a href=\"" $name ".html\">" $name "</a>: " $m ->doc "</li>"
+        ] vec-each
+        "</ul>"
+    } html-body
+;
+
+: append-slash ( path:str -- with-slash:dir ) :path
+   $path "/" str-ends? not [ ${ $path "/" } ] [ $path ] if ; 
+
+: docs-to-html ( directory:str -- ) append-slash :dir
+    # What all do we want?
+    # We want an index.html that has a list of modules
+    {} :modules
+    # Give each module a page
+    # Show the docs for each function on a page
+    # Maybe have a full-text larger page for searching?
+    { } :func-html-list
+    [ :mod
+        # "MOD" println
+        $modules $mod vec-pushback
+        $func-html-list len 0 > [
+            ${ $dir $old-mod ->name ".html" } open-file-writer :mod-out
+            $old-mod $func-html-list mod-html $mod-out write-iolist
+            $mod-out .close
+        ] when
+      $mod :old-mod
+      { } :func-html-list
+    ]
+    [ :func 
+        # "FUNC" println
+       $func-html-list $func func-html vec-pushback
+    ] 
+    iterate-help-info
+    $func-html-list len 0 > [
+        ${ $dir $old-mod ->name ".html" } open-file-writer :mod-out
+        $old-mod $func-html-list mod-html $mod-out write-iolist
+        $mod-out .close
+    ] when
+    $modules index-html ${ $dir "index.html" } open-file-writer dup :out write-iolist 
+    $out .close
+;
 

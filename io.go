@@ -78,7 +78,7 @@ func _openFileWriter(m *Machine) error {
 	})
 	m.PushValue(file)
 
-	return m.ImportPISCAsset("stdlib/io.pisc")
+	return nil
 }
 
 func _openFileReader(m *Machine) error {
@@ -164,7 +164,7 @@ They support the following calls (assuming a reader in $reader)
 		_openFileReader)
 
 	m.AddGoWordWithStack("priv_puts", "( str -- )", "Prints str to STDOUT", _priv_puts)
-	return nil
+	return m.ImportPISCAsset("stdlib/io.pisc")
 }
 
 type PISCReader interface {

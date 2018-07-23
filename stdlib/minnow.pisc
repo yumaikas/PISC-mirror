@@ -1,5 +1,5 @@
-# This can write each non-functional type
-: serial-mapping ( -- mapping )
+: serial-mapping ( -- mapping:func )
+    # Return a fuction that maps from types to serializers for said types
 	<dict>
 		[ write-dict ] <<-Dictionary
 		[ write-vec ] <<-Vector
@@ -17,7 +17,9 @@
 	] 
 ;
 
-: save-state ( OUT state -- state ) :state :path
+: save-state ( path:string state:any -- state:any )
+    # 
+     :state :path
 	$state typeof :type
 	f :success
 	[ 
@@ -27,20 +29,24 @@
 			$OUT <<-OUT
 			0 <<-tab
 	] :get-writer-ctx
-	[ eq dup $success or :success ] :eqn
-	$type "Dictionary" eqn [ get-writer-ctx $state write-dict ] when
-	$type "Vector" eqn [ get-writer-ctx $state write-vec ] when
+	[ eq dup $success or :success ] :eq-break
+	$type "Dictionary" eq-break [ get-writer-ctx $state write-dict ] when
+	$type "Vector" eq-break [ get-writer-ctx $state write-vec ] when
 	$success not
 		[ ${ "Cannot write value of type: " $type } error ]
 	when	
 	$OUT .close
 ;
 
-# Replace " with \" in the string, to keep it from breaking up
-: quote-safe ( str -- str ) "\\" "\\\\" str-replace "\"" "\\\"" str-replace ;
-: wrap-quotes ( str -- str ) "\"" swap str-concat "\"" str-concat ;
+: quote-safe ( str -- str ) /* Replace " with \" in the string, to keep it from breaking up on read */
+    "\\" "\\\\" str-replace "\"" "\\\"" str-replace ;
+
+: wrap-quotes ( str -- str ) /* Wrap a string in quotes */ 
+    "\"" swap str-concat "\"" str-concat ;
 
 : write-dict ( ctx dict -- ) 
+    # Write a dict to an IO writer
+
 	:pairs dup :ctx ->OUT :OUT
 	# Increase the tab-indent
 	$ctx dup ->tab 1 + <-tab 
@@ -92,11 +98,13 @@
 
 # TODO: do file mod-date checks here on gets, so that this file can be persisted across pisc sessions
 : <persisted-dict> ( path -- dict ) 
+    # Create a dictionary that is persisted to the filesystem when values are stored to it.
+
     :path
     ${ $path ".bak" } :backup
     $path import :state # Pick up the state from before
     <dict> dup :export # Export
-    # ( key value -- )
+    # ( key value -- ) 
     [ :v :k 
        $state $v $k dict-push 
        $export .save 
@@ -105,7 +113,7 @@
        $path $backup copy-file-simple
        $path $state save-state
     ] <<-save
-    # ( key -- value )
+    # ( key -- value ) 
     [ :k
       $state ->$k 
     ] <<-get

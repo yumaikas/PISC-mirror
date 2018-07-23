@@ -4,9 +4,9 @@ import "fmt"
 
 var ModSymbolCore = Module{
 	Author:    "Andrew Owen",
-	Name:      "",
+	Name:      "SymbolCore",
 	License:   "MIT",
-	DocString: "SymbolCore",
+	DocString: "Generate and compare symbols",
 	Load:      loadSymbolCore,
 }
 
@@ -33,7 +33,6 @@ func _symbolNotEqual(m *Machine) error {
 func loadSymbolCore(m *Machine) error {
 	// Push a symbol onto the stack
 	m.AddGoWordWithStack("<symbol>", "( -- symbol ) ", "Creates a unique symbol, and puts it on the stack", _genSymbol)
-	// ( symbol symbol -- bool )
-	m.AddGoWordWithStack("<symbol>", "( a b -- equal? ) ", "Compares two symbols, erroring it they aren't symbols", _symbolNotEqual)
+	m.AddGoWordWithStack("symb-neq?", "( a b -- equal? ) ", "Compares two symbols, erroring if they aren't symbols", _symbolNotEqual)
 	return m.ImportPISCAsset("stdlib/symbols.pisc")
 }

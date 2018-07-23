@@ -5,13 +5,32 @@ import (
 	"strings"
 )
 
-// TODO: Indicate deps modules?
+// TODO: Indicate modules that this one depends on?
 var ModHelpCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "HelpCore",
 	License:   "MIT",
 	DocString: "A function to look up help for words",
 	Load:      loadHelpCore,
+}
+
+func loadHelpCore(m *Machine) error {
+	// TODO: Implement cli docs browser?
+	// eh,
+
+	m.AddGoWordWithStack(
+		"help",
+		"( search-term:str -- )",
+		"Search the docs for the given search term, printing out any entries that match",
+		_help)
+	m.AddGoWordWithStack(
+		"iterate-help-info",
+		"( per-module:func[ attrs:dict[ count:int name:str author:str license:str doc:str ] - ] per-function:func[ attrs:dict[ name stack doc ] ] -- ? )",
+		"Iterate over all of the installed functions, running the callbacks provided as needed",
+		_iterateHelpinfo,
+	)
+	return m.ImportPISCAsset("stdlib/help.pisc")
+
 }
 
 func _help(m *Machine) error {
@@ -59,24 +78,4 @@ func _iterateHelpinfo(m *Machine) error {
 		}
 	}
 	return nil
-}
-
-// TODO: Pull from more Sources of docs, like word defs, not just
-// :DOC directive
-func loadHelpCore(m *Machine) error {
-	// TODO: Implement cli docs browser?
-
-	m.AddGoWordWithStack(
-		"help",
-		"( search-term:str -- )",
-		"Search the docs for the given search term, printing out any entries that match",
-		_help)
-	m.AddGoWordWithStack(
-		"iterate-help-info",
-		"( per-module:func[ attrs:dict[ count:int name:str author:str license:str doc:str ] - ] per-function:func[ attrs:dict[ name stack doc ] ] -- ? )",
-		"Iterate over all of the installed functions, running the callbacks provided as needed",
-		_iterateHelpinfo,
-	)
-	return m.ImportPISCAsset("stdlib/help.pisc")
-
 }

@@ -40,6 +40,7 @@ function webbuild {
 		cd "./cmd/playground"
         # TODO: Put in a go get command for gopherjs
 		gopherjs build -m
+        pisc -c '${ pwd "/docs" } docs-to-html'
 		cd ../..
 	} 
 }
@@ -50,6 +51,7 @@ function upload {
 	cd ./cmd/playground
 	# Note: This command won't work w/o a password for the scp
 	scp *.css *.js *.html yumaikas@junglecoder.com:/var/www/pisc-static/playground
+    scp docs/*.html yumaikas@junglecoder.com:/var/www/pisc-static/playground/docs
 	cd ../..
 }
 
@@ -90,6 +92,7 @@ esac
 # TODO: Implement an interactive tutorial in the 'in Y minutes' style. 
 # TODO: consider packing the scripts under scripts/ for general use, possibly with a switch for unpacking them
 # TODO: Now that something close to a save-game has been implemented for final-frontier, start implementing the initial states and such
+# TODO: Find a way to keep unbalanced or unclosed { or [ from leading to nil pointer panics
 cat <<EONOTE
 Review TODOs in build script
 EONOTE

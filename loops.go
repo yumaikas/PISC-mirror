@@ -6,7 +6,7 @@ var ModLoopCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "LoopCore",
 	License:   "MIT",
-	DocString: "times is the standard counted loop, while takes two conditions",
+	DocString: "Implements basic loops",
 	Load:      loadLoopCore,
 }
 

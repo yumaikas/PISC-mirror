@@ -224,13 +224,13 @@ func loadPISCCore(m *Machine) error {
 	m.AddGoWordWithStack(
 		"pick-dup",
 		"( ..x.. n -- ..x.. x )",
-		"Duplicates a vale that is n entries from the top, or errors if there are less than n entries in the stack",
+		"Duplicates a value that is n entries from the top, or errors if there are less than n entries in the stack",
 		pickDup)
 
 	m.AddGoWordWithStack(
 		"pick-drop",
 		"( ..x.. n -- x )",
-		"Removes a vale that is n entries from the top, putting it atop the stack. Raises an error if there are less than n entries in the stack",
+		"Removes a value that is n entries from the top, putting it atop the stack. Raises an error if there are less than n entries in the stack",
 		pickDrop)
 
 	m.AddGoWordWithStack(

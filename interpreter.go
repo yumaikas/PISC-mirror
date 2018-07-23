@@ -689,6 +689,7 @@ func (m *Machine) readWordBody(name word, c codeSequence) ([]*word, []CodePositi
 		wordDef = append(wordDef, wordVal)
 		wordInfo = append(wordInfo, c.getCodePosition())
 		// End copied
+		break
 	}
 
 	for err == nil && !wasEndOfFunction {
@@ -802,6 +803,7 @@ func (m *Machine) readPrefixDefinition(c codeSequence) error {
 		Words:         wordDef,
 		CodePositions: positions,
 	}
+	m._loadingModuleNames = append(m._loadingModuleNames, prefix.str)
 	return nil
 }
 

@@ -8,7 +8,7 @@ var ModVectorCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "VectorCore",
 	License:   "MIT",
-	DocString: "TODO: Fill this in",
+	DocString: "Words for creating and manipulating vectors",
 	Load:      loadVectorCore,
 }
 

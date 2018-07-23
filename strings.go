@@ -14,7 +14,7 @@ var ModStringsCore = Module{
 	Author:    "Andrew Owen",
 	Name:      "StringCore",
 	License:   "MIT",
-	DocString: "TODO: Fill this in",
+	DocString: "Various string-related functions",
 	Load:      loadStringCore,
 }
 
